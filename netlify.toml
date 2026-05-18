@@ -2,6 +2,9 @@
   publish = "."
   functions = "netlify/functions"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "PAYMOB_INTEGRATION_ID,COURSE_PRICE_CENTS,GMAIL_USER"
+
 [functions]
   node_bundler = "esbuild"
   included_files = ["netlify/functions/package.json"]
