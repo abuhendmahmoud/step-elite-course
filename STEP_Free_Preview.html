@@ -3941,7 +3941,7 @@ function _fingerprint() {
   ].join('|');
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = Math.imul(h,33) ^ s.charCodeAt(i);
-  return Math.abs(h).toString(16).toUpperCase().substring(0,8);
+  return Math.abs(h).toString(16).toUpperCase().padStart(8,'0').substring(0,8);
 }
 
 function _genCode(fp) {
