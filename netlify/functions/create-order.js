@@ -1,10 +1,8 @@
 // netlify/functions/create-order.js
 // Creates a Paymob Payment Intention and returns the checkout URL
-// Called by the HTML payment panel when student clicks "Pay Now"
 
 const https = require('https');
 
-// ── helpers ────────────────────────────────────────────────────────────────
 function postJSON(hostname, path, body, token) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
@@ -32,11 +30,11 @@ function postJSON(hostname, path, body, token) {
   });
 }
 
-// ── main handler ───────────────────────────────────────────────────────────
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: corsHeaders(), body: '' };
   }
+
   if (event.httpMethod !== 'POST') {
     return respond(405, { error: 'Method not allowed' });
   }
@@ -48,7 +46,7 @@ exports.handler = async (event) => {
   const { name, email, phone, deviceCode } = payload;
 
   if (!name || !email || !phone || !deviceCode) {
-    return respond(400, { error: 'Missing required fields: name, email, phone, deviceCode' });
+    return respond(400, { error: 'Missing required fields' });
   }
   if (!/^[0-9A-Fa-f]{8}$/.test(deviceCode)) {
     return respond(400, { error: 'Invalid device code format (expected 8 hex characters)' });
@@ -58,49 +56,76 @@ exports.handler = async (event) => {
   const PUBLIC_KEY     = process.env.PAYMOB_PUBLIC_KEY;
   const INTEGRATION_ID = process.env.PAYMOB_INTEGRATION_ID || '5676435';
   const AMOUNT_CENTS   = parseInt(process.env.COURSE_PRICE_CENTS || '70000', 10);
-  const SITE_URL       = process.env.URL || 'https://step-with-mahmoud.netlify.app';
+  const SITE_URL       = process.env.URL || 'https://step-elite-course.netlify.app';
 
   if (!SECRET_KEY || !PUBLIC_KEY) {
+    console.error('Missing PAYMOB_SECRET_KEY or PAYMOB_PUBLIC_KEY env vars');
     return respond(500, { error: 'Payment gateway not configured' });
   }
 
-  const merchantReference = `STEP-${deviceCode.toUpperCase()}-${Date.now()}`;
+  const merchantReference = 'STEP-' + deviceCode.toUpperCase() + '-' + Date.now();
 
   const intentionBody = {
     amount: AMOUNT_CENTS,
     currency: 'EGP',
     payment_methods: [parseInt(INTEGRATION_ID, 10)],
-    items: [{ name: 'STEP Elite Course – Full Access', amount: AMOUNT_CENTS, description: 'Saudi STEP Exam Prep – All 11 Sessions', quantity: 1 }],
+    items: [{
+      name: 'STEP Elite Course',
+      amount: AMOUNT_CENTS,
+      description: 'Saudi STEP Exam Prep – All 11 Sessions',
+      quantity: 1,
+    }],
     billing_data: {
       first_name: name.split(' ')[0] || name,
-      last_name: name.split(' ').slice(1).join(' ') || 'Student',
-      email, phone_number: phone, country: 'EG', city: 'Cairo',
-      street: 'N/A', building: 'N/A', floor: 'N/A', apartment: 'N/A',
+      last_name:  name.split(' ').slice(1).join(' ') || 'Student',
+      email,
+      phone_number: phone,
+      country: 'EG',
+      city: 'Cairo',
+      street: 'N/A',
+      building: 'N/A',
+      floor: 'N/A',
+      apartment: 'N/A',
     },
-    customer: { first_name: name.split(' ')[0] || name, last_name: name.split(' ').slice(1).join(' ') || 'Student', email },
-    extras: { device_code: deviceCode.toUpperCase(), student_email: email, student_name: name },
+    customer: {
+      first_name: name.split(' ')[0] || name,
+      last_name:  name.split(' ').slice(1).join(' ') || 'Student',
+      email,
+    },
+    extras: {
+      device_code: deviceCode.toUpperCase(),
+      student_email: email,
+      student_name: name,
+    },
     merchant_order_id: merchantReference,
-    redirection_url: `${SITE_URL}/payment-success.html`,
-    notification_url: `${SITE_URL}/.netlify/functions/verify-payment`,
+    redirection_url: SITE_URL + '/payment-success.html',
+    notification_url: SITE_URL + '/.netlify/functions/verify-payment',
   };
 
   let intentionRes;
   try {
     intentionRes = await postJSON('accept.paymob.com', '/v1/intention/', intentionBody, SECRET_KEY);
   } catch (err) {
+    console.error('Paymob network error:', err);
     return respond(502, { error: 'Failed to reach payment gateway' });
   }
 
+  console.log('Paymob status:', intentionRes.status);
+  console.log('Paymob body:', JSON.stringify(intentionRes.body));
+
   if (intentionRes.status !== 201 && intentionRes.status !== 200) {
+    console.error('Paymob error:', intentionRes.body);
     return respond(502, { error: 'Payment gateway error', detail: intentionRes.body });
   }
 
   const clientSecret = intentionRes.body.client_secret;
   if (!clientSecret) {
+    console.error('No client_secret:', intentionRes.body);
     return respond(502, { error: 'Invalid payment gateway response' });
   }
 
-  const checkoutUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${PUBLIC_KEY}&clientSecret=${clientSecret}`;
+  const checkoutUrl = 'https://accept.paymob.com/unifiedcheckout/?publicKey=' + PUBLIC_KEY + '&clientSecret=' + clientSecret;
+
   return respond(200, { checkoutUrl, merchantReference, amountEGP: (AMOUNT_CENTS / 100).toFixed(2) });
 };
 
@@ -113,5 +138,9 @@ function corsHeaders() {
 }
 
 function respond(statusCode, body) {
-  return { statusCode, headers: { 'Content-Type': 'application/json', ...corsHeaders() }, body: JSON.stringify(body) };
+  return {
+    statusCode,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+    body: JSON.stringify(body),
+  };
 }
