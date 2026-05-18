@@ -56,53 +56,38 @@ function sendEmail({ to, studentName, unlockCode, deviceCode, amountEGP }) {
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
-  let obj;
-  try { obj = JSON.parse(event.body); }
+  let body;
+  try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
-  // Log full payload so we can debug
-  console.log('Webhook received. Keys:', Object.keys(obj).join(', '));
-  console.log('success:', obj.success);
-  console.log('hmac field:', obj.hmac);
-  console.log('merchant_order_id:', obj.order?.merchant_order_id);
+  // New Paymob format: transaction is nested under body.obj
+  const txn = body.obj || body;
 
-  // HMAC check — log result but don't block (temporary for debugging)
-  const HMAC_SECRET = process.env.PAYMOB_HMAC_SECRET || '';
-  const fields = [
-    'amount_cents','created_at','currency','error_occured','has_parent_transaction',
-    'id','integration_id','is_3d_secure','is_auth','is_capture','is_refunded',
-    'is_standalone_payment','is_voided','order.id','owner','pending',
-    'source_data.pan','source_data.sub_type','source_data.type','success',
-  ];
-  const concatenated = fields.map((f) => {
-    const parts = f.split('.');
-    let val = obj;
-    for (const p of parts) val = val?.[p];
-    return val === undefined || val === null ? '' : String(val);
-  }).join('');
-  const calculated = crypto.createHmac('sha512', HMAC_SECRET).update(concatenated).digest('hex');
-  console.log('HMAC match:', calculated === obj.hmac);
+  console.log('Webhook type:', body.type);
+  console.log('success:', txn.success);
+  console.log('merchant_order_id:', txn.order?.merchant_order_id);
+  console.log('email:', txn.order?.billing_data?.email);
 
-  // Process only successful payments
-  if (obj.success !== true && obj.success !== 'true') {
-    console.log('Not successful, ignoring.');
+  // Only process successful payments
+  if (txn.success !== true && txn.success !== 'true') {
+    console.log('Not successful, ignoring. success=', txn.success);
     return { statusCode: 200, body: 'Ignored' };
   }
 
-  const extras     = obj.order?.merchant_order_id || '';
+  const extras     = txn.order?.merchant_order_id || '';
   const refMatch   = extras.match(/^STEP-([0-9A-Fa-f]{8})-\d+$/);
   const deviceCode = refMatch ? refMatch[1].toUpperCase() : null;
-  const studentEmail = obj.order?.billing_data?.email || obj.billing_data?.email || null;
-  const studentName  = [obj.order?.billing_data?.first_name, obj.order?.billing_data?.last_name].filter(Boolean).join(' ') || 'Student';
-  const amountEGP    = ((parseInt(obj.amount_cents || '0', 10)) / 100).toFixed(2);
+  const studentEmail = txn.order?.billing_data?.email || txn.billing_data?.email || null;
+  const studentName  = [txn.order?.billing_data?.first_name, txn.order?.billing_data?.last_name].filter(Boolean).join(' ') || 'Student';
+  const amountEGP    = ((parseInt(txn.amount_cents || '0', 10)) / 100).toFixed(2);
 
   console.log('deviceCode:', deviceCode, '| email:', studentEmail);
 
-  if (!deviceCode) { console.error('No device code'); return { statusCode: 200, body: 'No device code' }; }
-  if (!studentEmail) { console.error('No email'); return { statusCode: 200, body: 'No email' }; }
+  if (!deviceCode) { console.error('No device code in:', extras); return { statusCode: 200, body: 'No device code' }; }
+  if (!studentEmail) { console.error('No email found'); return { statusCode: 200, body: 'No email' }; }
 
   const unlockCode = generateUnlockCode(deviceCode);
-  console.log('Unlock code:', unlockCode);
+  console.log('Sending unlock code:', unlockCode, 'to:', studentEmail);
 
   try { await sendEmail({ to: studentEmail, studentName, unlockCode, deviceCode, amountEGP }); }
   catch (err) { console.error('Email failed:', err.message); }
