@@ -1,5 +1,4 @@
 // netlify/functions/create-order.js
-// Creates a Paymob Payment Intention and returns the checkout URL
 
 const https = require('https');
 
@@ -13,7 +12,7 @@ function postJSON(hostname, path, body, token) {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data),
-        ...(token ? { Authorization: `Token ${token}` } : {}),
+        ...(token ? { Authorization: 'Token ' + token } : {}),
       },
     };
     const req = https.request(options, (res) => {
@@ -34,7 +33,6 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: corsHeaders(), body: '' };
   }
-
   if (event.httpMethod !== 'POST') {
     return respond(405, { error: 'Method not allowed' });
   }
@@ -52,14 +50,13 @@ exports.handler = async (event) => {
     return respond(400, { error: 'Invalid device code format (expected 8 hex characters)' });
   }
 
-  const SECRET_KEY     = process.env.PAYMOB_SECRET_KEY;
-  const PUBLIC_KEY     = process.env.PAYMOB_PUBLIC_KEY;
-  const INTEGRATION_ID = process.env.PAYMOB_INTEGRATION_ID || '5676435';
-  const AMOUNT_CENTS   = parseInt(process.env.COURSE_PRICE_CENTS || '70000', 10);
-  const SITE_URL       = process.env.URL || 'https://step-elite-course.netlify.app';
+  const SECRET_KEY   = process.env.PAYMOB_SECRET_KEY;
+  const PUBLIC_KEY   = process.env.PAYMOB_PUBLIC_KEY;
+  const AMOUNT_CENTS = parseInt(process.env.COURSE_PRICE_CENTS || '70000', 10);
+  const SITE_URL     = process.env.URL || 'https://step-elite-course.netlify.app';
 
   if (!SECRET_KEY || !PUBLIC_KEY) {
-    console.error('Missing PAYMOB_SECRET_KEY or PAYMOB_PUBLIC_KEY env vars');
+    console.error('Missing env vars');
     return respond(500, { error: 'Payment gateway not configured' });
   }
 
@@ -68,7 +65,7 @@ exports.handler = async (event) => {
   const intentionBody = {
     amount: AMOUNT_CENTS,
     currency: 'EGP',
-    payment_methods: [parseInt(INTEGRATION_ID, 10)],
+    payment_methods: [5676435, 5676429],
     items: [{
       name: 'STEP Elite Course',
       amount: AMOUNT_CENTS,
@@ -94,8 +91,6 @@ exports.handler = async (event) => {
     },
     extras: {
       device_code: deviceCode.toUpperCase(),
-      student_email: email,
-      student_name: name,
     },
     merchant_order_id: merchantReference,
     redirection_url: SITE_URL + '/payment-success.html',
@@ -106,7 +101,7 @@ exports.handler = async (event) => {
   try {
     intentionRes = await postJSON('accept.paymob.com', '/v1/intention/', intentionBody, SECRET_KEY);
   } catch (err) {
-    console.error('Paymob network error:', err);
+    console.error('Network error:', err);
     return respond(502, { error: 'Failed to reach payment gateway' });
   }
 
@@ -114,19 +109,16 @@ exports.handler = async (event) => {
   console.log('Paymob body:', JSON.stringify(intentionRes.body));
 
   if (intentionRes.status !== 201 && intentionRes.status !== 200) {
-    console.error('Paymob error:', intentionRes.body);
     return respond(502, { error: 'Payment gateway error', detail: intentionRes.body });
   }
 
   const clientSecret = intentionRes.body.client_secret;
   if (!clientSecret) {
-    console.error('No client_secret:', intentionRes.body);
     return respond(502, { error: 'Invalid payment gateway response' });
   }
 
   const checkoutUrl = 'https://accept.paymob.com/unifiedcheckout/?publicKey=' + PUBLIC_KEY + '&clientSecret=' + clientSecret;
-
-  return respond(200, { checkoutUrl, merchantReference, amountEGP: (AMOUNT_CENTS / 100).toFixed(2) });
+  return respond(200, { checkoutUrl, merchantReference });
 };
 
 function corsHeaders() {
