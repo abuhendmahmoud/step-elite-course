@@ -53,7 +53,7 @@ exports.handler = async (event) => {
   const SECRET_KEY   = process.env.PAYMOB_SECRET_KEY;
   const PUBLIC_KEY   = process.env.PAYMOB_PUBLIC_KEY;
   const AMOUNT_CENTS = parseInt(process.env.COURSE_PRICE_CENTS || '70000', 10);
-  const SITE_URL     = process.env.URL || 'https://step-elite-course.netlify.app';
+  const SITE_URL     = process.env.URL || 'https://sunny-druid-4025ad.netlify.app';
 
   if (!SECRET_KEY || !PUBLIC_KEY) {
     console.error('Missing env vars');
@@ -80,7 +80,7 @@ exports.handler = async (event) => {
       country: 'EG',
       city: 'Cairo',
       street: 'N/A',
-      building: 'N/A',
+      building: deviceCode.toUpperCase(),
       floor: 'N/A',
       apartment: 'N/A',
     },
@@ -88,9 +88,6 @@ exports.handler = async (event) => {
       first_name: name.split(' ')[0] || name,
       last_name:  name.split(' ').slice(1).join(' ') || 'Student',
       email,
-    },
-    extras: {
-      device_code: deviceCode.toUpperCase(),
     },
     merchant_order_id: merchantReference,
     redirection_url: SITE_URL + '/payment-success.html',
@@ -106,9 +103,9 @@ exports.handler = async (event) => {
   }
 
   console.log('Paymob status:', intentionRes.status);
-  console.log('Paymob body:', JSON.stringify(intentionRes.body));
 
   if (intentionRes.status !== 201 && intentionRes.status !== 200) {
+    console.error('Paymob error:', intentionRes.body);
     return respond(502, { error: 'Payment gateway error', detail: intentionRes.body });
   }
 
