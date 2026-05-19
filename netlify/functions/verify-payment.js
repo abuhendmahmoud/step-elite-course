@@ -2,7 +2,7 @@
 // Receives Paymob webhook → verifies HMAC → generates unlock code → emails student
 
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const SALT = 'ABH_STEP_MAHMOUD_2026';
 
@@ -36,59 +36,51 @@ function verifyHmac(txn, topLevelHmac, hmacSecret) {
   return calculated === topLevelHmac;
 }
 
-function sendEmail({ to, studentName, unlockCode, deviceCode, amountEGP }) {
-  return new Promise((resolve, reject) => {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
-    });
-    const mailOptions = {
-      from: '"STEP Elite Course" <' + process.env.GMAIL_USER + '>',
-      to,
-      subject: 'Your STEP Elite Course Unlock Code',
-      html: '<!DOCTYPE html><html dir="ltr"><head><meta charset="UTF-8"></head>' +
-        '<body style="margin:0;padding:0;background:#f4f7fb;font-family:Tahoma,sans-serif;">' +
-        '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:40px 0;"><tr><td align="center">' +
-        '<table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">' +
-        '<tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px 40px;text-align:center;">' +
-        '<h1 style="margin:0;color:#fff;font-size:26px;">STEP Elite Course</h1>' +
-        '<p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Saudi Standardized Test of English Proficiency</p>' +
-        '</td></tr>' +
-        '<tr><td style="padding:36px 40px;">' +
-        '<p style="font-size:16px;color:#1e293b;">Dear <strong>' + studentName + '</strong>,</p>' +
-        '<p style="font-size:15px;color:#475569;line-height:1.6;">Your payment of <strong>' + amountEGP + ' EGP</strong> has been received. ' +
-        'Your unlock code for Device Code <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">' + deviceCode + '</code> is below.</p>' +
-        '<div style="background:#f0f4ff;border:2px dashed #6366f1;border-radius:10px;padding:24px;text-align:center;margin:24px 0;">' +
-        '<p style="margin:0 0 8px;font-size:13px;color:#6366f1;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Your Unlock Code</p>' +
-        '<span style="font-family:monospace;font-size:36px;font-weight:800;color:#4f46e5;letter-spacing:6px;">' + unlockCode + '</span></div>' +
-        '<h3 style="font-size:15px;color:#1e293b;">How to use:</h3>' +
-        '<ol style="color:#475569;font-size:14px;line-height:1.8;">' +
-        '<li>Open the STEP course file on the <strong>same device</strong>.</li>' +
-        '<li>Click <strong>"I Have a Code"</strong> on the overview page.</li>' +
-        '<li>Enter Device Code: <code>' + deviceCode + '</code></li>' +
-        '<li>Enter Unlock Code: <code>' + unlockCode + '</code></li>' +
-        '<li>Click <strong>Unlock</strong> — all 11 sessions open instantly!</li></ol>' +
-        '<div style="background:#fef9c3;border-left:4px solid #f59e0b;padding:14px 16px;margin-bottom:20px;">' +
-        '<p style="margin:0;font-size:13px;color:#92400e;"><strong>Important:</strong> This code only works on this device. ' +
-        'Need a transfer? Email <a href="mailto:abuhendmahmoud@gmail.com" style="color:#92400e;">abuhendmahmoud@gmail.com</a></p></div>' +
-        '<div dir="rtl" style="background:#f0fdf4;border-right:4px solid #22c55e;padding:14px 16px;border-radius:8px 0 0 8px;margin-bottom:24px;">' +
-        '<p style="margin:0;font-size:13px;color:#166534;line-height:1.8;"><strong>مبروك!</strong> تم استلام دفعتك. كودك: ' +
-        '<strong style="letter-spacing:3px;font-family:monospace;">' + unlockCode + '</strong>. بالتوفيق في STEP!</p></div>' +
-        '<p style="font-size:14px;color:#94a3b8;text-align:center;">Good luck! 🚀<br>' +
-        '<a href="mailto:abuhendmahmoud@gmail.com" style="color:#6366f1;">abuhendmahmoud@gmail.com</a></p>' +
-        '</td></tr>' +
-        '<tr><td style="background:#f8fafc;padding:16px 40px;text-align:center;border-top:1px solid #e2e8f0;">' +
-        '<p style="margin:0;font-size:12px;color:#94a3b8;">STEP Elite Course | Sent automatically after payment.</p>' +
-        '</td></tr></table></td></tr></table></body></html>',
-    };
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) { console.error('Email send error:', err); reject(err); }
-      else { console.log('Email sent:', info.messageId); resolve(info); }
-    });
+async function sendEmail({ to, studentName, unlockCode, deviceCode, amountEGP }) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const { data, error } = await resend.emails.send({
+    from: 'STEP Elite Course <onboarding@resend.dev>',
+    to,
+    subject: 'Your STEP Elite Course Unlock Code',
+    html: '<!DOCTYPE html><html dir="ltr"><head><meta charset="UTF-8"></head>' +
+      '<body style="margin:0;padding:0;background:#f4f7fb;font-family:Tahoma,sans-serif;">' +
+      '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:40px 0;"><tr><td align="center">' +
+      '<table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">' +
+      '<tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px 40px;text-align:center;">' +
+      '<h1 style="margin:0;color:#fff;font-size:26px;">STEP Elite Course</h1>' +
+      '<p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Saudi Standardized Test of English Proficiency</p>' +
+      '</td></tr>' +
+      '<tr><td style="padding:36px 40px;">' +
+      '<p style="font-size:16px;color:#1e293b;">Dear <strong>' + studentName + '</strong>,</p>' +
+      '<p style="font-size:15px;color:#475569;line-height:1.6;">Your payment of <strong>' + amountEGP + ' EGP</strong> has been received. ' +
+      'Your unlock code for Device Code <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">' + deviceCode + '</code> is below.</p>' +
+      '<div style="background:#f0f4ff;border:2px dashed #6366f1;border-radius:10px;padding:24px;text-align:center;margin:24px 0;">' +
+      '<p style="margin:0 0 8px;font-size:13px;color:#6366f1;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Your Unlock Code</p>' +
+      '<span style="font-family:monospace;font-size:36px;font-weight:800;color:#4f46e5;letter-spacing:6px;">' + unlockCode + '</span></div>' +
+      '<h3 style="font-size:15px;color:#1e293b;">How to use:</h3>' +
+      '<ol style="color:#475569;font-size:14px;line-height:1.8;">' +
+      '<li>Open the STEP course file on the <strong>same device</strong>.</li>' +
+      '<li>Click <strong>"I Have a Code"</strong> on the overview page.</li>' +
+      '<li>Enter Device Code: <code>' + deviceCode + '</code></li>' +
+      '<li>Enter Unlock Code: <code>' + unlockCode + '</code></li>' +
+      '<li>Click <strong>Unlock</strong> — all 11 sessions open instantly!</li></ol>' +
+      '<div style="background:#fef9c3;border-left:4px solid #f59e0b;padding:14px 16px;margin-bottom:20px;">' +
+      '<p style="margin:0;font-size:13px;color:#92400e;"><strong>Important:</strong> This code only works on this device. ' +
+      'Need a transfer? Email <a href="mailto:abuhendmahmoud@gmail.com" style="color:#92400e;">abuhendmahmoud@gmail.com</a></p></div>' +
+      '<div dir="rtl" style="background:#f0fdf4;border-right:4px solid #22c55e;padding:14px 16px;border-radius:8px 0 0 8px;margin-bottom:24px;">' +
+      '<p style="margin:0;font-size:13px;color:#166534;line-height:1.8;"><strong>مبروك!</strong> تم استلام دفعتك. كودك: ' +
+      '<strong style="letter-spacing:3px;font-family:monospace;">' + unlockCode + '</strong>. بالتوفيق في STEP!</p></div>' +
+      '<p style="font-size:14px;color:#94a3b8;text-align:center;">Good luck! 🚀<br>' +
+      '<a href="mailto:abuhendmahmoud@gmail.com" style="color:#6366f1;">abuhendmahmoud@gmail.com</a></p>' +
+      '</td></tr>' +
+      '<tr><td style="background:#f8fafc;padding:16px 40px;text-align:center;border-top:1px solid #e2e8f0;">' +
+      '<p style="margin:0;font-size:12px;color:#94a3b8;">STEP Elite Course | Sent automatically after payment.</p>' +
+      '</td></tr></table></td></tr></table></body></html>',
   });
+
+  if (error) throw new Error(JSON.stringify(error));
+  console.log('Email sent via Resend:', data?.id);
 }
 
 exports.handler = async (event) => {
@@ -98,7 +90,6 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
-  // Paymob sends HMAC as URL query param ?hmac=... and wraps transaction in body.obj
   const txn  = body.obj || body;
   const hmac = event.queryStringParameters?.hmac || body.hmac || txn.hmac;
 
@@ -145,7 +136,6 @@ exports.handler = async (event) => {
 
   try {
     await sendEmail({ to: studentEmail, studentName, unlockCode, deviceCode, amountEGP });
-    console.log('Email sent successfully to', studentEmail);
   } catch (err) {
     console.error('Failed to send email:', err.message);
   }
