@@ -1,11 +1,9 @@
 // netlify/functions/verify-payment.js
 // Receives Paymob webhook → verifies HMAC → generates unlock code → emails student
-// Webhook URL set in Paymob dashboard: https://sunny-druid-4025ad.netlify.app/.netlify/functions/verify-payment
 
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// ── STEP unlock-code algorithm (must match the HTML file exactly) ──────────
 const SALT = 'ABH_STEP_MAHMOUD_2026';
 
 function generateUnlockCode(deviceCode) {
@@ -62,7 +60,7 @@ function sendEmail({ to, studentName, unlockCode, deviceCode, amountEGP }) {
         '<tr><td style="padding:36px 40px;">' +
         '<p style="font-size:16px;color:#1e293b;">Dear <strong>' + studentName + '</strong>,</p>' +
         '<p style="font-size:15px;color:#475569;line-height:1.6;">Your payment of <strong>' + amountEGP + ' EGP</strong> has been received. ' +
-        'Below is your unlock code for Device Code <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">' + deviceCode + '</code>.</p>' +
+        'Your unlock code for Device Code <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">' + deviceCode + '</code> is below.</p>' +
         '<div style="background:#f0f4ff;border:2px dashed #6366f1;border-radius:10px;padding:24px;text-align:center;margin:24px 0;">' +
         '<p style="margin:0 0 8px;font-size:13px;color:#6366f1;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Your Unlock Code</p>' +
         '<span style="font-family:monospace;font-size:36px;font-weight:800;color:#4f46e5;letter-spacing:6px;">' + unlockCode + '</span></div>' +
@@ -72,9 +70,9 @@ function sendEmail({ to, studentName, unlockCode, deviceCode, amountEGP }) {
         '<li>Click <strong>"I Have a Code"</strong> on the overview page.</li>' +
         '<li>Enter Device Code: <code>' + deviceCode + '</code></li>' +
         '<li>Enter Unlock Code: <code>' + unlockCode + '</code></li>' +
-        '<li>Click <strong>Unlock</strong> — all 11 sessions open!</li></ol>' +
-        '<div style="background:#fef9c3;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;">' +
-        '<p style="margin:0;font-size:13px;color:#92400e;"><strong>Important:</strong> This code only works on this specific device. ' +
+        '<li>Click <strong>Unlock</strong> — all 11 sessions open instantly!</li></ol>' +
+        '<div style="background:#fef9c3;border-left:4px solid #f59e0b;padding:14px 16px;margin-bottom:20px;">' +
+        '<p style="margin:0;font-size:13px;color:#92400e;"><strong>Important:</strong> This code only works on this device. ' +
         'Need a transfer? Email <a href="mailto:abuhendmahmoud@gmail.com" style="color:#92400e;">abuhendmahmoud@gmail.com</a></p></div>' +
         '<div dir="rtl" style="background:#f0fdf4;border-right:4px solid #22c55e;padding:14px 16px;border-radius:8px 0 0 8px;margin-bottom:24px;">' +
         '<p style="margin:0;font-size:13px;color:#166534;line-height:1.8;"><strong>مبروك!</strong> تم استلام دفعتك. كودك: ' +
@@ -100,11 +98,14 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
+  // Paymob sends HMAC as URL query param ?hmac=... and wraps transaction in body.obj
   const txn  = body.obj || body;
-  const hmac = body.hmac || txn.hmac;
+  const hmac = event.queryStringParameters?.hmac || body.hmac || txn.hmac;
 
   const HMAC_SECRET = process.env.PAYMOB_HMAC_SECRET;
   if (!HMAC_SECRET) return { statusCode: 500, body: 'Server misconfiguration' };
+
+  console.log('Webhook received | hmac:', hmac ? 'present' : 'MISSING', '| type:', body.type);
 
   const hmacValid = verifyHmac(txn, hmac, HMAC_SECRET);
   if (!hmacValid) {
@@ -134,7 +135,7 @@ exports.handler = async (event) => {
   const studentName  = [shipping.first_name || billingData.first_name, shipping.last_name || billingData.last_name].filter(Boolean).join(' ') || 'Student';
   const amountEGP    = ((parseInt(txn.amount_cents || '0', 10)) / 100).toFixed(2);
 
-  console.log('Webhook | deviceCode:', deviceCode, '| email:', studentEmail, '| amount:', amountEGP);
+  console.log('Extracted | deviceCode:', deviceCode, '| email:', studentEmail, '| amount:', amountEGP);
 
   if (!deviceCode) return { statusCode: 200, body: 'No device code – manual processing needed' };
   if (!studentEmail) return { statusCode: 200, body: 'No email – manual processing needed' };
@@ -144,8 +145,9 @@ exports.handler = async (event) => {
 
   try {
     await sendEmail({ to: studentEmail, studentName, unlockCode, deviceCode, amountEGP });
+    console.log('Email sent successfully to', studentEmail);
   } catch (err) {
-    console.error('Email failed:', err.message);
+    console.error('Failed to send email:', err.message);
   }
 
   return { statusCode: 200, body: 'OK' };
