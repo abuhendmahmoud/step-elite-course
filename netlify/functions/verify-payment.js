@@ -60,39 +60,30 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
-  // New Paymob format: transaction is nested under body.obj
   const txn = body.obj || body;
 
   console.log('Webhook type:', body.type);
   console.log('success:', txn.success);
-  console.log('shipping_data:', JSON.stringify(txn.order?.shipping_data));
-  console.log('order full keys:', JSON.stringify(Object.keys(txn.order || {})));
-  console.log('txn.extra:', JSON.stringify(txn.extra));
-  console.log('txn.order.extra:', JSON.stringify(txn.order?.extra));
-  console.log('txn.order.metadata:', JSON.stringify(txn.order?.metadata));
-  console.log('txn.order.merchant_order_id:', txn.order?.merchant_order_id);
-  console.log('txn.order.id:', txn.order?.id);
 
-  // Only process successful payments
   if (txn.success !== true && txn.success !== 'true') {
-    console.log('Not successful, ignoring. success=', txn.success);
+    console.log('Not successful, ignoring.');
     return { statusCode: 200, body: 'Ignored' };
   }
 
-  const extras     = txn.order?.merchant_order_id || '';
-  const refMatch   = extras.match(/^STEP-([0-9A-Fa-f]{8})-\d+$/);
-  const deviceCode = refMatch ? refMatch[1].toUpperCase() : null;
-  const studentEmail = txn.order?.billing_data?.email || txn.billing_data?.email || null;
-  const studentName  = [txn.order?.billing_data?.first_name, txn.order?.billing_data?.last_name].filter(Boolean).join(' ') || 'Student';
+  const shipping    = txn.order?.shipping_data || {};
+  const deviceCode  = shipping.building && /^[0-9A-Fa-f]{8}$/.test(shipping.building)
+                      ? shipping.building.toUpperCase() : null;
+  const studentEmail = shipping.email || null;
+  const studentName  = [shipping.first_name, shipping.last_name].filter(Boolean).join(' ') || 'Student';
   const amountEGP    = ((parseInt(txn.amount_cents || '0', 10)) / 100).toFixed(2);
 
   console.log('deviceCode:', deviceCode, '| email:', studentEmail);
 
-  if (!deviceCode) { console.error('No device code in:', extras); return { statusCode: 200, body: 'No device code' }; }
-  if (!studentEmail) { console.error('No email found'); return { statusCode: 200, body: 'No email' }; }
+  if (!deviceCode) { console.error('No device code in shipping_data.building'); return { statusCode: 200, body: 'No device code' }; }
+  if (!studentEmail) { console.error('No email in shipping_data'); return { statusCode: 200, body: 'No email' }; }
 
   const unlockCode = generateUnlockCode(deviceCode);
-  console.log('Sending unlock code:', unlockCode, 'to:', studentEmail);
+  console.log('Sending code:', unlockCode, 'to:', studentEmail);
 
   try { await sendEmail({ to: studentEmail, studentName, unlockCode, deviceCode, amountEGP }); }
   catch (err) { console.error('Email failed:', err.message); }
