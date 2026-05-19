@@ -65,9 +65,13 @@ exports.handler = async (event) => {
 
   console.log('Webhook type:', body.type);
   console.log('success:', txn.success);
-  console.log('order.merchant_order_id:', txn.order?.merchant_order_id);
-  console.log('order.billing_data:', JSON.stringify(txn.order?.billing_data));
-  console.log('order.shipping_data:', JSON.stringify(txn.order?.shipping_data));
+  console.log('shipping_data:', JSON.stringify(txn.order?.shipping_data));
+  console.log('order full keys:', JSON.stringify(Object.keys(txn.order || {})));
+  console.log('txn.extra:', JSON.stringify(txn.extra));
+  console.log('txn.order.extra:', JSON.stringify(txn.order?.extra));
+  console.log('txn.order.metadata:', JSON.stringify(txn.order?.metadata));
+  console.log('txn.order.merchant_order_id:', txn.order?.merchant_order_id);
+  console.log('txn.order.id:', txn.order?.id);
 
   // Only process successful payments
   if (txn.success !== true && txn.success !== 'true') {
