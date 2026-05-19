@@ -1,13 +1,10 @@
 [build]
   publish = "."
   functions = "netlify/functions"
-
-[build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "PAYMOB_INTEGRATION_ID,COURSE_PRICE_CENTS,GMAIL_USER"
+  command = "cd netlify/functions && npm install"
 
 [functions]
-  node_bundler = "esbuild"
-  included_files = ["netlify/functions/package.json"]
+  node_bundler = "nft"
 
 [[redirects]]
   from = "/payment-success.html"
