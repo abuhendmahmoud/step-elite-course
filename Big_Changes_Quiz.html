@@ -250,6 +250,17 @@ let items=[],idx=0,points=0,maxPts=0,mistakes=[],student='';
 /* ---- read aloud: Gemini natural voice (Netlify function), browser voice as fallback ---- */
 const TTS_URL='/.netlify/functions/tts';
 const audioCache=new Map();let ttsFails=0,curAudio=null,speakId=0;
+// iPhone Safari only allows sound that starts from a tap: unlock one shared player + speech + beeps on the first touch
+const player=new Audio();player.playsInline=true;player.setAttribute('playsinline','');
+let actx=null,unlocked=false;
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+function unlockAudio(){
+  if(unlocked)return;unlocked=true;
+  try{player.src=SILENT;player.play().catch(()=>{})}catch(e){}
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}
+}
+['touchend','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 const ttsOn=()=>location.protocol.startsWith('http')&&ttsFails<2;
 const cleanSay=t=>t.replace(/___|👉|🔍/g,' ').replace(/\[|\]|\*/g,'').replace(/\s+/g,' ').trim();
 function fetchVoice(t){
@@ -259,7 +270,7 @@ function fetchVoice(t){
   return audioCache.get(t);
 }
 function prefetchSay(...ts){if(ttsOn())ts.filter(Boolean).map(cleanSay).filter(Boolean).forEach(t=>fetchVoice(t).catch(()=>{}))}
-function stopSay(){try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}try{player.pause()}catch(e){}curAudio=null}
 let bestVoice=null;
 function pickVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB)/i.test(v.lang));
   bestVoice=v.find(v=>/natural|neural|online/i.test(v.name))||v.find(v=>/google/i.test(v.name))||v.find(v=>/samantha|aria|jenny|daniel|karen/i.test(v.name))||v[0]||null}catch(e){}}
@@ -271,13 +282,13 @@ async function speak(raw){
   if(ttsOn()){
     document.body.classList.add('tts-wait');
     try{const url=await fetchVoice(t);if(id!==speakId)return;
-      curAudio=new Audio(url);await curAudio.play();return}
+      curAudio=player;player.src=url;await player.play();return}
     catch(e){if(id!==speakId)return}
     finally{if(id===speakId)document.body.classList.remove('tts-wait')}
   }
   browserSay(t);
 }
-function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+function beep(ok){try{const c=actx=actx||new (window.AudioContext||window.webkitAudioContext)();c.resume();const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
   o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
   g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
 function countPts(list){return list.reduce((n,q)=>n+(q.splash?0:q.t==='match'?q.pairs.length:1),0)}
