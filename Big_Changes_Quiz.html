@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Big Changes Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+/* floating bubbles */
+.bg span{position:fixed;border-radius:50%;opacity:.07;z-index:-1;animation:float 14s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-40px)}}
+
+/* top */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+
+/* start */
+.start{text-align:center;padding:40px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2.3rem,9vw,3.6rem);color:var(--gold);line-height:1.1;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:22px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.35rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.parts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.part{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-weight:700}
+.tips{margin-top:22px;background:var(--navy2);border-radius:16px;padding:14px;border:1px dashed var(--line)}
+
+/* card */
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.ins-ar{font-size:1rem}
+.q{font-size:clamp(1.3rem,5vw,1.7rem);font-weight:800;margin:18px 0 6px;line-height:1.5;text-align:center}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.err{color:var(--bad);text-decoration:underline wavy var(--bad);text-underline-offset:6px}
+.pic{font-size:clamp(3rem,14vw,4.5rem);text-align:center;margin:10px 0;letter-spacing:4px}
+.tools{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tool{min-height:42px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opts.one{grid-template-columns:1fr}
+@media(max-width:420px){.opts.long{grid-template-columns:1fr}}
+.opt{min-height:64px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.2rem;padding:8px 12px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}.msg.bad{color:var(--bad)}
+.msg .ar{font-size:.95rem}
+.next{margin-top:10px}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:58px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.05rem;padding:6px 8px}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2)}
+.m.done{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1);cursor:default}
+.m .tagn{display:inline-block;min-width:24px;height:24px;border-radius:50%;background:var(--ok);color:var(--navy);font-size:.8rem;margin-inline-end:4px;line-height:24px}
+
+/* section splash */
+.splash{text-align:center;padding:30px 10px}
+.splash .e{font-size:5rem}
+.splash h2{font-family:'Playfair Display';font-size:2.4rem;color:var(--gold)}
+
+/* end */
+.end{text-align:center}
+.end .score{font-family:'Playfair Display';font-size:4rem;color:var(--gold);line-height:1}
+.rate{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.review{text-align:start;margin-top:18px}
+.review li{list-style:none;background:var(--navy3);border-radius:12px;padding:8px 12px;margin-top:8px;border-inline-start:4px solid var(--bad)}
+.review li b{color:var(--ok)}
+.row-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row-btns .big-btn{margin:16px 0 0;font-size:1.1rem;padding:10px 24px}
+.big-btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+
+/* ===== LESSON ===== */
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+.lesson-nav .big-btn{margin:0;font-size:1.05rem;padding:8px 20px;min-height:52px}
+.dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block;transition:all .3s}
+.dots i.on{background:var(--gold);width:26px;border-radius:6px}
+.l-title{font-family:'Playfair Display';font-size:clamp(1.6rem,6vw,2.1rem);color:var(--gold);line-height:1.2;margin-top:8px}
+.l-pic{font-size:clamp(3.2rem,15vw,4.6rem);text-align:center;margin:12px 0 6px;letter-spacing:6px;animation:bob 3s ease-in-out infinite}
+.l-exp{direction:rtl;font-size:1.12rem;line-height:1.9;background:rgba(79,163,255,.08);border-radius:16px;padding:12px 16px;margin-top:10px}
+.l-exp b{color:var(--gold)}
+.formula{display:flex;row-gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:14px 0;font-weight:900;font-size:1.15rem}
+.formula span{padding:6px 12px;border-radius:12px;color:var(--navy)}
+.formula .plus{color:var(--muted);padding:0;font-size:1.3rem}
+.f1{background:var(--blue)}.f2{background:var(--gold)}.f3{background:var(--ok)}.f4{background:var(--pink)}.f5{background:var(--purple)}
+.exs{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.exl{display:flex;align-items:center;gap:10px;background:var(--navy3);border-radius:14px;padding:10px 12px;border:1px solid var(--line);color:var(--text);text-align:start;font-size:1.05rem;width:100%}
+.exl .e{font-size:1.6rem;flex:none}
+.exl .t{flex:1}
+.exl .t .ar{font-size:.9rem}
+.exl .sp{flex:none;font-size:1.2rem;opacity:.7}
+.exl mark{background:none;color:var(--gold);font-weight:900}
+.exl.no{border-color:rgba(255,107,107,.5)} .exl.no mark{color:var(--bad);text-decoration:line-through}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.box{background:var(--navy3);border-radius:14px;padding:10px;text-align:center;border-top:4px solid}
+.box h4{font-size:1.05rem}
+.box div{font-weight:700}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+.vcard{background:var(--navy3);border:2px solid var(--line);border-radius:18px;padding:12px 8px;text-align:center;color:var(--text);transition:transform .15s}
+.vcard:hover,.vcard:active{transform:translateY(-3px) scale(1.03);border-color:var(--gold)}
+.vcard .e{font-size:2.4rem;line-height:1.2;white-space:nowrap}
+.vcard .w{font-weight:900;font-size:1.15rem;margin-top:4px}
+.vcard .vm{font-size:.95rem;color:var(--muted);direction:rtl}
+.pairs{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--navy3);border-radius:16px;padding:10px;border:1px solid var(--line)}
+.pair button{background:none;border:none;color:var(--text);text-align:center}
+.pair .e{font-size:2rem;display:block}
+.pair .w{font-weight:900;font-size:1.05rem}
+.pair .pm{font-size:.85rem;color:var(--muted)}
+.pair .arrow{font-size:1.5rem;color:var(--gold);font-weight:900}
+.tip{margin-top:12px;background:rgba(212,175,55,.1);border:1px dashed var(--gold);border-radius:14px;padding:10px 14px;direction:rtl;font-weight:700}
+.start-btns{display:flex;flex-direction:column;align-items:center;gap:0}
+.big-btn.blue{background:linear-gradient(135deg,#4fa3ff,#8fc6ff);box-shadow:0 6px 0 #1f5fa8}
+.lbtn{position:absolute;top:0}
+.tts-pill{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gold);color:var(--navy);font-weight:800;border-radius:20px;padding:6px 16px;transition:transform .25s;z-index:99;pointer-events:none}
+body.tts-wait .tts-pill{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg">
+  <span style="width:260px;height:260px;background:var(--gold);top:8%;left:-80px"></span>
+  <span style="width:200px;height:200px;background:var(--blue);bottom:10%;right:-60px;animation-delay:-4s"></span>
+  <span style="width:140px;height:140px;background:var(--pink);top:50%;left:60%;animation-delay:-8s"></span>
+</div>
+
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars" id="stars">⭐ 0</span>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+<div class="tts-pill">🔊 …</div>
+
+<script>
+/* ================== QUESTIONS ================== */
+const G='Grammar',V='Vocabulary';
+const QS=[
+ {splash:G,e:'🧠',ar:'القواعد'},
+ // A. choose the correct form
+ ...[
+  ['Ali ___ early every morning.','wakes up',['wake up','wakes up','woken up','waking up'],'Ali = he → verb + s','علي = هو، و every morning تدل على عادة ← نضيف s'],
+  ['They ___ football every week.','play',['play','plays','playing','played'],'They → no s','مع They لا نضيف s للفعل'],
+  ["He doesn't ___ his teeth.",'brush',['brush','brushes','brushed','brushing'],"doesn't + base verb",'بعد doesn\'t نستخدم الفعل بدون إضافات'],
+  ['It is ___ right now.','raining',['rain','rains','rained','raining'],'is + ing (right now)','right now = الآن ← is + ing'],
+  ['I was ___ English when I lived in London.','learning',['learn','learns','learned','learning'],'was + ing','بعد was نضيف ing للفعل'],
+  ['She ___ her house yesterday.','cleaned',['clean','cleans','cleaned','cleaning'],'yesterday → past (-ed)','yesterday = أمس ← الفعل في الماضي'],
+  ['We ___ a nice movie last night.','saw',['see','saw','sees','seeing'],'last night → past: see → saw','last night ← ماضي الفعل see هو saw'],
+  ['They have ___ tennis three times.','played',['play','played','plays','playing'],'have + past participle','بعد have نستخدم التصريف الثالث: played'],
+  ['He has ___ for one hour.','studied',['study','studied','studying','studies'],'has + past participle','بعد has نستخدم التصريف الثالث: studied']
+ ].map(([q,a,o,h,hAr])=>({t:'mcq',sec:G,ins:'Choose the correct word.',insAr:'اختر الكلمة الصحيحة.',q,a,o,h,hAr})),
+ // B. correct the errors
+ ...[
+  ['She [pray] five times a day.','prays',['prays','praying','prayed'],'She + every day → s','مع She في المضارع نضيف s'],
+  ['I [visit] Jeddah last year.','visited',['visited','visits','visiting'],'last year → past','last year = السنة الماضية ← ماضي'],
+  ['[Do] he work yesterday?','Did',['Did','Does','Is'],'yesterday → Did','السؤال عن الماضي يبدأ بـ Did'],
+  ["She [weren't] sleeping.","wasn't",["wasn't","isn't","don't"],"She → wasn't",'مع She نستخدم wasn\'t وليس weren\'t'],
+  ['Ali was walking when he [see] Ahmed.','saw',['saw','sees','seeing'],'past: see → saw','الجملة في الماضي ← see تصبح saw']
+ ].map(([q,a,o,h,hAr])=>({t:'mcq',sec:G,fix:true,ins:'The red word is wrong. Choose the correct word.',insAr:'الكلمة الحمراء خطأ. اختر التصحيح.',q,a,o,h,hAr})),
+ // C. complete
+ {t:'mcq',sec:G,ins:'Complete. (present perfect)',insAr:'أكمل بالمضارع التام: have + التصريف الثالث',q:'I ___ this movie three times. (see)',a:'have seen',o:['have seen','have saw','saw','am seeing'],h:'have + seen',hAr:'have + التصريف الثالث (see → seen)'},
+ {t:'mcq',sec:G,ins:'Choose: last or ago?',insAr:'اختر: last أو ago؟',q:'I visited my grandmother two days ___.',a:'ago',o:['ago','last'],h:'number + ago',hAr:'رقم + ago (قبل يومين = two days ago)'},
+ {t:'mcq',sec:G,ins:'Choose: last or ago?',insAr:'اختر: last أو ago؟',q:'She visited her friend ___ night.',a:'last',o:['ago','last'],h:'last night',hAr:'last night = الليلة الماضية'},
+ // D. as shown
+ {t:'mcq',sec:G,ins:'Make it negative.',insAr:'حوّل الجملة إلى النفي.',pre:'He drinks milk every morning.',q:'👉 ___',a:"He doesn't drink milk every morning.",o:["He doesn't drink milk every morning.","He doesn't drinks milk every morning.","He don't drink milk every morning."],h:"doesn't + drink (no s)",hAr:'بعد doesn\'t نحذف s من الفعل',long:true},
+ {t:'mcq',sec:G,ins:'Join using "when".',insAr:'اربط الجملتين باستخدام when.',pre:'I walk home. / It starts to rain.',q:'👉 ___',a:'I was walking home when it started to rain.',o:['I was walking home when it started to rain.','I was walk home when it start to rain.','When I walking home it started rain.'],h:'was + ing … when + past',hAr:'was + ing ثم when + فعل ماضي',long:true},
+ {t:'mcq',sec:G,ins:'Give a negative short answer.',insAr:'أجب بإجابة قصيرة منفية.',pre:'Were people using computers in 1900?',q:'👉 ___',a:"No, they weren't.",o:["No, they weren't.","No, they didn't.","No, they aren't."],h:"Were → weren't",hAr:'السؤال بـ Were ← الإجابة weren\'t'},
+
+ {splash:V,e:'📚',ar:'المفردات'},
+ // odd one out
+ ...[
+  [['E-mail','Google','traffic','online'],'traffic','E-mail, Google, online = internet 💻','ثلاث كلمات عن الإنترنت، و traffic (زحمة سير) ليست منها'],
+  [['vibrant','lazy','ambitious','thriving'],'lazy','lazy 😴 is a bad word','ثلاث صفات إيجابية، و lazy (كسول) سلبية'],
+  [['pollution','poverty','traffic','hub'],'hub','hub = center','ثلاث مشكلات، و hub (مركز) ليست مشكلة']
+ ].map(([o,a,h,hAr])=>({t:'mcq',sec:V,ins:'Which word is different? (odd one out)',insAr:'أي كلمة مختلفة عن الباقي؟',q:'🔍 Find the odd word!',a,o,h,hAr,noShuffle:true})),
+ // fill
+ ...[
+  ['Hotter summers are an effect of ___.','global warming','🌡️🌍','global warming = الاحتباس الحراري'],
+  ['Corona virus is a ___ that started in China.','disease','🦠😷','disease = مرض'],
+  ['___ in Riyadh is a big problem because there are so many cars.','Traffic','🚗🚗🚗','traffic = زحمة السير']
+ ].map(([q,a,h,hAr])=>({t:'mcq',sec:V,ins:'Choose the correct word.',insAr:'اختر الكلمة المناسبة.',q,a,o:['Traffic','economy','global warming','disease'].map(x=>a==='Traffic'?x:x.toLowerCase()),h,hAr})),
+ // classify
+ ...[
+  ['pollution','Global Issue','🏭💨','pollution = التلوث ← مشكلة عالمية'],
+  ['floods','Natural Disaster','🌊🏠','floods = فيضانات ← كارثة طبيعية'],
+  ['diseases','Global Issue','🦠😷','diseases = أمراض ← مشكلة عالمية'],
+  ['global warming','Global Issue','🌍🔥','global warming = الاحتباس الحراري ← مشكلة عالمية'],
+  ['earthquakes','Natural Disaster','🏚️💥','earthquakes = زلازل ← كارثة طبيعية']
+ ].map(([w,a,pic,hAr])=>({t:'mcq',sec:V,ins:'Global issue or natural disaster?',insAr:'مشكلة عالمية أم كارثة طبيعية؟',pic,q:w,a,o:['Global Issue','Natural Disaster'],h:a==='Global Issue'?'Global issue 🌍':'Natural disaster 🌪️',hAr,noShuffle:true})),
+ // match
+ {t:'match',sec:V,ins:'Match the word with its meaning.',insAr:'صِل الكلمة بمعناها. اضغط على كلمة ثم على معناها.',pairs:[['hub','center'],['establish','set up / start'],['transforming','changing completely'],['vibrant','active & strong']],
+  ar:{hub:'مركز',establish:'يؤسس',transforming:'يغيّر كليًّا',vibrant:'نابض بالحياة'}},
+ {t:'match',sec:V,ins:'Match the word with its opposite.',insAr:'صِل الكلمة بعكسها.',pairs:[['poverty','wealth'],['security','danger'],['host','guest'],['transparent','unclear']],
+  ar:{poverty:'فقر ↔ ثروة',security:'أمان ↔ خطر',host:'مضيف ↔ ضيف',transparent:'واضح ↔ غير واضح'}},
+ // pictures
+ ...[
+  ['🧑‍💼❌💼 🧍🧍🧍','unemployment',['unemployment','host'],'unemployment = البطالة (no job)'],
+  ['🚗🚙🚕🚌🚗','traffic',['disaster','traffic'],'traffic = زحمة السير'],
+  ['🌪️🏠','tornado',['flood','tornado'],'tornado = إعصار'],
+  ['💰📈🏦','economy',['security','economy'],'economy = الاقتصاد'],
+  ['🌍🌡️🔥','global warming',['global warming','disease'],'global warming = الاحتباس الحراري']
+ ].map(([pic,a,o,hAr])=>({t:'mcq',sec:V,ins:'Look at the picture. Choose the correct word.',insAr:'انظر إلى الصورة واختر الكلمة الصحيحة.',pic,q:'',a,o,h:'Look at the picture 👀',hAr,noShuffle:true}))
+];
+
+/* ================== ENGINE ================== */
+const app=document.getElementById('app');
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const PRAISE=[['Great job','أحسنت!'],['Excellent','ممتاز!'],['Super','رائع!'],['Well done','عمل جميل!'],['Perfect','مثالي!']];
+const TRY=['Try again! You can do it 💪','حاول مرة أخرى! أنت تستطيع 💪'];
+let items=[],idx=0,points=0,maxPts=0,mistakes=[],student='';
+
+/* ---- read aloud: Gemini natural voice (Netlify function), browser voice as fallback ---- */
+const TTS_URL='/.netlify/functions/tts';
+const audioCache=new Map();let ttsFails=0,curAudio=null,speakId=0;
+const ttsOn=()=>location.protocol.startsWith('http')&&ttsFails<2;
+const cleanSay=t=>t.replace(/___|👉|🔍/g,' ').replace(/\[|\]|\*/g,'').replace(/\s+/g,' ').trim();
+function fetchVoice(t){
+  if(!audioCache.has(t))audioCache.set(t,fetch(TTS_URL+'?text='+encodeURIComponent(t))
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.blob()}).then(b=>{ttsFails=0;return URL.createObjectURL(b)})
+    .catch(e=>{audioCache.delete(t);ttsFails++;throw e}));
+  return audioCache.get(t);
+}
+function prefetchSay(...ts){if(ttsOn())ts.filter(Boolean).map(cleanSay).filter(Boolean).forEach(t=>fetchVoice(t).catch(()=>{}))}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}}
+let bestVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB)/i.test(v.lang));
+  bestVoice=v.find(v=>/natural|neural|online/i.test(v.name))||v.find(v=>/google/i.test(v.name))||v.find(v=>/samantha|aria|jenny|daniel|karen/i.test(v.name))||v[0]||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function browserSay(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.85;if(bestVoice)u.voice=bestVoice;speechSynthesis.speak(u)}catch(e){}}
+async function speak(raw){
+  const t=cleanSay(raw),id=++speakId;if(!t)return;
+  stopSay();
+  if(ttsOn()){
+    document.body.classList.add('tts-wait');
+    try{const url=await fetchVoice(t);if(id!==speakId)return;
+      curAudio=new Audio(url);await curAudio.play();return}
+    catch(e){if(id!==speakId)return}
+    finally{if(id===speakId)document.body.classList.remove('tts-wait')}
+  }
+  browserSay(t);
+}
+function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+function countPts(list){return list.reduce((n,q)=>n+(q.splash?0:q.t==='match'?q.pairs.length:1),0)}
+
+
+/* ================== LESSON ================== */
+// ex: [emoji, english (with *marked* words), arabic, isWrong]
+const LESSON=[
+ {sec:G,title:'Present Simple',ar:'المضارع البسيط — للعادات',pic:'⏰🔁🏫',
+  exp:'نستخدمه للأشياء التي نفعلها <b>كل يوم</b> أو <b>دائمًا</b> (عادة).<br>مع <b>He / She / It</b> أو اسم شخص واحد (Ali) نضيف <b>s</b> للفعل ✅',
+  f:[['I / You / We / They','f1'],['play','f3']],f2:[['He / She / It','f4'],['plays','f2']],
+  ex:[['👦','Ali *wakes up* early every morning.','علي يستيقظ مبكرًا كل صباح.'],['⚽','They *play* football every week.','هم يلعبون كرة القدم كل أسبوع.'],['🕌','She *prays* five times a day.','هي تصلي خمس مرات في اليوم.']],
+  tip:'🔎 كلمات تدلّك عليه: every day – every week – always – usually'},
+ {sec:G,title:"Don't / Doesn't",ar:'النفي في المضارع البسيط',pic:'🚫🪥',
+  exp:'للنفي نضع <b>don\'t</b> أو <b>doesn\'t</b> قبل الفعل.<br>⚠️ بعد <b>doesn\'t</b> نحذف الـ <b>s</b> من الفعل ✂️ — الفعل يرجع لأصله.',
+  f:[['He / She / It','f4'],["doesn't",'f2'],['brush','f3']],
+  ex:[['🪥',"He *doesn't brush* his teeth.",'هو لا ينظف أسنانه.'],['🥛',"He *doesn't drink* milk every morning.",'هو لا يشرب الحليب كل صباح.'],['❌',"He doesn't *brushes* his teeth.",'خطأ! لا نضع s بعد doesn\'t',1]],
+  tip:"🧠 كلمة doesn't تأخذ الـ s من الفعل ✂️"},
+ {sec:G,title:'Present Continuous',ar:'المضارع المستمر — يحدث الآن',pic:'🌧️☔👀',
+  exp:'نستخدمه لشيء يحدث <b>الآن</b> في هذه اللحظة.',
+  f:[['am / is / are','f1'],['verb + ing','f3']],
+  ex:[['🌧️','It *is raining* right now.','إنها تمطر الآن.'],['📖','I *am reading* a book now.','أنا أقرأ كتابًا الآن.']],
+  tip:'🔎 كلمات تدلّك عليه: now – right now – look!'},
+ {sec:G,title:'Past Simple',ar:'الماضي البسيط — حدث وانتهى',pic:'⏪📅✅',
+  exp:'لشيء حدث وانتهى في الماضي. نضيف <b>ed</b> للفعل المنتظم، والأفعال الشاذة لها شكل خاص.<br>وفي السؤال نستخدم <b>Did</b> + الفعل الأصلي.',
+  f:[['clean','f1'],['➜','plus'],['cleaned','f3']],f2:[['see','f1'],['➜','plus'],['saw','f2']],
+  ex:[['🧹','She *cleaned* her house yesterday.','هي نظفت بيتها أمس.'],['🎬','We *saw* a nice movie last night.','شاهدنا فيلمًا جميلًا الليلة الماضية.'],['🏙️','I *visited* Jeddah last year.','زرت جدة السنة الماضية.'],['❓','*Did* he work yesterday?','هل عمل أمس؟']],
+  tip:'🔎 كلمات تدلّك عليه: yesterday – last night – last year – two days ago'},
+ {sec:G,title:'Last or Ago?',ar:'الفرق بين last و ago',pic:'⏮️📆',
+  two:[['last ___','var(--blue)','last night<br>last week<br>last year','الماضي / الماضية'],['___ ago','var(--pink)','two days ago<br>a week ago<br>six years ago','قبل ... (رقم + ago)']],
+  ex:[['👵','I visited my grandmother two days *ago*.','زرت جدتي قبل يومين.'],['🌙','She visited her friend *last* night.','زارت صديقتها الليلة الماضية.']],
+  tip:'🧠 last قبل الكلمة، و ago بعد الرقم'},
+ {sec:G,title:'Past Continuous + When',ar:'الماضي المستمر مع when',pic:'🚶➡️🌧️⚡',
+  exp:'<b>was / were + ing</b> = حدث طويل كان مستمرًا في الماضي 🚶<br>ثم جاء حدث قصير فقطعه ⚡ بعد <b>when</b> بالماضي البسيط.',
+  f:[['I / He / She / It','f4'],['was','f2'],['walking','f3']],f2:[['You / We / They','f1'],['were','f2'],['walking','f3']],
+  ex:[['🌧️','I *was walking* home *when* it *started* to rain.','كنت أمشي إلى البيت عندما بدأ المطر.'],['👋','Ali *was walking* when he *saw* Ahmed.','كان علي يمشي عندما رأى أحمد.'],['😴',"She *wasn't* sleeping.",'هي لم تكن نائمة.'],['💻',"Were people using computers in 1900? — *No, they weren't.*",'هل كان الناس يستخدمون الحاسوب في ١٩٠٠؟ لا.']],
+  tip:"🧠 She wasn't ✅ &nbsp;·&nbsp; She weren't ❌",ltr:1},
+ {sec:G,title:'Present Perfect',ar:'المضارع التام',pic:'🎬🎬🎬',
+  exp:'نستخدمه لشيء حدث في الماضي ونتكلم عن عدد المرات أو المدة حتى الآن.<br><b>have / has</b> + التصريف الثالث للفعل (V3).',
+  f:[['I / You / We / They','f1'],['have','f2'],['seen','f3']],f2:[['He / She / It','f4'],['has','f2'],['studied','f3']],
+  ex:[['🎬','I *have seen* this movie three times.','شاهدت هذا الفيلم ثلاث مرات.'],['🎾','They *have played* tennis three times.','لعبوا التنس ثلاث مرات.'],['📚','He *has studied* for one hour.','ذاكر لمدة ساعة.']],
+  tip:'🧠 see → saw → seen &nbsp;·&nbsp; play → played → played',ltr:1},
+
+ {sec:V,title:'Internet & People',ar:'كلمات الإنترنت وصفات الأشخاص',
+  cards:[['📧','E-mail','بريد إلكتروني'],['🔎','Google','جوجل'],['🌐','online','على الإنترنت'],['🎉','vibrant','نابض بالحياة / نشيط'],['🚀','ambitious','طموح'],['🌱','thriving','مزدهر / ناجح'],['😴','lazy','كسول']],
+  tip:'🧠 vibrant – ambitious – thriving كلمات إيجابية 👍 &nbsp; lazy سلبية 👎'},
+ {sec:V,title:'Global Issues',ar:'مشكلات عالمية',
+  cards:[['🏭💨','pollution','التلوث'],['🏚️','poverty','الفقر'],['🚗🚙🚕','traffic','زحمة السير'],['🦠','disease','مرض'],['🌍🔥','global warming','الاحتباس الحراري'],['🧍💼❌','unemployment','البطالة'],['💰📈','economy','الاقتصاد']],
+  tip:'🌡️ Hotter summers are an effect of global warming.',ltr:1},
+ {sec:V,title:'Natural Disasters',ar:'كوارث طبيعية — من الطبيعة',
+  cards:[['🌊🏠','flood','فيضان'],['🏚️💥','earthquake','زلزال'],['🌪️','tornado','إعصار']],
+  tip:'🧠 المشكلات العالمية (global issues) غالبًا بسبب الإنسان 🏭، والكوارث الطبيعية (natural disasters) تأتي من الطبيعة 🌪️'},
+ {sec:V,title:'Meanings',ar:'معاني كلمات مهمة',
+  pairs:[['🎯','hub','مركز','🎯','center','='],['🏗️','establish','يؤسس','🚩','set up / start','='],['🐛','transforming','يغيّر','🦋','changing completely','='],['🎉','vibrant','نابض بالحياة','💪','active & strong','=']]},
+ {sec:V,title:'Opposites',ar:'الأضداد',
+  pairs:[['🏚️','poverty','فقر','💰','wealth','↔'],['🛡️','security','أمان','⚠️','danger','↔'],['🏠','host','مضيف','🧳','guest','↔'],['🪟','transparent','واضح','🌫️','unclear','↔']]}
+];
+let li=0;
+function mark(t){return esc(t).replace(/\*(.*?)\*/g,'<mark>$1</mark>')}
+function formula(f){return `<div class="formula">${f.map(([t,c])=>c==='plus'?`<span class="plus">${t}</span>`:`<span class="${c}">${esc(t)}</span>`).join('<span class="plus">+</span>').replace(/<span class="plus">\+<\/span><span class="plus">➜<\/span><span class="plus">\+<\/span>/g,'<span class="plus">➜</span>')}</div>`}
+function lessonScreen(i){
+  li=i;window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('top').classList.remove('hidden');
+  const L=LESSON[i],col=L.sec===G?'var(--blue)':'var(--pink)';
+  document.getElementById('qn').textContent='📖 Lesson';
+  document.getElementById('fill').style.width=((i+1)/LESSON.length*100)+'%';
+  document.getElementById('stars').textContent=`${i+1} / ${LESSON.length}`;
+  let body='';
+  if(L.pic)body+=`<div class="l-pic">${L.pic}</div>`;
+  if(L.exp)body+=`<div class="l-exp">${L.exp}</div>`;
+  if(L.f)body+=formula(L.f);
+  if(L.f2)body+=formula(L.f2);
+  if(L.two)body+=`<div class="two">${L.two.map(([h,c,w,a])=>`<div class="box" style="border-color:${c}"><h4 style="color:${c}">${h}</h4><div>${w}</div><div class="ar">${a}</div></div>`).join('')}</div>`;
+  if(L.ex)body+=`<div class="exs">${L.ex.map(([e,t,a,no])=>`<button class="exl${no?' no':''}" data-say="${esc(no?'':t.replace(/\*/g,''))}"><span class="e">${e}</span><span class="t">${mark(t)}<div class="ar">${a}</div></span><span class="sp">${no?'❌':'🔊'}</span></button>`).join('')}</div>`;
+  if(L.cards)body+=`<div class="vgrid">${L.cards.map(([e,w,m])=>`<button class="vcard" data-say="${esc(w)}"><div class="e">${e}</div><div class="w">${esc(w)}</div><div class="vm">${m}</div></button>`).join('')}</div>`;
+  if(L.pairs)body+=`<div class="pairs">${L.pairs.map(([e1,w1,m1,e2,w2,ar])=>`<div class="pair"><button data-say="${esc(w1)}"><span class="e">${e1}</span><span class="w">${esc(w1)}</span><div class="pm">${m1}</div></button><span class="arrow">${ar}</span><button data-say="${esc(w2)}"><span class="e">${e2}</span><span class="w">${esc(w2)}</span></button></div>`).join('')}</div>`;
+  if(L.tip)body+=`<div class="tip"${L.ltr?' style="direction:ltr;text-align:center"':''}>${L.tip}</div>`;
+  const last=i===LESSON.length-1;
+  app.innerHTML=`<div class="card">
+    <span class="chip" style="background:${col}">${L.sec===G?'🧠 Grammar':'📚 Vocabulary'} · 📖 Learn</span>
+    <div class="l-title">${L.title}</div><div class="ar" style="font-size:1.1rem;font-weight:700">${L.ar}</div>
+    ${body}
+    <div class="ar" style="text-align:center;margin-top:10px;font-size:.85rem">👆 اضغط على أي مثال أو صورة لتسمعها</div>
+    <div class="lesson-nav">
+      <button class="big-btn ghost" id="lp" ${i===0?'style="visibility:hidden"':''}>◀ Back</button>
+      <button class="big-btn ${last?'':'blue'}" id="ln">${last?'Quiz time! 🎯':'Next ▶'}</button>
+    </div>
+    <div class="dots">${LESSON.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
+  </div>`;
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>{if(b.dataset.say)speak(b.dataset.say)});
+  document.getElementById('lp').onclick=()=>lessonScreen(i-1);
+  document.getElementById('ln').onclick=()=>last?begin(QS):lessonScreen(i+1);
+}
+
+function startScreen(){
+  document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="start">
+    <div class="mascot">🦉</div>
+    <h1>Big Changes</h1>
+    <div class="sub">Revision · Unit 3 Quiz</div>
+    <div class="ar">مراجعة الوحدة الثالثة</div>
+    <input class="name" id="nm" placeholder="Your name · اسمك" maxlength="20">
+    <div class="start-btns">
+      <button class="big-btn blue" id="learn">📖 Learn first · الشرح أولًا</button>
+      <button class="big-btn" id="go">🎯 Start the quiz · ابدأ الاختبار</button>
+    </div>
+    <div class="parts"><div class="part">🧠 Grammar · ${countPts(QS.slice(0,QS.findIndex(q=>q.splash===V)))}</div><div class="part">📚 Vocabulary · ${countPts(QS.slice(QS.findIndex(q=>q.splash===V)))}</div></div>
+    <div class="tips">🔊 <b>Listen</b> · 💡 <b>Hint</b> · 🔁 <b>2 tries</b>
+      <div class="ar">اضغط 🔊 لسماع الجملة، و 💡 للمساعدة بالعربي. لديك محاولتان لكل سؤال — النجمة ⭐ للإجابة الصحيحة من أول مرة.</div></div>
+  </div>`;
+  document.getElementById('go').onclick=()=>{student=document.getElementById('nm').value.trim();begin(QS)};
+  document.getElementById('learn').onclick=()=>{student=document.getElementById('nm').value.trim();lessonScreen(0)};
+}
+
+function begin(list){items=list;idx=0;points=0;mistakes=[];maxPts=countPts(list);
+  document.getElementById('top').classList.remove('hidden');render()}
+
+function updateTop(){
+  const done=items.slice(0,idx).filter(q=>!q.splash).length,total=items.filter(q=>!q.splash).length;
+  document.getElementById('qn').textContent=`${Math.min(done+1,total)} / ${total}`;
+  document.getElementById('fill').style.width=(done/total*100)+'%';
+  document.getElementById('stars').textContent=`⭐ ${points}`;
+}
+
+function render(){
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(idx>=items.length)return endScreen();
+  updateTop();
+  const q=items[idx];
+  if(q.splash){
+    app.innerHTML=`<div class="card splash"><div class="e">${q.e}</div><h2>${q.splash}</h2><div class="ar" style="font-size:1.3rem">${q.ar}</div><button class="big-btn" id="nx">Let's go! ▶ هيا</button></div>`;
+    document.getElementById('nx').onclick=()=>{idx++;render()};return;
+  }
+  (q.t==='match'?renderMatch:renderMCQ)(q);
+}
+
+function head(q){
+  const col=q.sec===G?'var(--blue)':'var(--pink)';
+  return `<span class="chip" style="background:${col}">${q.sec===G?'🧠 Grammar':'📚 Vocabulary'}</span>
+   <div class="ins">${q.ins}</div><div class="ar ins-ar">${q.insAr}</div>`;
+}
+
+function fullSentence(q,ans){
+  if(q.pre)return q.pre;
+  if(q.fix)return q.q.replace(/\[.*?\]/,ans);
+  return (q.q||'').replace('___',ans);
+}
+
+function renderMCQ(q){
+  let qHtml='';
+  if(q.fix)qHtml=esc(q.q).replace(/\[(.*?)\]/,'<span class="err" id="bl">$1</span>');
+  else if(q.q)qHtml=esc(q.q).replace('___','<span class="blank" id="bl">?</span>');
+  const opts=q.noShuffle?q.o:shuffle(q.o);
+  app.innerHTML=`<div class="card">${head(q)}
+    ${q.pre?`<div class="q" style="color:var(--muted);font-size:1.2rem;margin-bottom:0">${esc(q.pre)}</div>`:''}
+    ${q.pic?`<div class="pic">${q.pic}</div>`:''}
+    ${qHtml?`<div class="q">${qHtml}</div>`:''}
+    <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+    <div class="hint" id="hint"><b>${esc(q.h)}</b><div class="ar">${q.hAr}</div></div>
+    <div class="opts ${opts.length<=2&&!q.long?'':''} ${q.long?'one':''} ${opts.some(o=>o.length>14)?'long':''}" id="opts"></div>
+    <div class="msg" id="msg"></div><div id="nxw"></div></div>`;
+  let tries=0;
+  prefetchSay(q.pre||(q.q?q.q:q.a),fullSentence(q,q.a));
+  document.getElementById('say').onclick=()=>speak(q.pre||(q.q?q.q:q.a));
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  const box=document.getElementById('opts'),msg=document.getElementById('msg');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;box.appendChild(b);
+    b.onclick=()=>{
+      if(o===q.a){
+        box.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('right');beep(true);
+        const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.className='blank done'}
+        if(tries===0){points++;const p=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+          msg.className='msg good';msg.innerHTML=`⭐ ${p[0]}${student?', '+esc(student):''}! <div class="ar">${p[1]}</div>`;
+          if(window.confetti)confetti({particleCount:40,spread:60,origin:{y:.7},colors:['#d4af37','#3ddc97','#4fa3ff']})}
+        else{msg.className='msg good';msg.innerHTML=`✅ Good! Now you know it. <div class="ar">جيد! الآن عرفت الإجابة.</div>`}
+        speak(fullSentence(q,q.a).replace('👉 ',''));nextBtn();updateTop();
+      }else{
+        tries++;b.classList.add('wrong');b.disabled=true;beep(false);
+        const card=box.closest('.card');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+        if(tries===1){msg.className='msg try';msg.innerHTML=`${TRY[0]}<div class="ar">${TRY[1]}</div>`;document.getElementById('hint').classList.add('show')}
+        else{
+          box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent===q.a)x.classList.add('right')});
+          const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.className='blank done'}
+          msg.className='msg bad';msg.innerHTML=`The answer is: <span style="color:var(--ok)">${esc(q.a)}</span><div class="ar">لا بأس! تذكّر الإجابة الصحيحة 👆</div>`;
+          nextBtn();
+        }
+        if(!mistakes.includes(q))mistakes.push(q);
+      }
+    }});
+}
+
+function renderMatch(q){
+  const rights=shuffle(q.pairs.map(p=>p[1]));
+  app.innerHTML=`<div class="card">${head(q)}
+    <div class="tools" style="margin-top:14px"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+    <div class="hint" id="hint">${q.pairs.map(p=>`<b>${p[0]}</b> = ${q.ar[p[0]]}`).join(' · ')}</div>
+    <div class="match"><div class="col" id="L"></div><div class="col" id="R"></div></div>
+    <div class="msg" id="msg"></div><div id="nxw"></div></div>`;
+  document.getElementById('say').onclick=()=>speak(q.pairs.map(p=>p[0]).join(', '));
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  const L=document.getElementById('L'),R=document.getElementById('R'),msg=document.getElementById('msg');
+  let sel=null,done=0,n=0;const missed=new Set();
+  q.pairs.forEach(([l])=>{const b=document.createElement('button');b.className='m';b.textContent=l;b.dataset.l=l;L.appendChild(b);
+    b.onclick=()=>{if(b.classList.contains('done'))return;L.querySelectorAll('.m').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;speak(l)}});
+  rights.forEach(r=>{const b=document.createElement('button');b.className='m';b.textContent=r;R.appendChild(b);
+    b.onclick=()=>{
+      if(b.classList.contains('done'))return;
+      if(!sel){msg.className='msg try';msg.innerHTML='👈 First tap a word on the left.<div class="ar">اضغط أولًا على كلمة من اليسار.</div>';return}
+      const l=sel.dataset.l,ok=q.pairs.find(p=>p[0]===l)[1]===r;
+      if(ok){n++;sel.classList.remove('sel');[sel,b].forEach(x=>{x.classList.add('done');x.insertAdjacentHTML('afterbegin',`<span class="tagn">${n}</span>`)});
+        if(!missed.has(l))points++;done++;beep(true);msg.className='msg good';msg.innerHTML=`✅ ${l} = ${r}<div class="ar">${q.ar[l]}</div>`;sel=null;updateTop();
+        if(done===q.pairs.length){msg.innerHTML=missed.size?`✅ All matched! <div class="ar">أحسنت! أكملت التوصيل.</div>`:`⭐ Perfect${student?' '+esc(student):''}! <div class="ar">ممتاز! كلها صحيحة من أول مرة.</div>`;
+          if(!missed.size&&window.confetti)confetti({particleCount:60,spread:70,origin:{y:.7}});nextBtn()}}
+      else{missed.add(l);beep(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');msg.className='msg try';
+        msg.innerHTML=`${TRY[0]}<div class="ar">${TRY[1]}</div>`;document.getElementById('hint').classList.add('show');if(!mistakes.includes(q))mistakes.push(q)}
+    }});
+}
+
+function nextBtn(){
+  const w=document.getElementById('nxw');
+  w.innerHTML=`<button class="big-btn next" id="nx">${idx===items.length-1?'Finish 🏁 إنهاء':'Next ▶ التالي'}</button>`;
+  document.getElementById('nx').onclick=()=>{idx++;render()};
+}
+
+function endScreen(){
+  document.getElementById('fill').style.width='100%';document.getElementById('stars').textContent=`⭐ ${points}`;
+  const p=points/maxPts,st=p>=.9?3:p>=.6?2:p>=.3?1:0;
+  const [en,ar]=p===1?['PERFECT! You are a star!','رائع! أنت نجم!']:p>=.8?['Excellent work!','عمل ممتاز!']:p>=.6?['Very good! Keep going!','جيد جدًا! استمر!']:p>=.4?['Good try! Practise the mistakes.','محاولة جيدة! تدرّب على الأخطاء.']:['Don\'t give up! Try again 💪','لا تستسلم! حاول مرة أخرى 💪'];
+  const rev=mistakes.map(q=>q.t==='match'?`<li>${esc(q.ins)}<br>${q.pairs.map(p=>`<b>${esc(p[0])}</b> = ${esc(p[1])}`).join(' · ')}</li>`
+    :`<li>${q.pic?q.pic+' ':''}${esc(q.pre||(q.fix?q.q.replace(/\[|\]/g,''):q.q)||'')} → <b>${esc(q.a)}</b><div class="ar">${q.hAr}</div></li>`).join('');
+  app.innerHTML=`<div class="card end">
+    <div class="mascot">${p>=.6?'🏆':'🦉'}</div>
+    <div class="score">${points} / ${maxPts}</div>
+    <div class="rate">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div>
+    <div style="font-size:1.4rem;font-weight:900">${en}${student?', '+esc(student):''}</div><div class="ar" style="font-size:1.1rem">${ar}</div>
+    ${mistakes.length?`<div class="review"><b style="color:var(--gold)">📝 Remember these · تذكّر هذه الإجابات</b><ul>${rev}</ul></div>`:''}
+    <div class="row-btns">
+      ${mistakes.length?`<button class="big-btn" id="rm">🔁 Practise mistakes · تدرّب على الأخطاء</button>`:''}
+      <button class="big-btn ghost" id="rl">📖 Review lesson · راجع الشرح</button>
+      <button class="big-btn ghost" id="ra">↺ Start again · من البداية</button>
+    </div></div>`;
+  if(p>=.8&&window.confetti){const end=Date.now()+1800,c=['#d4af37','#3ddc97','#4fa3ff','#ff8ac4'];(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:c});confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:c});if(Date.now()<end)requestAnimationFrame(f)})()}
+  const rm=document.getElementById('rm');if(rm)rm.onclick=()=>begin([...mistakes]);
+  document.getElementById('ra').onclick=()=>begin(QS);
+  document.getElementById('rl').onclick=()=>lessonScreen(0);
+}
+
+startScreen();
+</script>
+</body>
+</html>

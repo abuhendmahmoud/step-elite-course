@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Past Time Expressions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--text:#eef2f8;--muted:#9fb0c8;
+  --last:#4fa3ff;--yest:#3ddc97;--ago:#ff8a5c;--this:#f5d76e;--when:#c58cff;
+  --ok:#3ddc97;--bad:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--navy);color:var(--text);line-height:1.6;min-height:100vh}
+.ar{direction:rtl;color:var(--muted);font-size:.95em}
+h1,h2{font-family:'Playfair Display',serif}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 80px}
+button,input{font-family:inherit}
+button{cursor:pointer}
+
+.bar{position:sticky;top:0;z-index:50;background:rgba(10,22,40,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 16px}
+.bar-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar-track{flex:1;height:10px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#ffe68a);transition:width .5s}
+.bar-score{font-weight:800;color:var(--gold);white-space:nowrap}
+.nav{display:flex;gap:6px;overflow-x:auto;max-width:980px;margin:8px auto 0;scrollbar-width:none}
+.nav a{flex:none;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:700;padding:4px 12px;border:1px solid var(--line);border-radius:20px}
+.nav a:hover{color:var(--gold);border-color:var(--gold)}
+
+.hero{text-align:center;padding:40px 0 16px}
+.hero h1{font-size:clamp(2rem,7vw,3.4rem);line-height:1.15}
+.hero h1 .l{color:var(--last)}.hero h1 .y{color:var(--yest)}.hero h1 .a{color:var(--ago)}
+.hero p{color:var(--muted);margin-top:6px}
+.tag{display:inline-block;margin-top:12px;padding:4px 14px;border:1px solid var(--gold);color:var(--gold);border-radius:20px;font-size:.8rem;font-weight:700}
+
+section{margin-top:44px}
+.sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.sec-h h2{font-size:1.6rem;color:var(--gold)}
+.sec-h .num{font-family:'Playfair Display';color:var(--navy);background:var(--gold);border-radius:8px;padding:0 10px;font-weight:800}
+.sec-sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--navy2);border:1px solid var(--line);border-radius:18px;padding:20px}
+.ex{border-inline-start:3px solid var(--gold);padding:4px 12px;margin-top:10px;background:rgba(212,175,55,.06);border-radius:0 8px 8px 0}
+
+/* three rules */
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:720px){.rules{grid-template-columns:1fr}}
+.rule{border-radius:16px;padding:16px;background:var(--navy3);border-top:5px solid}
+.rule h3{font-family:'Playfair Display';font-size:1.8rem}
+.rule .f{font-weight:800;margin:4px 0 8px;font-size:1.05rem}
+.rule ul{list-style:none}
+.rule li{padding:2px 0}
+.r-last{border-color:var(--last)}.r-last h3{color:var(--last)}
+.r-yest{border-color:var(--yest)}.r-yest h3{color:var(--yest)}
+.r-ago{border-color:var(--ago)}.r-ago h3{color:var(--ago)}
+
+/* time machine */
+.tm-now{display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem;font-weight:700}
+.tm-track{position:relative;height:70px;margin:8px 10px 0}
+.tm-axis{position:absolute;left:0;right:0;top:32px;height:4px;background:var(--line);border-radius:4px}
+.tm-fill{position:absolute;top:32px;right:0;height:4px;border-radius:4px;transition:all .6s}
+.tm-dot{position:absolute;top:22px;width:24px;height:24px;border-radius:50%;transform:translateX(-50%);transition:all .6s;border:3px solid var(--navy);box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+.tm-nowpin{position:absolute;right:-6px;top:10px;width:4px;height:48px;background:var(--gold);border-radius:2px}
+input[type=range]{width:100%;accent-color:var(--gold);height:36px;direction:rtl}
+.tm-say{text-align:center;margin-top:10px}
+.tm-say .big{font-size:2rem;font-weight:800}
+.tm-say .kind{display:inline-block;padding:0 10px;border-radius:8px;color:var(--navy);font-weight:800;font-size:.85rem}
+
+/* mistakes */
+.mist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.m{background:var(--navy3);border-radius:12px;padding:12px 14px}
+.m .x{color:var(--bad);text-decoration:line-through}
+.m .v{color:var(--ok);font-weight:800}
+
+/* sort */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;margin-bottom:16px}
+.word{border:2px solid var(--gold);background:transparent;color:var(--text);border-radius:22px;padding:8px 14px;font-weight:700;min-height:44px;font-size:1rem}
+.word.pick{background:var(--gold);color:var(--navy);transform:translateY(-2px)}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.bins{grid-template-columns:1fr}}
+.bin{border:2px dashed;border-radius:16px;padding:10px;min-height:120px;background:var(--navy3);color:var(--text)}
+.bin h4{font-family:'Playfair Display';font-size:1.4rem;text-align:center}
+.bin small{display:block;text-align:center;color:var(--muted);font-size:.75rem}
+.bin.b-last{border-color:var(--last)}.bin.b-last h4{color:var(--last)}
+.bin.b-yest{border-color:var(--yest)}.bin.b-yest h4{color:var(--yest)}
+.bin.b-ago{border-color:var(--ago)}.bin.b-ago h4{color:var(--ago)}
+.placed{display:inline-block;margin:3px;padding:3px 10px;border-radius:14px;font-size:.9rem;font-weight:700;background:rgba(61,220,151,.18);color:var(--ok)}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fb{margin-top:10px;font-weight:700;min-height:1.6em}
+.fb.good{color:var(--ok)}.fb.badc{color:var(--bad)}
+
+/* when flipper */
+.flip-s{font-size:1.25rem;font-weight:700;min-height:3.2em;display:flex;flex-wrap:wrap;align-items:center;gap:6px;transition:opacity .3s}
+.wc{background:rgba(197,140,255,.18);color:var(--when);padding:2px 10px;border-radius:10px}
+.mc{background:rgba(79,163,255,.12);padding:2px 10px;border-radius:10px}
+.comma{color:var(--gold);font-size:2rem;line-height:1;font-weight:800;animation:pop .5s}
+@keyframes pop{from{transform:scale(3);opacity:0}}
+.flip-note{margin-top:6px}
+.flip-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.flip-row:last-of-type{border-bottom:none}
+.btn{min-height:46px;padding:8px 20px;border-radius:12px;border:none;background:var(--gold);color:var(--navy);font-weight:800;font-size:1rem;margin-top:12px}
+.btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn.sm{min-height:40px;padding:6px 14px;font-size:.9rem;margin-top:8px}
+
+/* prep or nothing */
+.q{padding:12px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:none}
+.q-t{font-weight:700;font-size:1.1rem;margin-bottom:8px}
+.blank{display:inline-block;min-width:54px;border-bottom:2px solid var(--gold);text-align:center;color:var(--gold)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{min-height:44px;min-width:64px;padding:6px 14px;border-radius:10px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700;font-size:1rem;text-align:start}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);color:var(--navy);border-color:var(--ok)}
+.opt.wrong{background:var(--bad);color:var(--navy);border-color:var(--bad)}
+.opts.col{flex-direction:column}
+.why{margin-top:6px;font-size:.9rem;color:var(--muted)}
+
+/* exercise A */
+.a-item{padding:12px 0;border-bottom:1px solid var(--line);line-height:2.4;font-size:1.05rem}
+.a-item:last-child{border-bottom:none}
+.a-item input{background:var(--navy3);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:4px 8px;font-size:1rem;min-height:38px;width:190px;max-width:100%}
+.a-item input.right{border-color:var(--ok);color:var(--ok)}
+.a-item input.wrong{border-color:var(--bad);color:var(--bad)}
+.a-item .cue{color:var(--gold);font-weight:700;font-size:.9rem}
+.a-item .model{display:none;color:var(--muted);font-size:.9rem;line-height:1.5}
+.show-models .a-item .model{display:block}
+
+/* exercise B */
+.b-item{padding:14px 0;border-bottom:1px solid var(--line)}
+.b-item:last-child{border-bottom:none}
+.b-line{min-height:52px;border:2px dashed var(--line);border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.b-line.right{border-color:var(--ok);border-style:solid}
+.b-line.wrong{border-color:var(--bad)}
+.tiles{display:flex;flex-wrap:wrap;gap:6px}
+.tile{min-height:40px;padding:4px 12px;border-radius:9px;border:1px solid var(--gold);background:var(--navy3);color:var(--text);font-weight:700;font-size:1rem}
+.tile.bold{font-weight:800;color:var(--gold)}
+.b-ans{color:var(--muted);font-size:.9rem;margin-top:4px}
+
+/* partner */
+.pcard{background:var(--navy3);border-radius:16px;padding:18px;text-align:center}
+.pcard .qa{font-size:1.3rem;font-weight:800;margin:6px 0}
+.pcard .an{color:var(--ok);font-weight:700;min-height:1.6em}
+
+.final{text-align:center;padding:30px 20px}
+.final .big{font-family:'Playfair Display';font-size:3.4rem;color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="bar-score" id="barScore">0 / 0 ⭐</div>
+  </div>
+  <nav class="nav">
+    <a href="#s1">1 · Last/Yesterday/Ago</a><a href="#s2">2 · Time machine</a><a href="#s3">3 · Sort</a>
+    <a href="#s4">4 · When clauses</a><a href="#s5">5 · in/on/at or nothing?</a>
+    <a href="#sA">A · Complete</a><a href="#sB">B · Word order</a><a href="#sC">C · Partner</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1><span class="l">Last</span> · <span class="y">Yesterday</span> · <span class="a">Ago</span></h1>
+  <p>Time Expressions for the Past · When Clauses · Past Dates &amp; Times</p>
+  <p class="ar">تعبيرات الزمن الماضي · جمل when · التواريخ والأوقات في الماضي</p>
+  <span class="tag">Super Goal 3 · Form, Meaning and Function 12</span>
+</header>
+
+<!-- 1 RULES -->
+<section id="s1">
+  <div class="sec-h"><span class="num">1</span><h2>Three Ways to Talk About the Past</h2></div>
+  <p class="sec-sub">Each word has its own pattern. Learn the pattern, not only the word.<br><span class="ar">لكل كلمة طريقة استخدام خاصة بها — احفظ القاعدة وليس الكلمة فقط.</span></p>
+  <div class="rules">
+    <div class="rule r-last">
+      <h3>Last</h3>
+      <div class="f">last + night / day / week / month / year / season</div>
+      <ul><li>last night</li><li>last Tuesday</li><li>last week</li><li>last month</li><li>last year</li><li>last summer</li></ul>
+      <div class="ar">الماضي / الماضية — بدون the وبدون حرف جر</div>
+    </div>
+    <div class="rule r-yest">
+      <h3>Yesterday</h3>
+      <div class="f">yesterday (+ morning / afternoon / evening)</div>
+      <ul><li>yesterday</li><li>yesterday morning</li><li>yesterday afternoon</li><li>yesterday evening</li><li>the day before yesterday</li></ul>
+      <div class="ar">أمس — the day before yesterday = أول أمس</div>
+    </div>
+    <div class="rule r-ago">
+      <h3>Ago</h3>
+      <div class="f">amount of time + ago</div>
+      <ul><li>ten minutes ago</li><li>five hours ago</li><li>two days ago</li><li>a week ago</li><li>six years ago</li></ul>
+      <div class="ar">قبل (من الآن) — ago تأتي <b>بعد</b> المدة دائمًا</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <b style="color:var(--gold)">⚠ Watch out! · انتبه</b>
+    <div class="mist" style="margin-top:10px">
+      <div class="m"><span class="x">yesterday night</span> → <span class="v">last night</span><div class="ar">نقول last night وليس yesterday night</div></div>
+      <div class="m"><span class="x">last morning</span> → <span class="v">yesterday morning</span><div class="ar">أجزاء اليوم (morning/afternoon/evening) مع yesterday</div></div>
+      <div class="m"><span class="x">before two days</span> → <span class="v">two days ago</span><div class="ar">«قبل يومين» = two days ago، وليس before two days</div></div>
+      <div class="m"><span class="x">the last week</span> → <span class="v">last week</span><div class="ar">لا نضع the قبل last هنا</div></div>
+      <div class="m"><span class="x">on last Monday</span> → <span class="v">last Monday</span><div class="ar">لا حرف جر مع last / yesterday / ago / this</div></div>
+      <div class="m"><span class="x">ago six years</span> → <span class="v">six years ago</span><div class="ar">المدة أولًا ثم ago</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 TIME MACHINE -->
+<section id="s2">
+  <div class="sec-h"><span class="num">2</span><h2>Time Machine</h2></div>
+  <p class="sec-sub">Drag the slider to travel back in time from NOW.<br><span class="ar">حرّك المؤشر لترجع بالزمن من «الآن» إلى الماضي.</span></p>
+  <div class="card">
+    <div class="tm-now"><span>⏪ long ago</span><span>NOW ⏺</span></div>
+    <div class="tm-track"><div class="tm-axis"></div><div class="tm-fill" id="tmFill"></div><div class="tm-nowpin"></div><div class="tm-dot" id="tmDot"></div></div>
+    <input type="range" min="0" max="9" value="0" id="tm" aria-label="Travel back in time">
+    <div class="tm-say"><span class="kind" id="tmKind"></span><div class="big" id="tmTxt"></div><div class="ar" id="tmAr"></div><div class="ex" id="tmEx" style="text-align:start"></div></div>
+  </div>
+</section>
+
+<!-- 3 SORT -->
+<section id="s3">
+  <div class="sec-h"><span class="num">3</span><h2>Sort Game</h2></div>
+  <p class="sec-sub">Which word goes with it? Tap a word, then tap the right box.<br><span class="ar">اضغط على الكلمة ثم اختر الصندوق: last أو yesterday أو ago؟</span></p>
+  <div class="card">
+    <div class="pool" id="pool"></div>
+    <div class="bins">
+      <button class="bin b-last" data-b="last"><h4>last ___</h4><small>last + …</small><div></div></button>
+      <button class="bin b-yest" data-b="yest"><h4>yesterday ___</h4><small>yesterday + …</small><div></div></button>
+      <button class="bin b-ago" data-b="ago"><h4>___ ago</h4><small>… + ago</small><div></div></button>
+    </div>
+    <div class="fb" id="sortFb"></div>
+    <button class="btn ghost sm" id="sortReset">↺ Restart</button>
+  </div>
+</section>
+
+<!-- 4 WHEN -->
+<section id="s4">
+  <div class="sec-h"><span class="num">4</span><h2>When Clauses</h2></div>
+  <p class="sec-sub">A <b>when</b> clause tells us the time of the main action. Tap <b>Flip ⇄</b> and watch the comma.<br><span class="ar">جملة when تخبرنا متى حدث الفعل. اضغط Flip ولاحظ الفاصلة.</span></p>
+  <div class="card" id="flips"></div>
+  <div class="card" style="margin-top:12px">
+    <b style="color:var(--gold)">📌 The comma rule · قاعدة الفاصلة</b>
+    <div class="ex"><span class="wc">When …</span><span class="comma" style="animation:none">,</span> <span class="mc">main clause</span> → comma ✅</div>
+    <div class="ex"><span class="mc">main clause</span> <span class="wc">when …</span> → no comma ❌</div>
+    <div class="ar" style="margin-top:8px">إذا بدأت الجملة بـ When نضع فاصلة بعد جملة when. وإذا جاءت when في الوسط فلا فاصلة.</div>
+  </div>
+</section>
+
+<!-- 5 PREP OR NOTHING -->
+<section id="s5">
+  <div class="sec-h"><span class="num">5</span><h2>in · on · at — or nothing?</h2></div>
+  <p class="sec-sub"><b>in</b> 1998 · <b>in</b> the 20th century · <b>on</b> May 25th 2000 · <b>on</b> Monday · <b>at</b> 6 A.M. · <b>—</b> this morning<br><span class="ar">لا نستخدم حرف جر مع: this / last / yesterday / ago. اختر — إذا لم نحتج حرف جر.</span></p>
+  <div class="card" id="pon"></div>
+</section>
+
+<!-- A -->
+<section id="sA">
+  <div class="sec-h"><span class="num">A</span><h2>Complete the Sentences</h2></div>
+  <p class="sec-sub">Use the word in (parentheses). Write about <b>you</b>! Then tap <b>Check</b>.<br><span class="ar">استخدم الكلمة بين القوسين واكتب عن نفسك، ثم اضغط Check. الإجابات الشخصية تُقبل إذا كانت القاعدة صحيحة.</span></p>
+  <div class="card" id="exA">
+    <div id="aItems"></div>
+    <button class="btn" id="aCheck">✔ Check</button>
+    <button class="btn ghost" id="aModel">💡 Model answers</button>
+    <div class="fb" id="aFb"></div>
+  </div>
+</section>
+
+<!-- B -->
+<section id="sB">
+  <div class="sec-h"><span class="num">B</span><h2>Put the Words in Order</h2></div>
+  <p class="sec-sub">Start with the word in <b style="color:var(--gold)">gold</b>. Tap words to build the sentence; tap a word in the line to send it back.<br><span class="ar">ابدأ بالكلمة الذهبية. اضغط على الكلمات لترتيب الجملة، واضغط على كلمة في السطر لإرجاعها.</span></p>
+  <div class="card" id="exB"></div>
+</section>
+
+<!-- C -->
+<section id="sC">
+  <div class="sec-h"><span class="num">C</span><h2>Partner Talk</h2></div>
+  <p class="sec-sub">First choose the correct answer. Then practise with a partner.<br><span class="ar">اختر الإجابة الصحيحة أولًا، ثم تدرّب مع زميلك على الأسئلة.</span></p>
+  <div class="card" id="exC"></div>
+  <div class="pcard" style="margin-top:12px">
+    <div style="color:var(--gold);font-weight:800">🗣 Ask your partner · اسأل زميلك</div>
+    <div class="qa" id="pQ"></div>
+    <div class="an" id="pA"></div>
+    <button class="btn ghost sm" id="pShow">Show example answer</button>
+    <button class="btn sm" id="pNext">Next question ➜</button>
+  </div>
+</section>
+
+<section>
+  <div class="card final">
+    <div class="big" id="finalScore">0 / 0</div>
+    <p id="finalMsg">Complete the activities above to see your score.</p>
+    <p class="ar" id="finalAr">أكمل الأنشطة أعلاه لتظهر نتيجتك.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[.,!?’]/g,m=>m==='’'?"'":'').replace(/\s+/g,' ').trim();
+
+/* ---------- scoring ---------- */
+const score={sort:0,pon:0,A:0,B:0,C:0},max={sort:0,pon:0,A:0,B:0,C:0};
+let celebrated=false;
+function updateScore(){
+  const s=Object.values(score).reduce((a,b)=>a+b,0),m=Object.values(max).reduce((a,b)=>a+b,0);
+  document.getElementById('barFill').style.width=(s/m*100)+'%';
+  document.getElementById('barScore').textContent=`${s} / ${m} ⭐`;
+  document.getElementById('finalScore').textContent=`${s} / ${m}`;
+  const p=s/m,msg=document.getElementById('finalMsg'),ar=document.getElementById('finalAr');
+  if(p===1){msg.textContent='🏆 Perfect! You are a past-time master!';ar.textContent='ممتاز! أتقنت تعبيرات الزمن الماضي!';if(!celebrated){celebrated=true;boom()}}
+  else if(p>=.8){msg.textContent='🌟 Excellent work! Almost perfect.';ar.textContent='عمل رائع! اقتربت من العلامة الكاملة.'}
+  else if(p>=.5){msg.textContent='👍 Good job — keep practising!';ar.textContent='أحسنت — استمر في التدريب!'}
+  else if(s>0){msg.textContent='💪 Keep going — review sections 1–5 and try again.';ar.textContent='استمر! راجع الأقسام من ١ إلى ٥ وحاول مرة أخرى.'}
+}
+function boom(){if(!window.confetti)return;const end=Date.now()+1500,c=['#d4af37','#4fa3ff','#3ddc97','#ff8a5c'];(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:c});confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:c});if(Date.now()<end)requestAnimationFrame(f)})()}
+
+/* ---------- 2 time machine ---------- */
+const K={last:['last','var(--last)'],yest:['yesterday','var(--yest)'],ago:['ago','var(--ago)'],this:['this','var(--this)']};
+const TM=[
+ ['ten minutes ago','ago',97,'قبل عشر دقائق','The class started <b>ten minutes ago</b>.'],
+ ['five hours ago','ago',91,'قبل خمس ساعات','I had breakfast <b>five hours ago</b>.'],
+ ['this morning','this',87,'هذا الصباح','I woke up at 6:30 <b>this morning</b>.'],
+ ['last night','last',82,'الليلة الماضية','I went to bed at 10 <b>last night</b>.'],
+ ['yesterday morning','yest',76,'صباح أمس','We had a test <b>yesterday morning</b>.'],
+ ['the day before yesterday','yest',68,'أول أمس','We took a math test <b>the day before yesterday</b>.'],
+ ['last week','last',55,'الأسبوع الماضي','My parents bought me a cell phone <b>last week</b>.'],
+ ['last month','last',40,'الشهر الماضي','We finished Unit 1 <b>last month</b>.'],
+ ['last year','last',25,'السنة الماضية','<b>Last year</b> I was in grade 8.'],
+ ['six years ago','ago',6,'قبل ست سنوات','I started school <b>six years ago</b>.']
+];
+function tm(){
+  const [t,k,x,ar,ex]=TM[+document.getElementById('tm').value],col=K[k][1];
+  const dot=document.getElementById('tmDot'),fill=document.getElementById('tmFill');
+  dot.style.left=x+'%';dot.style.background=col;fill.style.left=x+'%';fill.style.background=col;
+  const kd=document.getElementById('tmKind');kd.textContent=K[k][0];kd.style.background=col;
+  document.getElementById('tmTxt').innerHTML=t;document.getElementById('tmTxt').style.color=col;
+  document.getElementById('tmAr').textContent=ar;document.getElementById('tmEx').innerHTML=ex;
+}
+document.getElementById('tm').oninput=tm;tm();
+
+/* ---------- 3 sort ---------- */
+const WORDS=[['night','last'],['Tuesday','last'],['week','last'],['month','last'],['year','last'],['summer','last'],
+ ['morning','yest'],['afternoon','yest'],['evening','yest'],
+ ['six years','ago'],['two days','ago'],['a week','ago'],['five hours','ago'],['ten minutes','ago'],['a month','ago']];
+max.sort=WORDS.length;
+let picked=null,sortErr=0;
+function buildSort(){
+  score.sort=0;picked=null;sortErr=0;
+  const pool=document.getElementById('pool');pool.innerHTML='';
+  document.querySelectorAll('.bin div').forEach(d=>d.innerHTML='');
+  document.getElementById('sortFb').textContent='';
+  shuffle(WORDS).forEach(([w,a])=>{const b=document.createElement('button');b.className='word';b.textContent=w;b.dataset.a=a;
+    b.onclick=()=>{document.querySelectorAll('.word').forEach(x=>x.classList.remove('pick'));picked=b;b.classList.add('pick')};pool.appendChild(b)});
+  updateScore();
+}
+const binTxt={last:w=>'last '+w,yest:w=>'yesterday '+w,ago:w=>w+' ago'};
+document.querySelectorAll('.bin').forEach(bin=>bin.onclick=()=>{
+  const fb=document.getElementById('sortFb');
+  if(!picked){fb.className='fb badc';fb.textContent='👆 Tap a word first.';return}
+  const b=bin.dataset.b,w=picked.textContent;
+  if(picked.dataset.a===b){
+    const s=document.createElement('span');s.className='placed';s.textContent=binTxt[b](w);bin.querySelector('div').appendChild(s);
+    picked.remove();picked=null;score.sort++;fb.className='fb good';fb.textContent=`✅ ${binTxt[b](w)}`;
+    if(score.sort===WORDS.length)fb.textContent=`🎉 All sorted! Mistakes: ${sortErr}`;
+    updateScore();
+  }else{sortErr++;bin.classList.remove('shake');void bin.offsetWidth;bin.classList.add('shake');fb.className='fb badc';fb.textContent=`❌ We don't say "${binTxt[b](w)}" — try again.`}
+});
+document.getElementById('sortReset').onclick=buildSort;
+buildSort();
+
+/* ---------- 4 when flipper ---------- */
+const FL=[
+ ['when they were four years old','They didn\'t go to school','لم يذهبوا إلى المدرسة عندما كان عمرهم أربع سنوات.'],
+ ['When I was a child','I used to play with my toys all day','عندما كنت طفلًا، كنت ألعب بألعابي طوال اليوم.'],
+ ['when I started high school','I made new friends','كوّنت أصدقاء جددًا عندما بدأت المرحلة الثانوية.']
+];
+const flips=document.getElementById('flips');
+FL.forEach(([w,m,ar],i)=>{
+  const row=document.createElement('div');row.className='flip-row';
+  let whenFirst=i===1;
+  const s=document.createElement('div');s.className='flip-s';
+  const note=document.createElement('div');note.className='flip-note';
+  const cap=t=>t[0].toUpperCase()+t.slice(1),low=t=>t[0].toLowerCase()+t.slice(1);
+  const wc=w.replace(/^When/,'when');
+  function draw(){
+    if(whenFirst){s.innerHTML=`<span class="wc">${cap(wc)}</span><span class="comma">,</span><span class="mc">${low(m).replace(/^i /,'I ')}.</span>`;
+      note.innerHTML='✅ <b>When</b> first → comma <span class="ar">(when في البداية ← فاصلة)</span>'}
+    else{s.innerHTML=`<span class="mc">${cap(m)}</span><span class="wc">${wc}.</span>`;
+      note.innerHTML='✅ <b>when</b> in the middle → no comma <span class="ar">(when في الوسط ← بدون فاصلة)</span>'}
+  }
+  const btn=document.createElement('button');btn.className='btn ghost sm';btn.textContent='Flip ⇄';
+  btn.onclick=()=>{whenFirst=!whenFirst;draw()};
+  row.append(s,note);row.insertAdjacentHTML('beforeend',`<div class="ar">${ar}</div>`);row.append(btn);flips.appendChild(row);draw();
+});
+
+/* ---------- MCQ helper ---------- */
+function mcq(container,items,key,col){
+  max[key]=items.length;
+  items.forEach(([t,a,o,why,whyAr],i)=>{
+    const q=document.createElement('div');q.className='q';
+    q.innerHTML=`<div class="q-t">${i+1}. ${t.replace('___','<span class="blank">___</span>')}</div><div class="opts${col?' col':''}"></div><div class="why"></div>`;
+    const opts=q.querySelector('.opts'),bl=q.querySelector('.blank');
+    shuffle(o).forEach(op=>{const b=document.createElement('button');b.className='opt';b.textContent=op;
+      b.onclick=()=>{
+        opts.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent===a)x.classList.add('right')});
+        const ok=op===a;if(ok)score[key]++;else b.classList.add('wrong');
+        if(bl)bl.textContent=a;
+        q.querySelector('.why').innerHTML=`${ok?'✅':'❌'} ${why} · <span class="ar">${whyAr}</span>`;updateScore()};
+      opts.appendChild(b)});
+    container.appendChild(q);
+  });
+}
+
+/* ---------- 5 prep or nothing ---------- */
+const P4=['in','on','at','—'];
+mcq(document.getElementById('pon'),[
+ ['I was born ___ 2011.','in',P4,'year → in','السنة مع in'],
+ ['The Kingdom was founded ___ the 20th century.','in',P4,'century → in','القرن مع in'],
+ ['He graduated ___ May 25th, 2000.','on',P4,'date → on','التاريخ مع on'],
+ ['We had a test ___ Monday.','on',P4,'day → on','اليوم مع on'],
+ ['I woke up ___ 6 A.M.','at',P4,'clock time → at','الساعة مع at'],
+ ['I woke up late ___ this morning.','—',P4,'this morning → no preposition','لا حرف جر مع this'],
+ ['I went to bed early ___ last night.','—',P4,'last night → no preposition','لا حرف جر مع last'],
+ ['We visited my uncle ___ yesterday.','—',P4,'yesterday → no preposition','لا حرف جر مع yesterday'],
+ ['She moved to Jeddah ___ two years ago.','—',P4,'… ago → no preposition','لا حرف جر مع ago'],
+ ['It was very hot ___ the summer of 2020.','in',P4,'season → in','الفصل مع in'],
+ ['I played football ___ Friday afternoon.','on',P4,'day + part of day → on','اليوم + جزء منه مع on'],
+ ['My brother called me ___ last Tuesday.','—',P4,'last Tuesday → no preposition','لا حرف جر مع last']
+],'pon');
+
+/* ---------- A complete ---------- */
+const M='(january|february|march|april|may|june|july|august|september|october|november|december)';
+const D='(monday|tuesday|wednesday|thursday|friday|saturday|sunday)';
+const ORD='\\d{1,2}(st|nd|rd|th)?';
+const NUM='(\\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|a few|several)';
+const TIME=`at \\d{1,2}(:?\\d{2})?( ?(a ?m|p ?m|o'?clock))?`;
+const R=s=>new RegExp('^'+s+'$');
+// each item: html with {n} slots; slots: [regex, cue, model]
+const A=[
+ ["I'm in grade 9. {0} I was in grade 8, and {1} I was in grade 7.",
+  [[R('last year'),'last','Last year'],[R('(two|2) years ago'),'ago','two years ago']]],
+ ["I was born {0}. I was born {1} {2}.",
+  [[R(`in (\\d{4}|${M}( \\d{4})?)`),'in','in 2011'],[R(`on (${M} ${ORD}|${ORD} ${M}|the ${ORD} of ${M}|${D})(,? \\d{4})?`),'on','on March 5th'],[R(`${NUM} years ago`),'ago','fourteen years ago']]],
+ ["What time did you go to bed {0}? What time did you wake up {1}?",
+  [[R('last night'),'last','last night'],[R('this morning'),'this','this morning']]],
+ ["I went to bed {0} last night, and I woke up {1} this morning.",
+  [[R(TIME),'at','at 10:30 p.m.'],[R(TIME),'at','at 6:30 a.m.']]],
+ ["We finished Unit 1 of <i>SuperGoal 3</i> {0}.",
+  [[R(`${NUM} (days?|weeks?|months?)( and ${NUM} (days?|weeks?))? ago`),'ago','two weeks ago']]],
+ ["I started learning English {0}.",
+  [[R('when (i|we) (was|were) .{2,}'),'when','when I was six years old']]],
+ ["I didn't use to read and write {0}.",
+  [[R('when (i|we) (was|were) .{2,}'),'when','when I was a baby']]],
+ ["I started going to this high school {0}.",
+  [[R(`in (\\d{4}|${M}( \\d{4})?|grade \\w+)`),'in','in 2024']]],
+ ["King Abdulaziz Ibn Saud founded the Kingdom of Saudi Arabia {0}.",
+  [[R('in the (20th|twentieth) century'),'century','in the 20th century']]],
+ ["The Kingdom of Saudi Arabia was founded {0} {1}.",
+  [[R('in 1932'),'in','in 1932'],[R(`on (september 23(rd)?|23(rd)? september|the 23(rd)? of september)(,? 1932)?`),'on','on September 23rd']]]
+];
+const aItems=document.getElementById('aItems');const aInputs=[];
+A.forEach(([html,slots],i)=>{
+  const d=document.createElement('div');d.className='a-item';
+  d.innerHTML=`<b>${i+1}.</b> `+html.replace(/\{(\d)\}/g,(_,n)=>`<input data-i="${aInputs.length+ +n}" autocomplete="off" autocapitalize="off" spellcheck="false"> <span class="cue">(${slots[n][1]})</span>`)+
+   `<div class="model">💡 ${html.replace(/\{(\d)\}/g,(_,n)=>`<b style="color:var(--gold)">${slots[n][2]}</b>`)}</div>`;
+  slots.forEach(s=>aInputs.push(s));aItems.appendChild(d);
+});
+max.A=aInputs.length;
+const aEls=[...aItems.querySelectorAll('input')];
+aEls.forEach(e=>e.oninput=()=>e.classList.remove('right','wrong'));
+document.getElementById('aCheck').onclick=()=>{
+  let c=0;aEls.forEach((e,i)=>{const ok=aInputs[i][0].test(norm(e.value));e.classList.toggle('right',ok);e.classList.toggle('wrong',!ok);if(ok)c++});
+  score.A=c;updateScore();
+  const fb=document.getElementById('aFb');fb.className='fb '+(c===aEls.length?'good':'badc');
+  fb.innerHTML=c===aEls.length?'🎉 All correct!':`${c} / ${aEls.length} correct. Check the red boxes — use the word in (parentheses). <span class="ar">راجع المربعات الحمراء واستخدم الكلمة بين القوسين.</span>`;
+};
+document.getElementById('aModel').onclick=e=>{const on=document.getElementById('exA').classList.toggle('show-models');e.target.textContent=on?'🙈 Hide model answers':'💡 Model answers'};
+
+/* ---------- B word order ---------- */
+const B=[
+ [['hosted','in','*Beijing','the','Summer','Olympics','2008'],['Beijing hosted the Summer Olympics in 2008.'],'استضافت بكين الألعاب الأولمبية الصيفية عام ٢٠٠٨.'],
+ [['took','before','math','a','test','*We','day','yesterday','the'],['We took a math test the day before yesterday.'],'أدّينا اختبار رياضيات أول أمس.'],
+ [['graduated','*Fahd','when','was','he','23','university','from'],['Fahd graduated from university when he was 23.'],'تخرّج فهد من الجامعة عندما كان عمره ٢٣.'],
+ [['he','to','morning','was','sick','*Ali','so',"didn't",'class','this','go'],["Ali was sick this morning, so he didn't go to class.","Ali was sick, so he didn't go to class this morning."],'كان علي مريضًا هذا الصباح، لذلك لم يذهب إلى الحصة.'],
+ [['ago','ten','*Mona','a','started','years','as','working','teacher'],['Mona started working as a teacher ten years ago.'],'بدأت منى العمل معلمةً قبل عشر سنوات.'],
+ [['century',"didn't",'*People','cars','to','the','in','use','drive','19th'],["People didn't use to drive cars in the 19th century."],'لم يكن الناس يقودون السيارات في القرن التاسع عشر.'],
+ [['parents','me','cell','phone','*My','week','bought','a','last'],['My parents bought me a cell phone last week.'],'اشترى لي والداي هاتفًا محمولًا الأسبوع الماضي.'],
+ [['friends','new','I','when','started','high','school','made','*I'],['I made new friends when I started high school.'],'كوّنت أصدقاء جددًا عندما بدأت المرحلة الثانوية.']
+];
+max.B=B.length;
+const exB=document.getElementById('exB');
+B.forEach(([words,answers,ar],i)=>{
+  const d=document.createElement('div');d.className='b-item';
+  d.innerHTML=`<b>${i+1}.</b><div class="b-line"></div><div class="tiles"></div><button class="btn sm">✔ Check</button> <button class="btn ghost sm">↺</button><div class="b-ans"></div>`;
+  const line=d.querySelector('.b-line'),tiles=d.querySelector('.tiles'),[chk,rst]=d.querySelectorAll('button'),ans=d.querySelector('.b-ans');
+  let done=false;
+  function mk(w){const t=document.createElement('button');const bold=w[0]==='*';t.className='tile'+(bold?' bold':'');t.textContent=bold?w.slice(1):w;
+    t.onclick=()=>{if(done)return;line.classList.remove('wrong');(t.parentNode===tiles?line:tiles).appendChild(t)};return t}
+  function reset(){if(done)return;line.innerHTML='';tiles.innerHTML='';line.classList.remove('wrong');ans.textContent='';shuffle(words).forEach(w=>tiles.appendChild(mk(w)))}
+  chk.onclick=()=>{
+    if(done)return;
+    if(tiles.children.length){ans.innerHTML='👆 Use all the words. <span class="ar">استخدم كل الكلمات.</span>';return}
+    const got=norm([...line.children].map(t=>t.textContent).join(' '));
+    if(answers.some(a=>norm(a)===got)){done=true;score.B++;line.classList.add('right');
+      ans.innerHTML=`✅ <b>${answers.find(a=>norm(a)===got)}</b><br><span class="ar">${ar}</span>`;chk.disabled=rst.disabled=true;updateScore()}
+    else{line.classList.remove('wrong');void line.offsetWidth;line.classList.add('wrong','shake');ans.innerHTML='❌ Not quite — move some words and try again. <span class="ar">ليست صحيحة بعد — غيّر ترتيب بعض الكلمات.</span>'}
+  };
+  rst.onclick=reset;reset();exB.appendChild(d);
+});
+
+/* ---------- C partner ---------- */
+mcq(document.getElementById('exC'),[
+ ['A: What did you do last weekend?','I visited my grandparents last weekend.',['I visited my grandparents last weekend.','I visited my grandparents on last weekend.','I visited my grandparents the last weekend.'],'No preposition and no “the” before last','لا حرف جر ولا the قبل last'],
+ ['A: What time did you wake up this morning?','I woke up at 6:30 this morning.',['I woke up at 6:30 this morning.','I woke up in 6:30 this morning.','I woke up at 6:30 in this morning.'],'at + clock time; no preposition with this','at مع الساعة، ولا حرف جر مع this'],
+ ['A: When did you start school?','I started school six years ago.',['I started school six years ago.','I started school before six years.','I started school ago six years.'],'amount of time + ago','المدة + ago'],
+ ['A: What did you do last night?','I did my homework last night.',['I did my homework last night.','I did my homework yesterday night.','I did my homework in last night.'],'We say last night, not yesterday night','نقول last night وليس yesterday night'],
+ ['A: When were you born?','I was born in 2011.',['I was born in 2011.','I was born on 2011.','I was born at 2011.'],'year → in','السنة مع in'],
+ ['A: Where were you yesterday afternoon?','I was at the mall yesterday afternoon.',['I was at the mall yesterday afternoon.','I was at the mall last afternoon.','I was at the mall in yesterday afternoon.'],'yesterday + afternoon; no preposition','yesterday مع أجزاء اليوم وبدون حرف جر'],
+ ['A: What did you use to do when you were a child?','When I was a child, I used to play football.',['When I was a child, I used to play football.','When I was a child I use to play football.','I was a child when, I used to play football.'],'When first → comma; used to + verb','When في البداية ← فاصلة، و used to + فعل'],
+ ['A: When was the Kingdom of Saudi Arabia founded?','It was founded on September 23rd, 1932.',['It was founded on September 23rd, 1932.','It was founded in September 23rd, 1932.','It was founded at September 23rd, 1932.'],'full date → on','التاريخ الكامل مع on']
+].map(([q,a,o,w,wa])=>[`${q}<br><span style="color:var(--muted)">B:</span>`,a,o,w,wa]),'C',true);
+
+const PQ=[
+ ['What did you do last weekend?','I visited my grandparents last weekend.'],
+ ['What time did you wake up this morning?','I woke up at 6:30 this morning.'],
+ ['What did you eat for dinner last night?','I ate chicken and rice last night.'],
+ ['Where did you go yesterday afternoon?','I went to the park yesterday afternoon.'],
+ ['When did you start learning English?','I started learning English when I was six.'],
+ ['What did you do last summer?','I travelled to Abha last summer.'],
+ ['When did you last see your cousins?','I saw them two weeks ago.'],
+ ['What did you use to do when you were a child?','When I was a child, I used to watch cartoons.'],
+ ['What time did you go to bed last night?','I went to bed at 10:30 last night.'],
+ ['When did you get your first phone?','I got my first phone three years ago.']
+];
+let pq=shuffle(PQ),pi=0;
+function pShow(){document.getElementById('pQ').textContent='A: '+pq[pi][0];document.getElementById('pA').textContent=''}
+document.getElementById('pShow').onclick=()=>document.getElementById('pA').textContent='B: '+pq[pi][1];
+document.getElementById('pNext').onclick=()=>{pi=(pi+1)%pq.length;pShow()};
+pShow();
+
+updateScore();
+</script>
+</body>
+</html>
