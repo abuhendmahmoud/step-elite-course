@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Physical &amp; Chemical Changes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --navy:#0a1628; --navy-2:#11213b; --navy-3:#182c4d; --line:#26406a;
+  --gold:#d4af37; --gold-soft:#e8cf7a; --ink:#eef2f8; --muted:#9fb0c9;
+  --good:#3ecf8e; --good-bg:rgba(62,207,142,.12);
+  --bad:#ff6b6b; --bad-bg:rgba(255,107,107,.12);
+  --phys:#5fb3ff; --chem:#ff9f5a;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--navy);color:var(--ink);font:16px/1.65 Cairo,"Segoe UI",Tahoma,system-ui,sans-serif}
+h1,h2,h3{font-family:"Playfair Display",Georgia,serif;text-wrap:balance;margin:0}
+.ar{font-family:Cairo,Tahoma,sans-serif;direction:rtl;text-align:right}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+
+/* progress */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:rgba(10,22,40,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar-title{font-weight:700;color:var(--gold);font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.track{flex:1;min-width:120px;height:8px;background:var(--navy-3);border-radius:99px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .4s ease}
+.score{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;white-space:nowrap}
+.score b{color:var(--gold)}
+
+/* header */
+header{padding-block:40px 24px;display:grid;gap:10px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+header h1{font-size:clamp(30px,6vw,46px);line-height:1.15}
+header h1 span{color:var(--gold)}
+header p{margin:0;color:var(--muted);max-width:62ch}
+
+/* recap */
+.recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-block:8px 36px}
+.rc{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:6px;align-content:start}
+.rc h3{font-size:19px}
+.rc.p h3{color:var(--phys)} .rc.c h3{color:var(--chem)} .rc.m h3{color:var(--gold)}
+.rc p{margin:0;font-size:15px}
+.rc .ar{color:var(--muted);font-size:14px}
+.rc code{font-family:inherit;background:var(--navy-3);padding:1px 7px;border-radius:6px;font-size:14px}
+
+.part{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px;margin-block:12px 18px}
+.part h2{font-size:26px}
+.part span{color:var(--muted);font-size:14px}
+
+/* questions */
+.qs{display:grid;gap:16px}
+.q{background:var(--navy-2);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px}
+.q-head{display:flex;gap:12px;align-items:flex-start}
+.num{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--navy-3);color:var(--gold);border:1px solid var(--gold);font-size:14px}
+.q-text{font-weight:600;font-size:17px}
+.opts{display:grid;gap:8px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:flex-start;min-height:44px;padding:10px 14px;border-radius:12px;background:var(--navy-3);border:1px solid transparent;transition:border-color .15s,background .15s}
+.opt:hover:not([disabled]){border-color:var(--gold)}
+.opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.opt .l{flex:none;font-weight:700;color:var(--gold);width:20px}
+.opt[disabled]{cursor:default}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.right .l{color:var(--good)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .l{color:var(--bad)}
+.opt .mark{margin-left:auto;font-weight:700}
+.opt.right .mark{color:var(--good)} .opt.wrong .mark{color:var(--bad)}
+
+.exp{border-left:3px solid var(--gold);background:rgba(212,175,55,.07);border-radius:0 12px 12px 0;padding:12px 14px;display:grid;gap:8px}
+.exp .verdict{font-weight:700}
+.exp .verdict.ok{color:var(--good)} .exp .verdict.no{color:var(--bad)}
+.exp p{margin:0}
+.exp .ar{color:#d6deea;border-top:1px dashed var(--line);padding-top:8px}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:99px;margin-right:6px}
+.tag.p{background:rgba(95,179,255,.15);color:var(--phys)}
+.tag.c{background:rgba(255,159,90,.15);color:var(--chem)}
+
+.graph{background:var(--navy-3);border-radius:12px;padding:10px;overflow-x:auto}
+.graph svg{display:block;width:100%;max-width:520px;height:auto;margin:0 auto}
+
+/* written */
+textarea{width:100%;min-height:90px;resize:vertical;background:var(--navy-3);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit}
+textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:12px;font-weight:700;background:var(--gold);color:var(--navy)}
+.btn:hover{background:var(--gold-soft)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn.ghost:hover{background:rgba(212,175,55,.1)}
+.model{display:grid;gap:10px}
+.model ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.keys span{font-size:13px;padding:2px 10px;border-radius:99px;border:1px solid var(--gold);color:var(--gold-soft)}
+
+/* result */
+.result{margin-top:28px;background:var(--navy-2);border:1px solid var(--gold);border-radius:18px;padding:22px;display:grid;gap:10px;text-align:center;justify-items:center}
+.result .big{font-family:"Playfair Display",Georgia,serif;font-size:44px;color:var(--gold);font-variant-numeric:tabular-nums;line-height:1}
+.result p{margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="bar"><div class="bar-in">
+  <span class="bar-title">G6 · Ch.1 · L.3</span>
+  <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+  <span class="score" id="score">Answered <b>0</b>/14 · Score <b>0</b></span>
+</div></div>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Grade 6 Science · Answers &amp; Explanations</div>
+    <h1>Physical <span>&amp;</span> Chemical Changes</h1>
+    <p>Choose an answer to check it. The explanation opens right away, in English and Arabic. For the written questions, write your own answer first, then compare it with the model answer.</p>
+  </header>
+
+  <section class="recap" aria-label="Quick recap">
+    <div class="rc p">
+      <h3>Physical change</h3>
+      <p>The form or state changes, but the substance stays the same.</p>
+      <p>Melting ice · cutting paper · dissolving salt</p>
+      <p class="ar">يتغير الشكل أو الحالة فقط، وتبقى المادة نفسها.</p>
+    </div>
+    <div class="rc c">
+      <h3>Chemical change</h3>
+      <p>Particles rearrange and <strong>new substances</strong> form.</p>
+      <p>Signs: gas bubbles, new colour, precipitate, heat or light, new smell</p>
+      <p class="ar">تتكوّن مواد جديدة بخصائص جديدة.</p>
+    </div>
+    <div class="rc m">
+      <h3>Conservation of matter</h3>
+      <p>Matter is not created or destroyed. In a closed system, <code>mass before = mass after</code>.</p>
+      <p class="ar">المادة لا تفنى ولا تُستحدث، بل يُعاد ترتيب الجسيمات.</p>
+    </div>
+  </section>
+
+  <div class="part"><h2>Part 1 · Science Assessment</h2><span>12 multiple-choice questions</span></div>
+  <div class="qs" id="part1"></div>
+
+  <div class="part" style="margin-top:40px"><h2>Part 2 · Lesson Check</h2><span>2 multiple-choice · 3 written</span></div>
+  <div class="qs" id="part2"></div>
+
+  <div class="result" id="result">
+    <div class="big" id="bigScore">0 / 14</div>
+    <p id="msgEn">Answer all 14 multiple-choice questions to see your result.</p>
+    <p class="ar" id="msgAr">أجب عن جميع الأسئلة الأربعة عشر لترى نتيجتك.</p>
+    <div class="actions"><button class="btn ghost" id="reset" type="button">Start again</button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<script>
+const GRAPH = `<div class="graph"><svg viewBox="0 0 460 230" role="img" aria-label="Compost temperature rises from about 20 degrees to a peak of 48 degrees on day 6, then falls to about 12 degrees by day 20">
+  <g font-family="Cairo, sans-serif" font-size="12" fill="#9fb0c9">
+    <line x1="50" y1="190" x2="440" y2="190" stroke="#26406a"/>
+    <line x1="50" y1="20" x2="50" y2="190" stroke="#26406a"/>
+    ${[0,10,20,30,40,50].map(t=>{const y=190-t*3.2;return `<line x1="50" y1="${y}" x2="440" y2="${y}" stroke="#182c4d"/><text x="42" y="${y+4}" text-anchor="end">${t}</text>`}).join('')}
+    ${[0,5,10,15,20].map(d=>{const x=50+d*19.5;return `<text x="${x}" y="207" text-anchor="middle">${d}</text>`}).join('')}
+    <text x="245" y="225" text-anchor="middle">Day</text>
+    <text x="14" y="105" text-anchor="middle" transform="rotate(-90 14 105)">Temp (°C)</text>
+  </g>
+  <path d="M50 126 C 80 110, 130 40, 167 36 C 210 34, 260 100, 320 130 C 360 142, 410 148, 440 150" fill="none" stroke="#ff9f5a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="167" cy="36" r="5" fill="#d4af37"/>
+  <text x="178" y="32" font-family="Cairo, sans-serif" font-size="13" font-weight="700" fill="#d4af37">48 °C peak</text>
+</svg></div>`;
+
+const P = '<span class="tag p">Physical</span>', C = '<span class="tag c">Chemical</span>';
+
+const part1 = [
+ {q:"Which statement best distinguishes a physical change from a chemical change?",
+  o:["A physical change always releases heat.","A physical change changes form or state while the substance remains the same; a chemical change forms new substances.","A chemical change can always be reversed easily.","A physical change changes atoms into different elements."],a:1,
+  en:"This is the key difference. In a physical change the substance stays the same and only its form or state changes. In a chemical change new substances form. A is wrong because heat is not always released, C is wrong because chemical changes are usually hard to reverse, and D is wrong because atoms never change into other elements in either type.",
+  ar:"الفرق الأساسي: في التغير الفيزيائي تبقى المادة نفسها ويتغير شكلها أو حالتها فقط، أما في التغير الكيميائي فتتكوّن مواد جديدة."},
+ {q:"Which example is a physical change?",
+  o:["Iron forming rust outdoors","A candle burning","Salt dissolving in water and later being recovered by evaporation","Leaves decomposing in soil"],a:2,
+  en:P+"The salt is still salt. We get it back unchanged when the water evaporates, so no new substance formed. Rusting, burning and decomposing all make new substances, so they are chemical changes.",
+  ar:"الملح يذوب ثم نسترجعه كما هو بالتبخير، إذن لم تتكوّن مادة جديدة. أما الصدأ والاحتراق والتحلل فكلها تغيرات كيميائية."},
+ {q:"Which observation is the strongest evidence that a chemical change may have occurred?",
+  o:["A solid is cut into smaller pieces","Ice changes to liquid water","A clear liquid develops a new solid precipitate","A substance is moved to a new container"],a:2,
+  en:C+"A precipitate is a new solid that appears when liquids react. It is a new substance, so it is strong evidence. Cutting and melting are physical changes, and moving something is not a change at all.",
+  ar:"الراسب مادة صلبة جديدة تظهر في السائل، وهذا دليل قوي على حدوث تغير كيميائي."},
+ {q:"In a chemical reaction, the substances present at the start are called ____, and the substances formed are called ____.",
+  o:["products; reactants","reactants; products","precipitates; solvents","particles; elements"],a:1,
+  en:"<strong>Reactants</strong> are what you start with. <strong>Products</strong> are what you end with. Reactants → Products.",
+  ar:"المواد المتفاعلة هي التي نبدأ بها، والنواتج هي المواد الجديدة التي تتكوّن في النهاية."},
+ {q:"A green leaf changes color in autumn as chlorophyll breaks down and other pigments become visible. This color change is best classified as:",
+  o:["Only a physical change because the leaf is still a leaf","A chemical change because new molecules are present or pigments break down","Neither type of change","A physical change because no atoms are involved"],a:1,
+  en:C+"Chlorophyll molecules break down into different substances. When molecules break apart and form new ones, it is a chemical change. A colour change is one of the signs.",
+  ar:"الكلوروفيل يتكسّر إلى مواد أخرى، وتكسّر الجزيئات وتكوّن جزيئات جديدة يعني تغيرًا كيميائيًا."},
+ {q:"A leaf dries and falls from a branch. Which classification and evidence are most appropriate?",
+  o:["Chemical; new rust forms","Physical; atoms are destroyed","Chemical; bubbles form","Physical; water leaves and the leaf changes position while remaining the same substance"],a:3,
+  en:P+"Water evaporates out of the leaf and the leaf moves to the ground, but it is still the same leaf material. B has the right type but the wrong reason, because atoms are never destroyed.",
+  ar:"الماء يخرج من الورقة وتتحرك إلى الأرض، لكنها ما زالت نفس المادة، إذن هو تغير فيزيائي. والذرات لا تفنى أبدًا."},
+ {q:"A student says, “The effervescent tablet did not make a chemical change.” What is the best response?",
+  o:["Correct; disappearing always proves matter was destroyed.","Correct; water can never react.","Incorrect; bubbles indicate gas formation, and particles were rearranged into new substances.","Incorrect; the tablet became a smaller physical piece only."],a:2,
+  en:C+"The fizzing bubbles are a new gas (carbon dioxide). The tablet did not disappear. Its particles rearranged into new substances.",
+  ar:"الفقاعات غاز جديد تكوّن، والقرص لم يختفِ بل أعادت جسيماته ترتيب نفسها في مواد جديدة، فالطالب مخطئ."},
+ {q:"Which investigation most directly tests whether a gas-producing reaction obeys conservation of matter?",
+  o:["React the materials in an open cup and observe color only.","Measure the temperature of an empty container.","Crush the materials and compare their sizes.","Put the reaction in a sealed container, measure total mass before and after."],a:3,
+  en:"To test conservation of matter you must measure <strong>mass</strong>, and the container must be <strong>sealed</strong> so the gas cannot escape. In an open cup the gas leaves and the mass seems to go down.",
+  ar:"لاختبار حفظ المادة نقيس الكتلة، ويجب أن يكون الوعاء مغلقًا حتى لا يهرب الغاز."},
+ {q:"Using the diagram: compost temperature rises to 48 °C and then falls. Which explanation best fits?",graph:true,
+  o:["Chemical changes by microorganisms release heat.","The compost freezes at 48 °C.","The temperature proves no chemical change occurred.","The temperature rose because atoms were created."],a:0,
+  en:C+"Microorganisms break down the leaves and food scraps. These reactions release heat, so the temperature rises. When there is less material left to break down, the temperature falls again.",
+  ar:"الكائنات الدقيقة تحلل المواد، وهذه تفاعلات كيميائية تطلق حرارة، فترتفع الحرارة ثم تنخفض عندما تقل المواد."},
+ {q:"Which combination of observations gives the strongest evidence for chemical change in a compost pile?",
+  o:["The pile is moved and becomes smaller only","The pile becomes warm, releases gases, develops an earthy smell, and original leaves become unrecognizable","The leaves are placed in a different container","The pile is weighed with the lid open once"],a:1,
+  en:C+"Several signs together are stronger evidence than one: heat, gas, a new smell, and the leaves turning into something new.",
+  ar:"كلما اجتمعت علامات أكثر (حرارة، غازات، رائحة جديدة، تغيّر شكل الأوراق) كان الدليل أقوى."},
+ {q:"A yeast-and-sugar bottle slowly inflates a balloon. Which set correctly identifies a reactant and product?",
+  o:["Reactants: yeast and sugar; product: carbon dioxide gas","Reactant: carbon dioxide; product: sugar","Reactant: balloon; product: yeast","Reactants: oxygen and balloon; product: water only"],a:0,
+  en:"Yeast breaks down sugar, so they are the reactants. The gas that fills the balloon is carbon dioxide, the product. The balloon only collects the gas and is not part of the reaction.",
+  ar:"الخميرة والسكر مواد متفاعلة، وغاز ثاني أكسيد الكربون هو الناتج الذي نفخ البالون. البالون لا يشارك في التفاعل."},
+ {q:"A sealed bottle contains vinegar and baking soda. Carbon dioxide forms but remains trapped. What should happen to total mass?",
+  o:["It should decrease because gas has no mass.","It should increase because new atoms are created.","It should remain the same because matter is rearranged within the closed system.","It should become zero when bubbles form."],a:2,
+  en:"The system is closed, so nothing enters or leaves. The atoms only rearrange, so the total mass stays the same. Gas does have mass.",
+  ar:"النظام مغلق، والذرات فقط تعيد ترتيب نفسها، إذن الكتلة الكلية تبقى ثابتة. والغاز له كتلة."}
+];
+
+const part2mcq = [
+ {q:"Which of the following is best described as a chemical change?",
+  o:["Cutting a sheet of paper into smaller pieces.","A puddle of water freezing on a cold morning.","A piece of fruit slowly rotting on a forest floor.","A sugar cube dissolving in a cup of warm tea."],a:2,
+  en:C+"Rotting fruit forms new substances: a new colour, a bad smell and gases. Cutting, freezing and dissolving are all physical changes.",
+  ar:"تعفّن الفاكهة ينتج مواد جديدة (لون ورائحة وغازات)، أما القص والتجمد والذوبان فتغيرات فيزيائية."},
+ {q:"The principle of conservation of matter states that:",
+  o:["Matter can be created in a chemical change but not in a physical change.","The total amount of matter does not change during a physical or chemical change.","Matter is always lost during a chemical change as gases escape.","Matter changes from one element into another during a chemical change."],a:1,
+  en:"Matter is never created or destroyed in <strong>any</strong> change. If gas escapes from an open container, the matter still exists. It has only moved out of the container.",
+  ar:"قانون حفظ المادة: المادة لا تفنى ولا تُستحدث في أي تغير، فيزيائيًا كان أو كيميائيًا."}
+];
+
+const written = [
+ {q:"Describe two signs of a chemical change. For each sign, explain why that sign suggests new substances have formed, rather than simply a change in the form of the original substance.",
+  model:[
+   "<strong>Gas bubbles (without heating):</strong> the bubbles are a new gas that was not there before. It forms when the particles of the starting substances rearrange, so a new substance has formed. It is not just the same substance changing state.",
+   "<strong>A colour change:</strong> for example, iron turning reddish-brown when it rusts. The new colour belongs to a new substance (rust) with different properties. It is not the same iron in a different shape."],
+  extra:"Other correct signs: a precipitate forms, heat or light is given off, a new smell is produced.",
+  keys:["gas bubbles","colour change","new substance","particles rearrange"],
+  ar:"علامتان: (1) تصاعد فقاعات غاز جديد لم يكن موجودًا. (2) تغيّر اللون، لأن اللون الجديد يعود لمادة جديدة بخصائص مختلفة. ومن العلامات أيضًا: تكوّن راسب، انطلاق حرارة أو ضوء، رائحة جديدة."},
+ {q:"The yeast-and-sugar bottle slowly inflated a balloon over thirty minutes. Identify the kind of change, the reactants and at least one product, and use conservation of matter to explain where the gas came from.",
+  model:[
+   "<strong>Kind of change:</strong> a chemical change.",
+   "<strong>Reactants:</strong> yeast and sugar (in water).",
+   "<strong>Product:</strong> carbon dioxide gas, which inflated the balloon.",
+   "<strong>Where the gas came from:</strong> matter cannot be created or destroyed. The atoms in the carbon dioxide were already in the sugar. The yeast broke the sugar down, and its atoms rearranged into new substances, including carbon dioxide. The gas came from the reactants, not from nothing."],
+  keys:["chemical change","yeast + sugar","carbon dioxide","atoms rearranged"],
+  ar:"تغير كيميائي. المتفاعلات: الخميرة والسكر. الناتج: غاز ثاني أكسيد الكربون. الغاز جاء من ذرات السكر نفسها بعد أن أعادت ترتيب نفسها، لأن المادة لا تُستحدث من العدم."},
+ {q:"Return to the Curiosity Corner phenomenon, the colour of falling leaves. Identify one change that is a physical change and one that is a chemical change. Explain how you decided for each.",
+  model:[
+   P+"The leaf dries and falls from the branch. Water leaves and the leaf changes position and shape, but it is still the same leaf material, so no new substance forms.",
+   C+"The leaf changes from green to yellow, orange or red. Chlorophyll breaks down into different substances and other pigments show. Rotting in the soil later is also chemical.",
+   "<strong>How I decided:</strong> if only the form, state or position changes, it is physical. If new substances form (new colour, gas, heat or smell), it is chemical."],
+  keys:["drying = physical","colour change = chemical","chlorophyll breaks down"],
+  ar:"فيزيائي: جفاف الورقة وسقوطها، فهي ما زالت نفس المادة. كيميائي: تغيّر لونها من الأخضر، لأن الكلوروفيل يتكسّر إلى مواد جديدة."}
+];
+
+const all = [...part1, ...part2mcq];
+const state = {answered:0, correct:0};
+const L = ["A","B","C","D"];
+
+function mcqCard(item, label, idx){
+  const el = document.createElement('article');
+  el.className = 'q';
+  el.innerHTML = `<div class="q-head"><span class="num">${label}</span><div class="q-text">${item.q}</div></div>
+    ${item.graph ? GRAPH : ''}
+    <div class="opts">${item.o.map((t,i)=>`<button type="button" class="opt" id="q${idx}o${i}" data-i="${i}"><span class="l">${L[i]}</span><span>${t}</span><span class="mark"></span></button>`).join('')}</div>
+    <div class="exp" hidden></div>`;
+  const btns = el.querySelectorAll('.opt'), exp = el.querySelector('.exp');
+  btns.forEach(b=>b.addEventListener('click',()=>{
+    const pick = +b.dataset.i, ok = pick === item.a;
+    btns.forEach(x=>x.disabled = true);
+    btns[item.a].classList.add('right'); btns[item.a].querySelector('.mark').textContent = '✓';
+    if(!ok){ b.classList.add('wrong'); b.querySelector('.mark').textContent = '✗'; }
+    exp.innerHTML = `<div class="verdict ${ok?'ok':'no'}">${ok ? 'Correct! · إجابة صحيحة' : 'Not quite. The answer is '+L[item.a]+' · الإجابة الصحيحة '+L[item.a]}</div>
+      <p>${item.en}</p><p class="ar">${item.ar}</p>`;
+    exp.hidden = false;
+    state.answered++; if(ok) state.correct++;
+    update();
+  }));
+  return el;
+}
+
+function writtenCard(item, label, idx){
+  const el = document.createElement('article');
+  el.className = 'q';
+  el.innerHTML = `<div class="q-head"><span class="num">${label}</span><div class="q-text">${item.q}</div></div>
+    <label class="ar" for="w${idx}" style="color:var(--muted);font-size:14px">اكتب إجابتك أولًا، ثم قارنها بالإجابة النموذجية · Write your answer first</label>
+    <textarea id="w${idx}" placeholder="Type your answer here..."></textarea>
+    <div><button type="button" class="btn">Show model answer</button></div>
+    <div class="exp model" hidden>
+      <div class="verdict ok">Model answer · الإجابة النموذجية</div>
+      <ul>${item.model.map(m=>`<li>${m}</li>`).join('')}</ul>
+      ${item.extra ? `<p style="color:var(--muted)">${item.extra}</p>` : ''}
+      <div class="keys">${item.keys.map(k=>`<span>${k}</span>`).join('')}</div>
+      <p class="ar">${item.ar}</p>
+    </div>`;
+  const btn = el.querySelector('.btn'), box = el.querySelector('.model');
+  btn.addEventListener('click',()=>{
+    box.hidden = !box.hidden;
+    btn.textContent = box.hidden ? 'Show model answer' : 'Hide model answer';
+  });
+  return el;
+}
+
+function update(){
+  document.getElementById('fill').style.width = (state.answered/all.length*100)+'%';
+  document.getElementById('score').innerHTML = `Answered <b>${state.answered}</b>/${all.length} · Score <b>${state.correct}</b>`;
+  document.getElementById('bigScore').textContent = `${state.correct} / ${all.length}`;
+  if(state.answered === all.length){
+    const pct = state.correct/all.length;
+    const [en, ar] = pct === 1 ? ["Perfect score! You really understand physical and chemical changes.","ممتاز! درجة كاملة، أنت فاهم الدرس تمامًا."]
+      : pct >= .75 ? ["Great work! Read the explanations for the ones you missed.","عمل رائع! راجع شرح الأسئلة التي أخطأت فيها."]
+      : pct >= .5 ? ["Good effort. Review the recap at the top, then try again.","مجهود جيد، راجع الملخص في الأعلى ثم حاول مرة أخرى."]
+      : ["Keep going! Read each explanation carefully and try again.","لا بأس، اقرأ الشرح بتمعّن وحاول مرة أخرى."];
+    document.getElementById('msgEn').textContent = en;
+    document.getElementById('msgAr').textContent = ar;
+    if(pct === 1 && window.confetti && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      confetti({particleCount:160, spread:80, origin:{y:.7}, colors:['#d4af37','#e8cf7a','#ffffff','#5fb3ff']});
+    }
+  }
+}
+
+function build(){
+  const p1 = document.getElementById('part1'), p2 = document.getElementById('part2');
+  p1.innerHTML = ''; p2.innerHTML = '';
+  part1.forEach((it,i)=>p1.appendChild(mcqCard(it, i+1, i)));
+  part2mcq.forEach((it,i)=>p2.appendChild(mcqCard(it, i+1, 12+i)));
+  written.forEach((it,i)=>p2.appendChild(writtenCard(it, i+3, i)));
+  state.answered = 0; state.correct = 0;
+  document.getElementById('msgEn').textContent = 'Answer all 14 multiple-choice questions to see your result.';
+  document.getElementById('msgAr').textContent = 'أجب عن جميع الأسئلة الأربعة عشر لترى نتيجتك.';
+  update();
+}
+document.getElementById('reset').addEventListener('click',()=>{ build(); window.scrollTo({top:0,behavior:'smooth'}); });
+build();
+</script>
+
+</body>
+</html>
