@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Big Changes Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+/* floating bubbles */
+.bg span{position:fixed;border-radius:50%;opacity:.07;z-index:-1;animation:float 14s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-40px)}}
+
+/* top */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+
+/* start */
+.start{text-align:center;padding:40px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2.3rem,9vw,3.6rem);color:var(--gold);line-height:1.1;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:22px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.35rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.parts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.part{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-weight:700}
+.tips{margin-top:22px;background:var(--navy2);border-radius:16px;padding:14px;border:1px dashed var(--line)}
+
+/* card */
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.ins-ar{font-size:1rem}
+.q{font-size:clamp(1.3rem,5vw,1.7rem);font-weight:800;margin:18px 0 6px;line-height:1.5;text-align:center}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.err{color:var(--bad);text-decoration:underline wavy var(--bad);text-underline-offset:6px}
+.pic{font-size:clamp(3rem,14vw,4.5rem);text-align:center;margin:10px 0;letter-spacing:4px}
+.tools{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tool{min-height:42px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opts.one{grid-template-columns:1fr}
+@media(max-width:420px){.opts.long{grid-template-columns:1fr}}
+.opt{min-height:64px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.2rem;padding:8px 12px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}.msg.bad{color:var(--bad)}
+.msg .ar{font-size:.95rem}
+.next{margin-top:10px}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:58px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.05rem;padding:6px 8px}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2)}
+.m.done{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1);cursor:default}
+.m .tagn{display:inline-block;min-width:24px;height:24px;border-radius:50%;background:var(--ok);color:var(--navy);font-size:.8rem;margin-inline-end:4px;line-height:24px}
+
+/* section splash */
+.splash{text-align:center;padding:30px 10px}
+.splash .e{font-size:5rem}
+.splash h2{font-family:'Playfair Display';font-size:2.4rem;color:var(--gold)}
+
+/* end */
+.end{text-align:center}
+.end .score{font-family:'Playfair Display';font-size:4rem;color:var(--gold);line-height:1}
+.rate{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.review{text-align:start;margin-top:18px}
+.review li{list-style:none;background:var(--navy3);border-radius:12px;padding:8px 12px;margin-top:8px;border-inline-start:4px solid var(--bad)}
+.review li b{color:var(--ok)}
+.row-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row-btns .big-btn{margin:16px 0 0;font-size:1.1rem;padding:10px 24px}
+.big-btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+</style>
+</head>
+<body>
+<div class="bg">
+  <span style="width:260px;height:260px;background:var(--gold);top:8%;left:-80px"></span>
+  <span style="width:200px;height:200px;background:var(--blue);bottom:10%;right:-60px;animation-delay:-4s"></span>
+  <span style="width:140px;height:140px;background:var(--pink);top:50%;left:60%;animation-delay:-8s"></span>
+</div>
+
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars" id="stars">⭐ 0</span>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ================== QUESTIONS ================== */
+const G='Grammar',V='Vocabulary';
+const QS=[
+ {splash:G,e:'🧠',ar:'القواعد'},
+ // A. choose the correct form
+ ...[
+  ['Ali ___ early every morning.','wakes up',['wake up','wakes up','woken up','waking up'],'Ali = he → verb + s','علي = هو، و every morning تدل على عادة ← نضيف s'],
+  ['They ___ football every week.','play',['play','plays','playing','played'],'They → no s','مع They لا نضيف s للفعل'],
+  ["He doesn't ___ his teeth.",'brush',['brush','brushes','brushed','brushing'],"doesn't + base verb",'بعد doesn\'t نستخدم الفعل بدون إضافات'],
+  ['It is ___ right now.','raining',['rain','rains','rained','raining'],'is + ing (right now)','right now = الآن ← is + ing'],
+  ['I was ___ English when I lived in London.','learning',['learn','learns','learned','learning'],'was + ing','بعد was نضيف ing للفعل'],
+  ['She ___ her house yesterday.','cleaned',['clean','cleans','cleaned','cleaning'],'yesterday → past (-ed)','yesterday = أمس ← الفعل في الماضي'],
+  ['We ___ a nice movie last night.','saw',['see','saw','sees','seeing'],'last night → past: see → saw','last night ← ماضي الفعل see هو saw'],
+  ['They have ___ tennis three times.','played',['play','played','plays','playing'],'have + past participle','بعد have نستخدم التصريف الثالث: played'],
+  ['He has ___ for one hour.','studied',['study','studied','studying','studies'],'has + past participle','بعد has نستخدم التصريف الثالث: studied']
+ ].map(([q,a,o,h,hAr])=>({t:'mcq',sec:G,ins:'Choose the correct word.',insAr:'اختر الكلمة الصحيحة.',q,a,o,h,hAr})),
+ // B. correct the errors
+ ...[
+  ['She [pray] five times a day.','prays',['prays','praying','prayed'],'She + every day → s','مع She في المضارع نضيف s'],
+  ['I [visit] Jeddah last year.','visited',['visited','visits','visiting'],'last year → past','last year = السنة الماضية ← ماضي'],
+  ['[Do] he work yesterday?','Did',['Did','Does','Is'],'yesterday → Did','السؤال عن الماضي يبدأ بـ Did'],
+  ["She [weren't] sleeping.","wasn't",["wasn't","isn't","don't"],"She → wasn't",'مع She نستخدم wasn\'t وليس weren\'t'],
+  ['Ali was walking when he [see] Ahmed.','saw',['saw','sees','seeing'],'past: see → saw','الجملة في الماضي ← see تصبح saw']
+ ].map(([q,a,o,h,hAr])=>({t:'mcq',sec:G,fix:true,ins:'The red word is wrong. Choose the correct word.',insAr:'الكلمة الحمراء خطأ. اختر التصحيح.',q,a,o,h,hAr})),
+ // C. complete
+ {t:'mcq',sec:G,ins:'Complete. (present perfect)',insAr:'أكمل بالمضارع التام: have + التصريف الثالث',q:'I ___ this movie three times. (see)',a:'have seen',o:['have seen','have saw','saw','am seeing'],h:'have + seen',hAr:'have + التصريف الثالث (see → seen)'},
+ {t:'mcq',sec:G,ins:'Choose: last or ago?',insAr:'اختر: last أو ago؟',q:'I visited my grandmother two days ___.',a:'ago',o:['ago','last'],h:'number + ago',hAr:'رقم + ago (قبل يومين = two days ago)'},
+ {t:'mcq',sec:G,ins:'Choose: last or ago?',insAr:'اختر: last أو ago؟',q:'She visited her friend ___ night.',a:'last',o:['ago','last'],h:'last night',hAr:'last night = الليلة الماضية'},
+ // D. as shown
+ {t:'mcq',sec:G,ins:'Make it negative.',insAr:'حوّل الجملة إلى النفي.',pre:'He drinks milk every morning.',q:'👉 ___',a:"He doesn't drink milk every morning.",o:["He doesn't drink milk every morning.","He doesn't drinks milk every morning.","He don't drink milk every morning."],h:"doesn't + drink (no s)",hAr:'بعد doesn\'t نحذف s من الفعل',long:true},
+ {t:'mcq',sec:G,ins:'Join using "when".',insAr:'اربط الجملتين باستخدام when.',pre:'I walk home. / It starts to rain.',q:'👉 ___',a:'I was walking home when it started to rain.',o:['I was walking home when it started to rain.','I was walk home when it start to rain.','When I walking home it started rain.'],h:'was + ing … when + past',hAr:'was + ing ثم when + فعل ماضي',long:true},
+ {t:'mcq',sec:G,ins:'Give a negative short answer.',insAr:'أجب بإجابة قصيرة منفية.',pre:'Were people using computers in 1900?',q:'👉 ___',a:"No, they weren't.",o:["No, they weren't.","No, they didn't.","No, they aren't."],h:"Were → weren't",hAr:'السؤال بـ Were ← الإجابة weren\'t'},
+
+ {splash:V,e:'📚',ar:'المفردات'},
+ // odd one out
+ ...[
+  [['E-mail','Google','traffic','online'],'traffic','E-mail, Google, online = internet 💻','ثلاث كلمات عن الإنترنت، و traffic (زحمة سير) ليست منها'],
+  [['vibrant','lazy','ambitious','thriving'],'lazy','lazy 😴 is a bad word','ثلاث صفات إيجابية، و lazy (كسول) سلبية'],
+  [['pollution','poverty','traffic','hub'],'hub','hub = center','ثلاث مشكلات، و hub (مركز) ليست مشكلة']
+ ].map(([o,a,h,hAr])=>({t:'mcq',sec:V,ins:'Which word is different? (odd one out)',insAr:'أي كلمة مختلفة عن الباقي؟',q:'🔍 Find the odd word!',a,o,h,hAr,noShuffle:true})),
+ // fill
+ ...[
+  ['Hotter summers are an effect of ___.','global warming','🌡️🌍','global warming = الاحتباس الحراري'],
+  ['Corona virus is a ___ that started in China.','disease','🦠😷','disease = مرض'],
+  ['___ in Riyadh is a big problem because there are so many cars.','Traffic','🚗🚗🚗','traffic = زحمة السير']
+ ].map(([q,a,h,hAr])=>({t:'mcq',sec:V,ins:'Choose the correct word.',insAr:'اختر الكلمة المناسبة.',q,a,o:['Traffic','economy','global warming','disease'].map(x=>a==='Traffic'?x:x.toLowerCase()),h,hAr})),
+ // classify
+ ...[
+  ['pollution','Global Issue','🏭💨','pollution = التلوث ← مشكلة عالمية'],
+  ['floods','Natural Disaster','🌊🏠','floods = فيضانات ← كارثة طبيعية'],
+  ['diseases','Global Issue','🦠😷','diseases = أمراض ← مشكلة عالمية'],
+  ['global warming','Global Issue','🌍🔥','global warming = الاحتباس الحراري ← مشكلة عالمية'],
+  ['earthquakes','Natural Disaster','🏚️💥','earthquakes = زلازل ← كارثة طبيعية']
+ ].map(([w,a,pic,hAr])=>({t:'mcq',sec:V,ins:'Global issue or natural disaster?',insAr:'مشكلة عالمية أم كارثة طبيعية؟',pic,q:w,a,o:['Global Issue','Natural Disaster'],h:a==='Global Issue'?'Global issue 🌍':'Natural disaster 🌪️',hAr,noShuffle:true})),
+ // match
+ {t:'match',sec:V,ins:'Match the word with its meaning.',insAr:'صِل الكلمة بمعناها. اضغط على كلمة ثم على معناها.',pairs:[['hub','center'],['establish','set up / start'],['transforming','changing completely'],['vibrant','active & strong']],
+  ar:{hub:'مركز',establish:'يؤسس',transforming:'يغيّر كليًّا',vibrant:'نابض بالحياة'}},
+ {t:'match',sec:V,ins:'Match the word with its opposite.',insAr:'صِل الكلمة بعكسها.',pairs:[['poverty','wealth'],['security','danger'],['host','guest'],['transparent','unclear']],
+  ar:{poverty:'فقر ↔ ثروة',security:'أمان ↔ خطر',host:'مضيف ↔ ضيف',transparent:'واضح ↔ غير واضح'}},
+ // pictures
+ ...[
+  ['🧑‍💼❌💼 🧍🧍🧍','unemployment',['unemployment','host'],'unemployment = البطالة (no job)'],
+  ['🚗🚙🚕🚌🚗','traffic',['disaster','traffic'],'traffic = زحمة السير'],
+  ['🌪️🏠','tornado',['flood','tornado'],'tornado = إعصار'],
+  ['💰📈🏦','economy',['security','economy'],'economy = الاقتصاد'],
+  ['🌍🌡️🔥','global warming',['global warming','disease'],'global warming = الاحتباس الحراري']
+ ].map(([pic,a,o,hAr])=>({t:'mcq',sec:V,ins:'Look at the picture. Choose the correct word.',insAr:'انظر إلى الصورة واختر الكلمة الصحيحة.',pic,q:'',a,o,h:'Look at the picture 👀',hAr,noShuffle:true}))
+];
+
+/* ================== ENGINE ================== */
+const app=document.getElementById('app');
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const PRAISE=[['Great job','أحسنت!'],['Excellent','ممتاز!'],['Super','رائع!'],['Well done','عمل جميل!'],['Perfect','مثالي!']];
+const TRY=['Try again! You can do it 💪','حاول مرة أخرى! أنت تستطيع 💪'];
+let items=[],idx=0,points=0,maxPts=0,mistakes=[],student='';
+
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/___|👉|🔍/g,' ').replace(/\[|\]/g,''));u.lang='en-US';u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+function countPts(list){return list.reduce((n,q)=>n+(q.splash?0:q.t==='match'?q.pairs.length:1),0)}
+
+function startScreen(){
+  document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="start">
+    <div class="mascot">🦉</div>
+    <h1>Big Changes</h1>
+    <div class="sub">Revision · Unit 3 Quiz</div>
+    <div class="ar">مراجعة الوحدة الثالثة</div>
+    <input class="name" id="nm" placeholder="Your name · اسمك" maxlength="20">
+    <button class="big-btn" id="go">Start ▶ ابدأ</button>
+    <div class="parts"><div class="part">🧠 Grammar · ${countPts(QS.slice(0,QS.findIndex(q=>q.splash===V)))}</div><div class="part">📚 Vocabulary · ${countPts(QS.slice(QS.findIndex(q=>q.splash===V)))}</div></div>
+    <div class="tips">🔊 <b>Listen</b> · 💡 <b>Hint</b> · 🔁 <b>2 tries</b>
+      <div class="ar">اضغط 🔊 لسماع الجملة، و 💡 للمساعدة بالعربي. لديك محاولتان لكل سؤال — النجمة ⭐ للإجابة الصحيحة من أول مرة.</div></div>
+  </div>`;
+  document.getElementById('go').onclick=()=>{student=document.getElementById('nm').value.trim();begin(QS)};
+}
+
+function begin(list){items=list;idx=0;points=0;mistakes=[];maxPts=countPts(list);
+  document.getElementById('top').classList.remove('hidden');render()}
+
+function updateTop(){
+  const done=items.slice(0,idx).filter(q=>!q.splash).length,total=items.filter(q=>!q.splash).length;
+  document.getElementById('qn').textContent=`${Math.min(done+1,total)} / ${total}`;
+  document.getElementById('fill').style.width=(done/total*100)+'%';
+  document.getElementById('stars').textContent=`⭐ ${points}`;
+}
+
+function render(){
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(idx>=items.length)return endScreen();
+  updateTop();
+  const q=items[idx];
+  if(q.splash){
+    app.innerHTML=`<div class="card splash"><div class="e">${q.e}</div><h2>${q.splash}</h2><div class="ar" style="font-size:1.3rem">${q.ar}</div><button class="big-btn" id="nx">Let's go! ▶ هيا</button></div>`;
+    document.getElementById('nx').onclick=()=>{idx++;render()};return;
+  }
+  (q.t==='match'?renderMatch:renderMCQ)(q);
+}
+
+function head(q){
+  const col=q.sec===G?'var(--blue)':'var(--pink)';
+  return `<span class="chip" style="background:${col}">${q.sec===G?'🧠 Grammar':'📚 Vocabulary'}</span>
+   <div class="ins">${q.ins}</div><div class="ar ins-ar">${q.insAr}</div>`;
+}
+
+function fullSentence(q,ans){
+  if(q.pre)return q.pre;
+  if(q.fix)return q.q.replace(/\[.*?\]/,ans);
+  return (q.q||'').replace('___',ans);
+}
+
+function renderMCQ(q){
+  let qHtml='';
+  if(q.fix)qHtml=esc(q.q).replace(/\[(.*?)\]/,'<span class="err" id="bl">$1</span>');
+  else if(q.q)qHtml=esc(q.q).replace('___','<span class="blank" id="bl">?</span>');
+  const opts=q.noShuffle?q.o:shuffle(q.o);
+  app.innerHTML=`<div class="card">${head(q)}
+    ${q.pre?`<div class="q" style="color:var(--muted);font-size:1.2rem;margin-bottom:0">${esc(q.pre)}</div>`:''}
+    ${q.pic?`<div class="pic">${q.pic}</div>`:''}
+    ${qHtml?`<div class="q">${qHtml}</div>`:''}
+    <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+    <div class="hint" id="hint"><b>${esc(q.h)}</b><div class="ar">${q.hAr}</div></div>
+    <div class="opts ${opts.length<=2&&!q.long?'':''} ${q.long?'one':''} ${opts.some(o=>o.length>14)?'long':''}" id="opts"></div>
+    <div class="msg" id="msg"></div><div id="nxw"></div></div>`;
+  let tries=0;
+  document.getElementById('say').onclick=()=>speak(q.pre||(q.q?q.q:q.a));
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  const box=document.getElementById('opts'),msg=document.getElementById('msg');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;box.appendChild(b);
+    b.onclick=()=>{
+      if(o===q.a){
+        box.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('right');beep(true);
+        const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.className='blank done'}
+        if(tries===0){points++;const p=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+          msg.className='msg good';msg.innerHTML=`⭐ ${p[0]}${student?', '+esc(student):''}! <div class="ar">${p[1]}</div>`;
+          if(window.confetti)confetti({particleCount:40,spread:60,origin:{y:.7},colors:['#d4af37','#3ddc97','#4fa3ff']})}
+        else{msg.className='msg good';msg.innerHTML=`✅ Good! Now you know it. <div class="ar">جيد! الآن عرفت الإجابة.</div>`}
+        speak(fullSentence(q,q.a).replace('👉 ',''));nextBtn();updateTop();
+      }else{
+        tries++;b.classList.add('wrong');b.disabled=true;beep(false);
+        const card=box.closest('.card');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+        if(tries===1){msg.className='msg try';msg.innerHTML=`${TRY[0]}<div class="ar">${TRY[1]}</div>`;document.getElementById('hint').classList.add('show')}
+        else{
+          box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent===q.a)x.classList.add('right')});
+          const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.className='blank done'}
+          msg.className='msg bad';msg.innerHTML=`The answer is: <span style="color:var(--ok)">${esc(q.a)}</span><div class="ar">لا بأس! تذكّر الإجابة الصحيحة 👆</div>`;
+          nextBtn();
+        }
+        if(!mistakes.includes(q))mistakes.push(q);
+      }
+    }});
+}
+
+function renderMatch(q){
+  const rights=shuffle(q.pairs.map(p=>p[1]));
+  app.innerHTML=`<div class="card">${head(q)}
+    <div class="tools" style="margin-top:14px"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+    <div class="hint" id="hint">${q.pairs.map(p=>`<b>${p[0]}</b> = ${q.ar[p[0]]}`).join(' · ')}</div>
+    <div class="match"><div class="col" id="L"></div><div class="col" id="R"></div></div>
+    <div class="msg" id="msg"></div><div id="nxw"></div></div>`;
+  document.getElementById('say').onclick=()=>speak(q.pairs.map(p=>p[0]).join(', '));
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  const L=document.getElementById('L'),R=document.getElementById('R'),msg=document.getElementById('msg');
+  let sel=null,done=0,n=0;const missed=new Set();
+  q.pairs.forEach(([l])=>{const b=document.createElement('button');b.className='m';b.textContent=l;b.dataset.l=l;L.appendChild(b);
+    b.onclick=()=>{if(b.classList.contains('done'))return;L.querySelectorAll('.m').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;speak(l)}});
+  rights.forEach(r=>{const b=document.createElement('button');b.className='m';b.textContent=r;R.appendChild(b);
+    b.onclick=()=>{
+      if(b.classList.contains('done'))return;
+      if(!sel){msg.className='msg try';msg.innerHTML='👈 First tap a word on the left.<div class="ar">اضغط أولًا على كلمة من اليسار.</div>';return}
+      const l=sel.dataset.l,ok=q.pairs.find(p=>p[0]===l)[1]===r;
+      if(ok){n++;sel.classList.remove('sel');[sel,b].forEach(x=>{x.classList.add('done');x.insertAdjacentHTML('afterbegin',`<span class="tagn">${n}</span>`)});
+        if(!missed.has(l))points++;done++;beep(true);msg.className='msg good';msg.innerHTML=`✅ ${l} = ${r}<div class="ar">${q.ar[l]}</div>`;sel=null;updateTop();
+        if(done===q.pairs.length){msg.innerHTML=missed.size?`✅ All matched! <div class="ar">أحسنت! أكملت التوصيل.</div>`:`⭐ Perfect${student?' '+esc(student):''}! <div class="ar">ممتاز! كلها صحيحة من أول مرة.</div>`;
+          if(!missed.size&&window.confetti)confetti({particleCount:60,spread:70,origin:{y:.7}});nextBtn()}}
+      else{missed.add(l);beep(false);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');msg.className='msg try';
+        msg.innerHTML=`${TRY[0]}<div class="ar">${TRY[1]}</div>`;document.getElementById('hint').classList.add('show');if(!mistakes.includes(q))mistakes.push(q)}
+    }});
+}
+
+function nextBtn(){
+  const w=document.getElementById('nxw');
+  w.innerHTML=`<button class="big-btn next" id="nx">${idx===items.length-1?'Finish 🏁 إنهاء':'Next ▶ التالي'}</button>`;
+  document.getElementById('nx').onclick=()=>{idx++;render()};
+}
+
+function endScreen(){
+  document.getElementById('fill').style.width='100%';document.getElementById('stars').textContent=`⭐ ${points}`;
+  const p=points/maxPts,st=p>=.9?3:p>=.6?2:p>=.3?1:0;
+  const [en,ar]=p===1?['PERFECT! You are a star!','رائع! أنت نجم!']:p>=.8?['Excellent work!','عمل ممتاز!']:p>=.6?['Very good! Keep going!','جيد جدًا! استمر!']:p>=.4?['Good try! Practise the mistakes.','محاولة جيدة! تدرّب على الأخطاء.']:['Don\'t give up! Try again 💪','لا تستسلم! حاول مرة أخرى 💪'];
+  const rev=mistakes.map(q=>q.t==='match'?`<li>${esc(q.ins)}<br>${q.pairs.map(p=>`<b>${esc(p[0])}</b> = ${esc(p[1])}`).join(' · ')}</li>`
+    :`<li>${q.pic?q.pic+' ':''}${esc(q.pre||(q.fix?q.q.replace(/\[|\]/g,''):q.q)||'')} → <b>${esc(q.a)}</b><div class="ar">${q.hAr}</div></li>`).join('');
+  app.innerHTML=`<div class="card end">
+    <div class="mascot">${p>=.6?'🏆':'🦉'}</div>
+    <div class="score">${points} / ${maxPts}</div>
+    <div class="rate">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div>
+    <div style="font-size:1.4rem;font-weight:900">${en}${student?', '+esc(student):''}</div><div class="ar" style="font-size:1.1rem">${ar}</div>
+    ${mistakes.length?`<div class="review"><b style="color:var(--gold)">📝 Remember these · تذكّر هذه الإجابات</b><ul>${rev}</ul></div>`:''}
+    <div class="row-btns">
+      ${mistakes.length?`<button class="big-btn" id="rm">🔁 Practise mistakes · تدرّب على الأخطاء</button>`:''}
+      <button class="big-btn ghost" id="ra">↺ Start again · من البداية</button>
+    </div></div>`;
+  if(p>=.8&&window.confetti){const end=Date.now()+1800,c=['#d4af37','#3ddc97','#4fa3ff','#ff8ac4'];(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:c});confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:c});if(Date.now()<end)requestAnimationFrame(f)})()}
+  const rm=document.getElementById('rm');if(rm)rm.onclick=()=>begin([...mistakes]);
+  document.getElementById('ra').onclick=()=>begin(QS);
+}
+
+startScreen();
+</script>
+</body>
+</html>
