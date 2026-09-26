@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IN · ON · AT — Prepositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold-l:#f3e1a0;
+  --text:#eef2f8;--muted:#9fb0c8;
+  --in:#4fa3ff;--on:#3ddc97;--at:#ff8a5c;--tw:#c58cff;
+  --ok:#3ddc97;--bad:#ff6b6b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--navy);color:var(--text);line-height:1.6;min-height:100vh}
+.ar{direction:rtl;font-family:'Cairo',sans-serif;color:var(--muted);font-size:.95em}
+h1,h2{font-family:'Playfair Display',serif}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 80px}
+
+/* progress */
+.bar{position:sticky;top:0;z-index:50;background:rgba(10,22,40,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 16px}
+.bar-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar-track{flex:1;height:10px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#ffe68a);transition:width .5s}
+.bar-score{font-weight:800;color:var(--gold);white-space:nowrap;font-size:.95rem}
+.nav{display:flex;gap:6px;overflow-x:auto;max-width:980px;margin:8px auto 0;scrollbar-width:none}
+.nav a{flex:none;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:700;padding:4px 12px;border:1px solid var(--line);border-radius:20px}
+.nav a:hover{color:var(--gold);border-color:var(--gold)}
+
+/* hero */
+.hero{text-align:center;padding:40px 0 20px}
+.hero h1{font-size:clamp(2.2rem,8vw,4rem);line-height:1.1}
+.hero h1 .i{color:var(--in)} .hero h1 .o{color:var(--on)} .hero h1 .a{color:var(--at)}
+.hero p{color:var(--muted);margin-top:8px}
+.tag{display:inline-block;margin-top:14px;padding:4px 14px;border:1px solid var(--gold);color:var(--gold);border-radius:20px;font-size:.8rem;font-weight:700}
+
+section{margin-top:44px}
+.sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.sec-h h2{font-size:1.6rem;color:var(--gold)}
+.sec-h .num{font-family:'Playfair Display';color:var(--navy);background:var(--gold);border-radius:8px;padding:0 10px;font-weight:800}
+.sec-sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--navy2);border:1px solid var(--line);border-radius:18px;padding:20px}
+
+button{font-family:inherit;cursor:pointer}
+.seg{display:inline-flex;background:var(--navy3);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:none;background:transparent;color:var(--muted);font-weight:800;padding:10px 18px;border-radius:9px;min-height:44px;font-size:1rem}
+.seg button.on{background:var(--gold);color:var(--navy)}
+
+/* pyramid */
+.pyr-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;margin-top:16px}
+@media(max-width:720px){.pyr-grid{grid-template-columns:1fr}}
+.pyr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.band{border:none;color:#08121f;font-weight:800;font-size:1.5rem;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;clip-path:polygon(0 0,100% 0,88% 100%,12% 100%);transition:transform .2s,filter .2s;filter:saturate(.7) brightness(.85)}
+.band small{font-size:.75rem;font-weight:700;opacity:.8}
+.band:hover{transform:scale(1.03)}
+.band.sel{filter:none;transform:scale(1.05)}
+.band.b-in{background:var(--in);width:100%}
+.band.b-on{background:var(--on);width:76%}
+.band.b-at{background:var(--at);width:52%;clip-path:polygon(0 0,100% 0,50% 100%);min-height:90px;padding-bottom:18px}
+.pyr-cap{display:flex;justify-content:space-between;width:100%;font-size:.8rem;color:var(--muted);margin-top:4px}
+.detail{min-height:260px}
+.detail .big{font-family:'Playfair Display';font-size:3rem;line-height:1}
+.detail h3{margin:6px 0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{background:var(--navy3);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-weight:700}
+.chip b{margin-inline-end:4px}
+.ex{border-inline-start:3px solid var(--gold);padding:4px 12px;margin-top:8px;background:rgba(212,175,55,.06);border-radius:0 8px 8px 0}
+
+/* scene */
+.scene-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;align-items:center}
+@media(max-width:720px){.scene-grid{grid-template-columns:1fr}}
+svg.scene{width:100%;height:auto;background:var(--navy3);border-radius:14px}
+#ball{transition:transform .7s cubic-bezier(.5,1.6,.4,1)}
+.scene-btns{display:flex;gap:10px;margin:14px 0}
+.scene-btns button{flex:1;min-height:52px;border-radius:12px;border:2px solid;font-size:1.3rem;font-weight:800;background:transparent}
+.sb-in{color:var(--in);border-color:var(--in)!important}.sb-on{color:var(--on);border-color:var(--on)!important}.sb-at{color:var(--at);border-color:var(--at)!important}
+.scene-btns button.on{color:var(--navy)}
+.sb-in.on{background:var(--in)}.sb-on.on{background:var(--on)}.sb-at.on{background:var(--at)}
+.scene-say{font-size:1.25rem;font-weight:700}
+
+/* zoom */
+.zoom-row{margin-top:18px}
+.zoom-row label{font-weight:800;color:var(--gold)}
+input[type=range]{width:100%;accent-color:var(--gold);height:36px}
+.lens{display:flex;align-items:center;gap:16px;margin-top:6px;flex-wrap:wrap}
+.scope{height:22px;border-radius:12px;transition:width .5s,background .5s;min-width:22px}
+.scope-wrap{flex:1;min-width:180px;background:var(--navy3);border-radius:12px;height:22px}
+.phrase{font-size:1.6rem;font-weight:800;min-width:230px}
+.phrase .p{padding:0 6px;border-radius:8px;color:var(--navy)}
+.zoom-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem}
+
+/* time words */
+.tw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.tw{min-height:56px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.05rem}
+.tw.on{background:var(--tw);color:var(--navy);border-color:var(--tw)}
+.tl{position:relative;height:120px;margin:22px 8px 6px}
+.tl-axis{position:absolute;left:0;right:0;top:60px;height:3px;background:var(--line)}
+.tl-axis::after{content:'';position:absolute;right:-2px;top:-6px;border:7px solid transparent;border-left-color:var(--line)}
+.tl-now{position:absolute;top:36px;left:88%;transform:translateX(-50%);text-align:center;font-size:.75rem;color:var(--gold);font-weight:800}
+.tl-now::after{content:'';display:block;width:3px;height:30px;background:var(--gold);margin:2px auto 0}
+.tl-seg{position:absolute;top:54px;height:15px;border-radius:8px;background:var(--tw);transition:all .6s;opacity:.9}
+.tl-dot{position:absolute;top:50px;width:22px;height:22px;border-radius:50%;transform:translateX(-50%);transition:all .6s;border:3px solid var(--navy)}
+.tl-lab{position:absolute;transform:translateX(-50%);font-size:.8rem;font-weight:700;white-space:nowrap;transition:all .6s}
+.tw-exp{margin-top:6px}
+
+/* mistakes */
+.mist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.m{background:var(--navy3);border-radius:12px;padding:12px 14px}
+.m .x{color:var(--bad);text-decoration:line-through}
+.m .v{color:var(--ok);font-weight:800}
+
+/* sort game */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;margin-bottom:16px}
+.word{border:2px solid var(--gold);background:transparent;color:var(--text);border-radius:22px;padding:8px 14px;font-weight:700;min-height:44px;font-size:1rem}
+.word.pick{background:var(--gold);color:var(--navy);transform:translateY(-2px)}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.bins{grid-template-columns:1fr}}
+.bin{border:2px dashed;border-radius:16px;padding:10px;min-height:130px;background:var(--navy3);text-align:start;color:var(--text)}
+.bin h4{font-family:'Playfair Display';font-size:1.6rem;text-align:center}
+.bin.b-in{border-color:var(--in)}.bin.b-in h4{color:var(--in)}
+.bin.b-on{border-color:var(--on)}.bin.b-on h4{color:var(--on)}
+.bin.b-at{border-color:var(--at)}.bin.b-at h4{color:var(--at)}
+.bin .placed{display:inline-block;margin:3px;padding:3px 10px;border-radius:14px;font-size:.9rem;font-weight:700}
+.placed.ok{background:rgba(61,220,151,.18);color:var(--ok)}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fb{margin-top:10px;font-weight:700;min-height:1.6em}
+.fb.good{color:var(--ok)}.fb.badc{color:var(--bad)}
+
+/* quiz */
+.q{padding:14px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:none}
+.q-t{font-weight:700;font-size:1.1rem;margin-bottom:8px}
+.q-t .blank{display:inline-block;min-width:60px;border-bottom:2px solid var(--gold);text-align:center;color:var(--gold)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{min-height:44px;min-width:70px;padding:6px 14px;border-radius:10px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700;font-size:1rem}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);color:var(--navy);border-color:var(--ok)}
+.opt.wrong{background:var(--bad);color:var(--navy);border-color:var(--bad)}
+.why{margin-top:6px;font-size:.9rem;color:var(--muted)}
+
+/* textbook */
+.tlx{overflow-x:auto;margin-bottom:16px}
+.tlx-in{min-width:640px;position:relative;height:120px}
+.tlx-axis{position:absolute;left:0;right:0;top:74px;height:3px;background:var(--gold)}
+.ev{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:.72rem;line-height:1.25;width:90px}
+.ev b{color:var(--gold);display:block}
+.ev::after{content:'';display:block;width:2px;height:22px;background:var(--gold);margin:4px auto 0}
+.yr{position:absolute;top:84px;transform:translateX(-50%);font-size:.75rem;color:var(--muted)}
+.passage{font-size:1.08rem;line-height:2.3}
+.passage select{font-family:inherit;font-size:1rem;font-weight:700;background:var(--navy3);color:var(--gold);border:1px solid var(--gold);border-radius:8px;padding:2px 4px;min-height:36px}
+.passage select.right{border-color:var(--ok);color:var(--ok)}
+.passage select.wrong{border-color:var(--bad);color:var(--bad)}
+.passage sup{color:var(--muted);font-size:.7rem}
+.btn{min-height:48px;padding:10px 22px;border-radius:12px;border:none;background:var(--gold);color:var(--navy);font-weight:800;font-size:1rem;margin-top:14px}
+.btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold);margin-inline-start:8px}
+.keylist{margin-top:14px;display:none}
+.keylist li{margin:4px 0 4px 20px}
+.keylist .bad{color:var(--bad)}
+
+/* final */
+.final{text-align:center;padding:30px 20px}
+.final .big{font-family:'Playfair Display';font-size:3.4rem;color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="bar-score" id="barScore">0 / 0 ⭐</div>
+  </div>
+  <nav class="nav">
+    <a href="#s1">1 · Big→Small</a><a href="#s2">2 · Place</a><a href="#s3">3 · Zoom</a>
+    <a href="#s4">4 · Time words</a><a href="#s5">5 · Mistakes</a><a href="#s6">6 · Sort</a>
+    <a href="#s7">7 · Quiz</a><a href="#s8">8 · Prince Sultan</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1><span class="i">IN</span> · <span class="o">ON</span> · <span class="a">AT</span></h1>
+  <p>Prepositions of Place &amp; Time + Time Words</p>
+  <p class="ar">حروف الجر للمكان والزمان + كلمات الوقت</p>
+  <span class="tag">Writing Corner</span>
+</header>
+
+<!-- 1 PYRAMID -->
+<section id="s1">
+  <div class="sec-h"><span class="num">1</span><h2>The Big → Small Rule</h2></div>
+  <p class="sec-sub">IN = big &amp; general · ON = medium · AT = small &amp; exact. Tap a level.<br><span class="ar">IN للأشياء الكبيرة والعامة، ON للمتوسطة، AT للنقطة الدقيقة المحددة. اضغط على أي مستوى.</span></p>
+  <div class="card">
+    <div class="seg" id="pyrMode"><button class="on" data-m="place">📍 Place</button><button data-m="time">⏰ Time</button></div>
+    <div class="pyr-grid">
+      <div>
+        <div class="pyr">
+          <button class="band b-in sel" data-p="in">IN<small>BIG</small></button>
+          <button class="band b-on" data-p="on">ON<small>MEDIUM</small></button>
+          <button class="band b-at" data-p="at">AT<small>EXACT</small></button>
+        </div>
+      </div>
+      <div class="detail" id="pyrDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 SCENE -->
+<section id="s2">
+  <div class="sec-h"><span class="num">2</span><h2>See it: Place</h2></div>
+  <p class="sec-sub">Where is the ball? Tap each preposition.<br><span class="ar">أين الكرة؟ اضغط على كل حرف جر وشاهد الفرق.</span></p>
+  <div class="card scene-grid">
+    <svg class="scene" viewBox="0 0 320 220" aria-label="A box and a ball">
+      <!-- ground -->
+      <line x1="0" y1="190" x2="320" y2="190" stroke="#26406a" stroke-width="3"/>
+      <!-- spot -->
+      <g transform="translate(250 190)">
+        <ellipse rx="26" ry="7" fill="none" stroke="#ff8a5c" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="0" y1="0" x2="0" y2="-70" stroke="#9fb0c8" stroke-width="3"/>
+        <path d="M0 -70 L34 -60 L0 -50Z" fill="#ff8a5c"/>
+        <text x="0" y="22" fill="#9fb0c8" font-size="12" text-anchor="middle" font-family="Cairo">the bus stop</text>
+      </g>
+      <!-- box back -->
+      <rect x="70" y="110" width="110" height="80" fill="#1a2f50" stroke="#4fa3ff" stroke-width="2"/>
+      <!-- ball -->
+      <g id="ball"><circle cx="0" cy="0" r="20" fill="#d4af37"/><path d="M-20 0 Q0 -12 20 0 M-8 -18 Q-2 0 -8 18" stroke="#0a1628" stroke-width="2" fill="none"/></g>
+      <!-- box front (glass) -->
+      <rect x="70" y="110" width="110" height="80" fill="rgba(79,163,255,.18)" stroke="#4fa3ff" stroke-width="3"/>
+      <text x="125" y="208" fill="#9fb0c8" font-size="12" text-anchor="middle" font-family="Cairo">the box</text>
+    </svg>
+    <div>
+      <div class="scene-btns">
+        <button class="sb-in on" data-s="in">in</button>
+        <button class="sb-on" data-s="on">on</button>
+        <button class="sb-at" data-s="at">at</button>
+      </div>
+      <div class="scene-say" id="sceneSay"></div>
+      <div class="ar" id="sceneAr"></div>
+      <div class="ex" id="sceneEx"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ZOOM -->
+<section id="s3">
+  <div class="sec-h"><span class="num">3</span><h2>Zoom In</h2></div>
+  <p class="sec-sub">Drag the slider. The more exact you get, the preposition changes.<br><span class="ar">حرّك المؤشر: كلما صار المكان أو الوقت أدق، يتغير حرف الجر.</span></p>
+  <div class="card">
+    <div class="zoom-row">
+      <label>📍 Place</label>
+      <input type="range" min="0" max="3" value="0" id="zPlace">
+      <div class="zoom-labels"><span>big / general</span><span>exact point</span></div>
+      <div class="lens"><div class="phrase" id="zPlaceTxt"></div><div class="scope-wrap"><div class="scope" id="zPlaceBar"></div></div></div>
+    </div>
+    <div class="zoom-row" style="margin-top:28px">
+      <label>⏰ Time</label>
+      <input type="range" min="0" max="3" value="0" id="zTime">
+      <div class="zoom-labels"><span>long period</span><span>exact moment</span></div>
+      <div class="lens"><div class="phrase" id="zTimeTxt"></div><div class="scope-wrap"><div class="scope" id="zTimeBar"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 TIME WORDS -->
+<section id="s4">
+  <div class="sec-h"><span class="num">4</span><h2>Time Words</h2></div>
+  <p class="sec-sub">from…to · since · ago · then · when · before · after — tap one to see it on the timeline.<br><span class="ar">اضغط على الكلمة لترى معناها على الخط الزمني.</span></p>
+  <div class="card">
+    <div class="tw-grid" id="twBtns"></div>
+    <div class="tl" id="tl">
+      <div class="tl-axis"></div>
+      <div class="tl-now">NOW</div>
+      <div class="tl-seg" id="tlSeg"></div>
+      <div class="tl-dot" id="tlA"></div>
+      <div class="tl-dot" id="tlB"></div>
+      <div class="tl-lab" id="tlLA"></div>
+      <div class="tl-lab" id="tlLB"></div>
+    </div>
+    <div class="tw-exp" id="twExp"></div>
+  </div>
+</section>
+
+<!-- 5 MISTAKES -->
+<section id="s5">
+  <div class="sec-h"><span class="num">5</span><h2>Watch Out!</h2></div>
+  <p class="sec-sub">Common mistakes and special cases.<br><span class="ar">أخطاء شائعة وحالات خاصة يجب حفظها.</span></p>
+  <div class="mist">
+    <div class="m"><span class="x">in Monday</span> → <span class="v">on Monday</span><div class="ar">الأيام دائمًا مع on</div></div>
+    <div class="m"><span class="x">on 2001</span> → <span class="v">in 2001</span><div class="ar">السنوات والشهور مع in</div></div>
+    <div class="m"><span class="x">in 8:00 a.m.</span> → <span class="v">at 8:00 a.m.</span><div class="ar">الساعة المحددة مع at</div></div>
+    <div class="m"><span class="x">on June</span> → <span class="v">in June</span> / <span class="v">on June 3rd</span><div class="ar">الشهر وحده in، لكن الشهر مع اليوم (تاريخ) on</div></div>
+    <div class="m"><span class="x">at the morning</span> → <span class="v">in the morning</span><div class="ar">in the morning / afternoon / evening — لكن at night و at noon</div></div>
+    <div class="m"><span class="x">in Earth</span> → <span class="v">on Earth</span><div class="ar">on Earth / on an island / on a farm — لكن in the world</div></div>
+    <div class="m"><span class="x">in school</span> → <span class="v">at school</span><div class="ar">at school / at home / at work — أماكن نذهب إليها لنشاط معيّن</div></div>
+    <div class="m"><span class="x">since two years</span> → <span class="v">for two years</span> / <span class="v">since 2024</span><div class="ar">since + نقطة بداية (سنة، تاريخ)، وليس مدة</div></div>
+    <div class="m"><span class="x">ago two years</span> → <span class="v">two years ago</span><div class="ar">ago تأتي بعد المدة دائمًا</div></div>
+  </div>
+</section>
+
+<!-- 6 SORT -->
+<section id="s6">
+  <div class="sec-h"><span class="num">6</span><h2>Sort Game</h2></div>
+  <p class="sec-sub">Tap a word, then tap the right box.<br><span class="ar">اضغط على الكلمة ثم اضغط على الصندوق الصحيح.</span></p>
+  <div class="card">
+    <div class="pool" id="pool"></div>
+    <div class="bins">
+      <button class="bin b-in" data-b="in"><h4>IN</h4><div></div></button>
+      <button class="bin b-on" data-b="on"><h4>ON</h4><div></div></button>
+      <button class="bin b-at" data-b="at"><h4>AT</h4><div></div></button>
+    </div>
+    <div class="fb" id="sortFb"></div>
+    <button class="btn ghost" id="sortReset" style="margin-inline-start:0">↺ Restart</button>
+  </div>
+</section>
+
+<!-- 7 QUIZ -->
+<section id="s7">
+  <div class="sec-h"><span class="num">7</span><h2>Quick Quiz</h2></div>
+  <p class="sec-sub">Choose the correct word. One try per question!<br><span class="ar">اختر الكلمة الصحيحة — محاولة واحدة فقط لكل سؤال.</span></p>
+  <div class="card" id="quiz"></div>
+</section>
+
+<!-- 8 TEXTBOOK -->
+<section id="s8">
+  <div class="sec-h"><span class="num">8</span><h2>Prince Sultan bin Salman</h2></div>
+  <p class="sec-sub">Look at the timeline, then complete the summary with prepositions and time words.<br><span class="ar">انظر إلى الخط الزمني ثم أكمل الملخص بحروف الجر وكلمات الوقت.</span></p>
+  <div class="card">
+    <div class="tlx"><div class="tlx-in" id="tlx"></div></div>
+    <div class="passage" id="passage"></div>
+    <button class="btn" id="checkP">✔ Check answers</button>
+    <button class="btn ghost" id="resetP">↺ Try again</button>
+    <ol class="keylist" id="keyP"></ol>
+  </div>
+</section>
+
+<section>
+  <div class="card final" id="final">
+    <div class="big" id="finalScore">0 / 0</div>
+    <p id="finalMsg">Complete the activities above to see your score.</p>
+    <p class="ar" id="finalAr">أكمل الأنشطة أعلاه لتظهر نتيجتك.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+const C={in:'var(--in)',on:'var(--on)',at:'var(--at)'};
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- scoring ---------- */
+const score={sort:0,quiz:0,pass:0}, max={sort:0,quiz:0,pass:20};
+let celebrated=false;
+function updateScore(){
+  const s=score.sort+score.quiz+score.pass, m=max.sort+max.quiz+max.pass;
+  document.getElementById('barFill').style.width=(s/m*100)+'%';
+  document.getElementById('barScore').textContent=`${s} / ${m} ⭐`;
+  document.getElementById('finalScore').textContent=`${s} / ${m}`;
+  const pct=s/m, msg=document.getElementById('finalMsg'), ar=document.getElementById('finalAr');
+  if(pct===1){msg.textContent='🏆 Perfect! You are a preposition master!';ar.textContent='ممتاز! أنت بطل حروف الجر!';
+    if(!celebrated){celebrated=true;boom()}}
+  else if(pct>=.8){msg.textContent='🌟 Excellent work! Almost perfect.';ar.textContent='عمل رائع! اقتربت من العلامة الكاملة.'}
+  else if(pct>=.5){msg.textContent='👍 Good job — keep practising!';ar.textContent='أحسنت — استمر في التدريب!'}
+  else if(s>0){msg.textContent='💪 Keep going — review sections 1–5 and try again.';ar.textContent='استمر! راجع الأقسام من ١ إلى ٥ وحاول مرة أخرى.'}
+}
+function boom(){if(!window.confetti)return;const end=Date.now()+1500;(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:['#d4af37','#4fa3ff','#3ddc97','#ff8a5c']});confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:['#d4af37','#4fa3ff','#3ddc97','#ff8a5c']});if(Date.now()<end)requestAnimationFrame(f)})()}
+
+/* ---------- 1 pyramid ---------- */
+const PYR={
+ place:{
+  in:{t:'Big areas & inside',ar:'المناطق الكبيرة وداخل الأشياء',chips:['in the world','in Saudi Arabia','in Riyadh','in Jeddah','in a box','in the car'],ex:'I was raised <b>in</b> Abha.',exAr:'نشأتُ في أبها.'},
+  on:{t:'Surfaces & lines',ar:'الأسطح والخطوط (مثل الشارع)',chips:['on Earth','on an island','on the wall','on the table','on King Fahd Road','on the bus'],ex:'There are many animals <b>on</b> the island.',exAr:'هناك حيوانات كثيرة على الجزيرة.'},
+  at:{t:'An exact point / place for an activity',ar:'نقطة محددة أو مكان لنشاط معيّن',chips:['at school','at home','at work','at the door','at the bus stop','at 25 Olaya Street'],ex:'He studied <b>at</b> the University of Denver.',exAr:'درس في جامعة دنفر.'}
+ },
+ time:{
+  in:{t:'Long periods',ar:'الفترات الطويلة: سنوات، شهور، فصول، أجزاء اليوم',chips:['in 2001','in May','in the winter','in the 1990s','in the morning','in the evening'],ex:'He was born <b>in</b> 1956.',exAr:'وُلد عام ١٩٥٦.'},
+  on:{t:'Days & dates',ar:'الأيام والتواريخ',chips:['on Monday','on June 3rd','on my birthday','on Eid day','on Friday morning','on June 27, 1956'],ex:'We have a test <b>on</b> Sunday.',exAr:'لدينا اختبار يوم الأحد.'},
+  at:{t:'Exact times',ar:'الوقت الدقيق (الساعة) وبعض التعبيرات',chips:['at 8:00 a.m.','at noon','at night','at midnight','at sunset','at the weekend'],ex:'The class starts <b>at</b> 4:30.',exAr:'يبدأ الدرس الساعة ٤:٣٠.'}
+ }
+};
+let pMode='place',pSel='in';
+function drawPyr(){
+  const d=PYR[pMode][pSel];
+  document.querySelectorAll('.band').forEach(b=>b.classList.toggle('sel',b.dataset.p===pSel));
+  document.getElementById('pyrDetail').innerHTML=`
+   <div class="big" style="color:${C[pSel]}">${pSel.toUpperCase()}</div>
+   <h3>${d.t}</h3><div class="ar">${d.ar}</div>
+   <div class="chips">${d.chips.map(c=>`<span class="chip">${c.replace(/^(in|on|at)\b/,m=>`<b style="color:${C[pSel]}">${m}</b>`)}</span>`).join('')}</div>
+   <div class="ex">${d.ex}<div class="ar">${d.exAr}</div></div>`;
+}
+document.querySelectorAll('.band').forEach(b=>b.onclick=()=>{pSel=b.dataset.p;drawPyr()});
+document.querySelectorAll('#pyrMode button').forEach(b=>b.onclick=()=>{
+  pMode=b.dataset.m;document.querySelectorAll('#pyrMode button').forEach(x=>x.classList.toggle('on',x===b));drawPyr()});
+drawPyr();
+
+/* ---------- 2 scene ---------- */
+const SC={
+ in:{pos:'translate(125px,165px)',say:'The ball is <b style="color:var(--in)">in</b> the box.',ar:'الكرة داخل الصندوق — محاطة من كل الجهات.',ex:'in Riyadh · in Saudi Arabia · in the room'},
+ on:{pos:'translate(125px,88px)',say:'The ball is <b style="color:var(--on)">on</b> the box.',ar:'الكرة فوق الصندوق — تلمس السطح.',ex:'on the table · on the wall · on an island'},
+ at:{pos:'translate(250px,168px)',say:'The ball is <b style="color:var(--at)">at</b> the bus stop.',ar:'الكرة عند نقطة محددة — مكان معيّن.',ex:'at school · at the door · at the bus stop'}
+};
+function scene(k){
+  document.getElementById('ball').style.transform=SC[k].pos;
+  document.getElementById('sceneSay').innerHTML=SC[k].say;
+  document.getElementById('sceneAr').textContent=SC[k].ar;
+  document.getElementById('sceneEx').textContent=SC[k].ex;
+  document.querySelectorAll('.scene-btns button').forEach(b=>b.classList.toggle('on',b.dataset.s===k));
+}
+document.querySelectorAll('.scene-btns button').forEach(b=>b.onclick=()=>scene(b.dataset.s));
+scene('in');
+
+/* ---------- 3 zoom ---------- */
+const ZP=[['in','Saudi Arabia',100],['in','Riyadh',65],['on','Olaya Street',35],['at','the King Fahd Library',10]];
+const ZT=[['in','2001',100],['in','May',65],['on','May 3rd',35],['at','8:00 a.m.',10]];
+function zoom(id,data){
+  const v=+document.getElementById(id).value,[p,n,w]=data[v];
+  document.getElementById(id+'Txt').innerHTML=`<span class="p" style="background:${C[p]}">${p}</span> ${n}`;
+  const bar=document.getElementById(id+'Bar');bar.style.width=w+'%';bar.style.background=C[p];
+}
+['zPlace','zTime'].forEach((id,i)=>{const d=i?ZT:ZP;document.getElementById(id).oninput=()=>zoom(id,d);zoom(id,d)});
+
+/* ---------- 4 time words ---------- */
+const TW={
+ 'from … to':{seg:[15,55],a:15,b:55,la:'from 2007',lb:'to 2010',en:'<b>from</b> start <b>to</b> end — a period with a beginning and an end.',ex:'I lived in Jeddah <b>from</b> 2007 <b>to</b> 2010.',ar:'من ... إلى: فترة لها بداية ونهاية.'},
+ 'since':{seg:[30,88],a:30,b:null,la:'since 2015',en:'<b>since</b> + a starting point → continues until <b>now</b>.',ex:'I have lived here <b>since</b> I was twelve.',ar:'منذ: من نقطة في الماضي وحتى الآن.'},
+ 'ago':{seg:[55,88],a:55,b:null,la:'two years ago',en:'time period + <b>ago</b> = counting back from <b>now</b>.',ex:'We moved here two years <b>ago</b>.',ar:'قبل (من الآن): المدة + ago.'},
+ 'then':{seg:null,a:25,b:60,la:'1. raised in Abha',lb:'2. then → Riyadh',en:'<b>then</b> = next, after that (shows order).',ex:'I was raised in Abha. <b>Then</b> my family moved to Riyadh.',ar:'ثم / بعد ذلك: الحدث التالي.'},
+ 'when':{seg:null,a:45,b:45,la:'I was twelve',lb:'we moved',en:'<b>when</b> = at the same time as another event.',ex:'My family moved to Riyadh <b>when</b> I was twelve.',ar:'عندما: حدثان في نفس الوقت.'},
+ 'before':{seg:null,a:25,b:60,la:'learned to read',lb:'went to school',en:'A <b>before</b> B → A happened first.',ex:'I learned to read <b>before</b> I went to school.',ar:'قبل: الحدث الأول يسبق الثاني.'},
+ 'after':{seg:null,a:25,b:60,la:'high school',lb:'went to college',en:'<b>after</b> A, B → B happened second.',ex:'<b>After</b> high school, he went to college.',ar:'بعد: الحدث الثاني يأتي بعد الأول.'}
+};
+const twBtns=document.getElementById('twBtns');
+Object.keys(TW).forEach(k=>{const b=document.createElement('button');b.className='tw';b.textContent=k;b.onclick=()=>tw(k);twBtns.appendChild(b)});
+function tw(k){
+  const d=TW[k],seg=document.getElementById('tlSeg'),A=document.getElementById('tlA'),B=document.getElementById('tlB'),LA=document.getElementById('tlLA'),LB=document.getElementById('tlLB');
+  [...twBtns.children].forEach(b=>b.classList.toggle('on',b.textContent===k));
+  if(d.seg){seg.style.left=d.seg[0]+'%';seg.style.width=(d.seg[1]-d.seg[0])+'%';seg.style.opacity=.9}else{seg.style.width=0;seg.style.opacity=0}
+  A.style.left=d.a+'%';A.style.background='var(--gold)';LA.style.left=d.a+'%';LA.style.top='82px';LA.textContent=d.la;
+  if(d.b!==null){B.style.opacity=1;B.style.left=d.b+'%';B.style.background='var(--tw)';LB.style.opacity=1;LB.style.left=d.b+'%';LB.style.top=(d.a===d.b?'4px':'82px');LB.textContent=d.lb}
+  else{B.style.opacity=0;LB.style.opacity=0}
+  document.getElementById('twExp').innerHTML=`<div>${d.en}</div><div class="ar">${d.ar}</div><div class="ex">${d.ex}</div>`;
+}
+tw('from … to');
+
+/* ---------- 6 sort ---------- */
+const WORDS=[['Monday','on'],['2001','in'],['8:00 a.m.','at'],['Jeddah','in'],['June 3rd','on'],['noon','at'],['the winter','in'],['school','at'],['an island','on'],['Earth','on'],['the world','in'],['night','at'],['my birthday','on'],['the morning','in'],['home','at'],['the wall','on'],['Saudi Arabia','in'],['the door','at']];
+max.sort=WORDS.length;
+let picked=null,sortErr=0;
+function buildSort(){
+  score.sort=0;picked=null;sortErr=0;
+  const pool=document.getElementById('pool');pool.innerHTML='';
+  document.querySelectorAll('.bin div').forEach(d=>d.innerHTML='');
+  document.getElementById('sortFb').textContent='';
+  shuffle(WORDS).forEach(([w,a])=>{const b=document.createElement('button');b.className='word';b.textContent=w;b.dataset.a=a;
+    b.onclick=()=>{document.querySelectorAll('.word').forEach(x=>x.classList.remove('pick'));picked=b;b.classList.add('pick')};pool.appendChild(b)});
+  updateScore();
+}
+document.querySelectorAll('.bin').forEach(bin=>bin.onclick=()=>{
+  const fb=document.getElementById('sortFb');
+  if(!picked){fb.className='fb badc';fb.textContent='👆 Tap a word first.';return}
+  if(picked.dataset.a===bin.dataset.b){
+    const s=document.createElement('span');s.className='placed ok';s.textContent=picked.textContent;bin.querySelector('div').appendChild(s);
+    picked.remove();picked=null;score.sort++;fb.className='fb good';fb.textContent='✅ Correct!';
+    if(score.sort===WORDS.length){fb.textContent=`🎉 All sorted! Mistakes: ${sortErr}`}
+    updateScore();
+  }else{sortErr++;bin.classList.remove('shake');void bin.offsetWidth;bin.classList.add('shake');fb.className='fb badc';fb.textContent=`❌ Not "${bin.dataset.b}" — try again.`}
+});
+document.getElementById('sortReset').onclick=buildSort;
+buildSort();
+
+/* ---------- 7 quiz ---------- */
+const QZ=[
+ ['My birthday is ___ March.','in',['in','on','at'],'Month → in','الشهر وحده مع in'],
+ ['The class starts ___ 7:30.','at',['in','on','at'],'Clock time → at','الساعة مع at'],
+ ['We don\'t have school ___ Friday.','on',['in','on','at'],'Day → on','الأيام مع on'],
+ ['There is a picture ___ the wall.','on',['in','on','at'],'Surface → on','السطح مع on'],
+ ['I live ___ Al-Ahsa.','in',['in','on','at'],'City/region → in','المدينة مع in'],
+ ['She is ___ school now.','at',['in','on','at'],'Place for an activity → at','مكان لنشاط معيّن مع at'],
+ ['It\'s very cold ___ the winter.','in',['in','on','at'],'Season → in','الفصول مع in'],
+ ['I saw him two days ___.','ago',['ago','since','before'],'Period + ago','المدة + ago'],
+ ['I have studied English ___ 2019.','since',['since','from','ago'],'Starting point until now → since','منذ نقطة البداية حتى الآن'],
+ ['The shop is open ___ 9 a.m. to 5 p.m.','from',['from','since','at'],'from … to','من ... إلى'],
+ ['I brush my teeth ___ I go to bed.','before',['before','after','ago'],'Brushing happens first','الفعل الأول يسبق الثاني'],
+ ['I was on the plane ___ you called me.','when',['when','then','since'],'Same time → when','حدثان في نفس الوقت']
+];
+max.quiz=QZ.length;
+const quiz=document.getElementById('quiz');
+QZ.forEach(([t,a,o,why,whyAr],i)=>{
+  const q=document.createElement('div');q.className='q';
+  q.innerHTML=`<div class="q-t">${i+1}. ${t.replace('___','<span class="blank">___</span>')}</div><div class="opts"></div><div class="why"></div>`;
+  const opts=q.querySelector('.opts');
+  shuffle(o).forEach(op=>{const b=document.createElement('button');b.className='opt';b.textContent=op;
+    b.onclick=()=>{
+      opts.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent===a)x.classList.add('right')});
+      const ok=op===a;if(!ok)b.classList.add('wrong');else score.quiz++;
+      q.querySelector('.blank').textContent=a;
+      q.querySelector('.why').innerHTML=`${ok?'✅':'❌'} ${why} · <span class="ar">${whyAr}</span>`;
+      updateScore()};
+    opts.appendChild(b)});
+  quiz.appendChild(q);
+});
+
+/* ---------- 8 textbook ---------- */
+const EV=[[0,'born','June 27',1956],[20,'education','Riyadh',1970],[32,'college','U.S.',1978],[40,'researcher','Ministry Info',1982],[46,'space shuttle','June 17–24',1985],[57,'air force','',1985],[75,'Secretary General','SCTA',2000],[92,'President','SCTA',2008]];
+const tlx=document.getElementById('tlx');
+tlx.innerHTML='<div class="tlx-axis"></div>'+EV.map(([x,t,s])=>`<div class="ev" style="left:${4+x*.9}%"><b>${t}</b>${s}</div>`).join('')+
+ [[1956,0],[1960,7],[1970,20],[1980,34],[1990,51],[2000,75],[2010,88],['present',97]].map(([y,x])=>`<div class="yr" style="left:${4+x*.9}%">${y}</div>`).join('');
+
+const OPTS=['in','on','at','from','to','into','since','ago','then','when','while','before','after'];
+// [accepted answers, reason EN, reason AR]
+const KEY=[
+ [['in'],'city → in','مدينة'],[['on'],'full date → on','تاريخ كامل'],[['in'],'city → in','مدينة'],
+ [['after'],'after finishing high school','بعد الثانوية'],[['at'],'institution / specific place → at','مؤسسة/مكان محدد'],
+ [['in'],'country → in','دولة'],[['when','while'],'at the same time','في نفس الوقت'],
+ [['in'],'year → in','سنة'],[['at'],'place of work → at','مكان العمل'],[['in'],'country → in','دولة'],
+ [['in'],'year → in','سنة'],[['when'],'at the same time he became…','عندما أصبح'],
+ [['into','to'],'travel into/to space','السفر إلى الفضاء'],[['from'],'from … to','من'],[['to'],'from … to','إلى'],
+ [['then','after'],'next event (Then / After that)','الحدث التالي'],[['in'],'year → in','سنة'],
+ [['from'],'from … to','من'],[['to'],'from … to','إلى'],[['since'],'2008 until now → since','منذ ٢٠٠٨ حتى الآن']
+];
+const TXT=`His Royal Highness Prince Sultan bin Salman Al Saud was born #1 Riyadh #2 June 27, 1956. He was educated #3 Riyadh. #4 high school, he went to study communications and aviation #5 the University of Denver #6 the U.S. #7 he was there, he also became a pilot. He started his career #8 1982 as a researcher #9 the Ministry of Information #10 Saudi Arabia. #11 1985, His Royal Highness Prince Sultan bin Salman Al Saud made history #12 he became the first Saudi astronaut to travel #13 space. He flew aboard the space shuttle <i>STS-51-G Discovery</i> #14 June 17 #15 June 24. #16 he joined the Royal Saudi Air Force as a pilot, and retired #17 1996. #18 2000 #19 2008, he was Secretary General of the Saudi Commission for Tourism and Antiquities, and #20 2008 he has served as its President.`;
+const pass=document.getElementById('passage');
+pass.innerHTML=TXT.replace(/#(\d+)/g,(_,n)=>`<sup>(${n})</sup><select data-i="${n-1}"><option value="">— ? —</option>${OPTS.map(o=>`<option>${o}</option>`).join('')}</select>`);
+const sels=[...pass.querySelectorAll('select')];
+sels.forEach(s=>s.onchange=()=>s.classList.remove('right','wrong'));
+document.getElementById('checkP').onclick=()=>{
+  let c=0;const key=document.getElementById('keyP');key.innerHTML='';
+  sels.forEach((s,i)=>{const [acc,en,ar]=KEY[i],ok=acc.includes(s.value);
+    s.classList.toggle('right',ok);s.classList.toggle('wrong',!ok);if(ok)c++;
+    key.innerHTML+=`<li class="${ok?'':'bad'}">${ok?'✅':'❌'} (${i+1}) <b>${acc.join(' / ')}</b> — ${en} <span class="ar">(${ar})</span></li>`});
+  score.pass=c;key.style.display='block';updateScore();
+};
+document.getElementById('resetP').onclick=()=>{sels.forEach(s=>{s.value='';s.classList.remove('right','wrong')});document.getElementById('keyP').style.display='none';score.pass=0;updateScore()};
+
+updateScore();
+</script>
+</body>
+</html>
