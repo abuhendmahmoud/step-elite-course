@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Unit 2 Review Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);background-color:var(--navy);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+
+/* start */
+.start{text-align:center;padding:36px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2rem,8vw,3.2rem);color:var(--gold);line-height:1.15;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:22px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.3rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.parts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.part{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-weight:700}
+.tips{margin-top:22px;background:var(--navy2);border-radius:16px;padding:14px;border:1px dashed var(--line)}
+
+/* card */
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.q{font-size:clamp(1.25rem,5vw,1.6rem);font-weight:800;margin:14px 0 6px;line-height:1.55;text-align:center}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.pic{font-size:clamp(3rem,14vw,4.3rem);text-align:center;margin:8px 0 2px;letter-spacing:4px;line-height:1.2}
+.tools{display:flex;justify-content:center;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
+.tool{min-height:44px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+.hint b{color:var(--gold)}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{min-height:66px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.15rem;padding:6px 10px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30;display:flex;align-items:center;justify-content:center;gap:8px}
+.opt .e{font-size:1.6rem}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}
+.msg .ar{font-size:.95rem}
+
+/* word bank */
+.bank{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-top:14px}
+.bw{background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.bw .e{font-size:2rem;display:block;line-height:1.3}
+.bw b{color:var(--gold);font-size:1.1rem}
+.bw .ar{font-size:.9rem;display:block}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1.3fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:62px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1rem;padding:6px 8px;text-align:center;transition:transform .12s}
+.m.w{display:flex;align-items:center;gap:8px;justify-content:flex-start;text-align:left}
+.m.w .e{font-size:1.9rem;flex-shrink:0}
+.m.w small{display:block;font-weight:600;color:var(--muted);direction:rtl;font-size:.8rem}
+.m.d{font-weight:700;font-size:.95rem}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2);transform:scale(1.03)}
+.m.done{background:rgba(61,220,151,.15);border-color:var(--ok);color:var(--ok);cursor:default}
+.m.done small{color:var(--ok)}
+.m.no{background:var(--bad);border-color:var(--bad);color:var(--navy)}
+@media(max-width:480px){.match{grid-template-columns:1fr 1.2fr}.m{font-size:.9rem}.m.d{font-size:.85rem}.m.w .e{font-size:1.5rem}}
+
+/* builder */
+.slots{min-height:66px;border:2px dashed var(--line);border-radius:16px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:8px 0 14px}
+.slots.ok{border-color:var(--ok);border-style:solid;background:rgba(61,220,151,.1)}
+.tiles{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.tile{min-height:50px;padding:6px 16px;border-radius:12px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.15rem;box-shadow:0 3px 0 #0c1a30}
+.tile.in{background:rgba(212,175,55,.18);border-color:var(--gold)}
+.tile:disabled{opacity:.25;cursor:default}
+.row-btns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* result */
+.result{text-align:center;padding:30px 0}
+.big-score{font-family:'Playfair Display';font-size:4.2rem;color:var(--gold);line-height:1}
+.breakdown{display:grid;gap:10px;margin:22px auto 0;max-width:420px}
+.brow{display:flex;justify-content:space-between;background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;font-weight:700}
+.brow span:last-child{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars">⭐ <span id="score">0</span></span>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ DATA (from the Unit 2 Review worksheet) ============ */
+const BANK = [
+  {w:"because",   e:"🤔", ar:"لأنّ — السبب"},
+  {w:"so that",   e:"🎯", ar:"لكي — الهدف"},
+  {w:"there are", e:"👥", ar:"يوجد — جمع"},
+  {w:"there is",  e:"☝️", ar:"يوجد — مفرد"},
+  {w:"could",     e:"💪⏪", ar:"استطاع — ماضي"},
+  {w:"must",      e:"⚠️", ar:"يجب"},
+  {w:"carefully", e:"🤲", ar:"بحذر — كيف؟"},
+  {w:"so",        e:"➡️", ar:"لذلك — النتيجة"}
+];
+const bankE = w => (BANK.find(b=>b.w.toLowerCase()===w.toLowerCase())||{}).e||"";
+
+const PART_A = [
+  {s:"___ many different sign languages around the world.", a:"There are", o:["There are","There is","Must","So"],
+   pic:"🌍🤟👐", ar:"توجد لغات إشارة كثيرة مختلفة حول العالم.", clue:"<b>many languages</b> = جمع 👥 ← <b>There are</b>؟ أم There is؟"},
+  {s:"You ___ never touch a plant unless you know it is safe.", a:"must", o:["must","could","so","because"],
+   pic:"⚠️🌿✋", ar:"يجب ألّا تلمس نبتة أبداً إلا إذا عرفت أنها آمنة.", clue:"هذه قاعدة وتحذير ⚠️ ← الكلمة معناها <b>يجب</b>"},
+  {s:"The runner yawned many times ___ she felt nervous before the race.", a:"because", o:["because","so that","carefully","there is"],
+   pic:"🏃‍♀️🥱😰", ar:"العدّاءة تثاءبت كثيراً لأنها كانت متوترة قبل السباق.", clue:"لماذا تثاءبت؟ 🤔 الجملة الثانية هي <b>السبب</b>"},
+  {s:"He carried the box ___ so it wouldn't break.", a:"carefully", o:["carefully","must","there are","so"],
+   pic:"📦🤲😌", ar:"حمل الصندوق بحذر حتى لا ينكسر.", clue:"كيف حمل الصندوق؟ الكلمة تنتهي بـ <b>-ly</b>"},
+  {s:"We laughed a lot at the party, ___ we felt very happy afterward.", a:"so", o:["so","because","could","there is"],
+   pic:"😂🎉➡️😊", ar:"ضحكنا كثيراً في الحفلة، لذلك شعرنا بسعادة بعدها.", clue:"ضحكنا ➡️ فشعرنا بالسعادة = <b>النتيجة</b> (لذلك)"},
+  {s:"___ a lot of salt in ocean water.", a:"There is", o:["There is","There are","Must","Carefully"],
+   pic:"🌊🧂", ar:"يوجد الكثير من الملح في ماء المحيط.", clue:"<b>salt</b> لا يُعَدّ (مفرد ☝️) ← There is؟ أم There are؟"},
+  {s:"She practiced sign language every day ___ she could talk with her deaf cousin.", a:"so that", o:["so that","because","carefully","must"],
+   pic:"🤟📅🎯👧", ar:"تدرّبت على لغة الإشارة كل يوم لكي تستطيع التحدث مع ابنة عمها الصمّاء.", clue:"ما <b>الهدف</b> 🎯 من التدريب؟ ← (لكي) وبعدها could"},
+  {s:"When he was younger, he ___ speak three languages.", a:"could", o:["could","must","so","there is"],
+   pic:"👦🗣️3️⃣", ar:"عندما كان أصغر، كان يستطيع التحدث بثلاث لغات.", clue:"<b>was</b> = ماضي ⏪ + قدرة 💪 ← <b>استطاع</b>"}
+];
+
+const PART_B = [
+  {w:"contagious", e:"🤧", ar:"مُعْدٍ",       d:"spreads easily to others"},
+  {w:"poisonous",  e:"☠️", ar:"سامّ",         d:"able to harm if eaten"},
+  {w:"evaporate",  e:"♨️", ar:"يتبخّر",       d:"to change into vapor/air"},
+  {w:"interpret",  e:"🗣️", ar:"يترجم شفهياً", d:"to change speech into another form"},
+  {w:"alert",      e:"👀", ar:"يَقِظ / منتبه", d:"awake and able to think fast"},
+  {w:"careful",    e:"🧐", ar:"حَذِر",        d:"paying close attention"},
+  {w:"famous",     e:"⭐", ar:"مشهور",        d:"known by many people"},
+  {w:"escape",     e:"🏃💨", ar:"يهرب",       d:"to get away from danger"}
+];
+
+const PART_C = [
+  {s:"I study hard so that I can pass the test.", pic:"📚✏️🎯💯", ar:"أذاكر بجد لكي أنجح في الاختبار."},
+  {s:"There are many stars in the sky.",           pic:"🌙✨⭐✨",  ar:"توجد نجوم كثيرة في السماء."},
+  {s:"She walked carefully on the ice.",           pic:"👩🧊🤲",    ar:"مشت بحذر على الجليد."},
+  {s:"I was tired, so I went to bed.",             pic:"🥱➡️🛏️",   ar:"كنت متعباً، لذلك ذهبت إلى السرير."}
+];
+
+/* ============ STATE ============ */
+const TOTAL = PART_A.length + PART_B.length + PART_C.length;
+let name="", score=0, done=0, sec={A:0,B:0,C:0};
+const $app = document.getElementById("app");
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+function speak(t){
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=.8; speechSynthesis.speak(u);}catch(e){}
+}
+function updTop(label){
+  document.getElementById("score").textContent=score;
+  document.getElementById("fill").style.width=(done/TOTAL*100)+"%";
+  if(label!==undefined) document.getElementById("qn").textContent=label;
+}
+function addPoint(part){ score++; sec[part]++; }
+const PRAISE = [["Great job! 🎉","ممتاز! 👏"],["Super! 🌟","رائع جداً!"],["Well done! 💪","أحسنت!"],["Correct! ✅","إجابة صحيحة!"]];
+const praise = () => PRAISE[Math.floor(Math.random()*PRAISE.length)];
+
+/* ============ START ============ */
+function startScreen(){
+  $app.innerHTML = `
+  <div class="start">
+    <div class="mascot">🦉</div>
+    <h1>How &amp; Why<br>Put It All Together</h1>
+    <p class="sub">Unit 2 Review · مراجعة الوحدة الثانية</p>
+    <input class="name" id="nm" placeholder="Your name · اسمك" maxlength="20">
+    <button class="big-btn" id="go">Start ▶ ابدأ</button>
+    <div class="parts">
+      <div class="part">A · Grammar 📝</div>
+      <div class="part">B · Vocabulary 🔤</div>
+      <div class="part">C · Build it 🧩</div>
+    </div>
+    <div class="tips ar">
+      💡 كل سؤال معه <b>صورة</b> تساعدك.<br>
+      🔊 اضغط <b>Listen</b> لتسمع الجملة · 💡 اضغط <b>Hint</b> للمساعدة.<br>
+      ⭐ النجمة تُحسب إذا أجبت صح من أول مرة — ولو أخطأت جرّب مرة ثانية!
+    </div>
+  </div>`;
+  document.getElementById("go").onclick=()=>{
+    name=document.getElementById("nm").value.trim();
+    document.getElementById("top").classList.remove("hidden");
+    bankScreen();
+  };
+}
+
+/* ============ PART A ============ */
+function bankScreen(){
+  updTop("Part A");
+  $app.innerHTML = `
+  <div class="card">
+    <span class="chip" style="background:var(--gold)">Part A · Word Bank</span>
+    <p class="ins">Look at the words first 👀</p>
+    <p class="ar">تعرّف على الكلمات وصورها قبل أن تبدأ — اضغط على الكلمة لتسمعها</p>
+    <div class="bank">${BANK.map(b=>`<button class="bw" data-w="${b.w}"><span class="e">${b.e}</span><b>${b.w}</b><span class="ar">${b.ar}</span></button>`).join("")}</div>
+    <button class="big-btn" id="go">I'm ready ✔ جاهز</button>
+  </div>`;
+  $app.querySelectorAll(".bw").forEach(b=>b.onclick=()=>speak(b.dataset.w));
+  document.getElementById("go").onclick=()=>partA(0);
+}
+
+function partA(i){
+  if(i>=PART_A.length) return partB();
+  const q=PART_A[i]; let tries=0;
+  updTop(`A ${i+1}/${PART_A.length}`);
+  const sHtml = esc(q.s).replace("___",`<span class="blank" id="bl">?</span>`);
+  $app.innerHTML = `
+  <div class="card" id="cd">
+    <span class="chip" style="background:var(--gold)">Part A · Grammar</span>
+    <p class="ins">Choose the correct word 👇 <span class="ar">اختر الكلمة الصحيحة</span></p>
+    <div class="pic">${q.pic}</div>
+    <div class="q">${i+1}. ${sHtml}</div>
+    <div class="tools">
+      <button class="tool" id="ls">🔊 Listen</button>
+      <button class="tool" id="ht">💡 Hint · مساعدة</button>
+    </div>
+    <div class="hint ar" id="hb">${q.clue}<br><span style="color:var(--text)">🇸🇦 ${q.ar}</span></div>
+    <div class="opts">${shuffle(q.o).map(o=>`<button class="opt" data-o="${o}"><span class="e">${bankE(o)}</span>${o}</button>`).join("")}</div>
+    <div class="msg" id="msg"></div>
+  </div>`;
+  document.getElementById("ls").onclick=()=>speak(q.s.replace("___","blank"));
+  document.getElementById("ht").onclick=()=>document.getElementById("hb").classList.add("show");
+  $app.querySelectorAll(".opt").forEach(btn=>btn.onclick=()=>{
+    const msg=document.getElementById("msg");
+    if(btn.dataset.o===q.a){
+      if(tries===0) addPoint("A");
+      done++; btn.classList.add("right");
+      $app.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+      const bl=document.getElementById("bl"); bl.textContent=q.a; bl.classList.add("done");
+      const p=praise(); msg.className="msg good"; msg.innerHTML=`${p[0]} <span class="ar">${p[1]}</span>`;
+      speak(q.s.replace("___",q.a));
+      updTop();
+      setTimeout(()=>partA(i+1),2200);
+    }else{
+      tries++; btn.classList.add("wrong"); btn.disabled=true;
+      document.getElementById("cd").classList.remove("shake"); void document.getElementById("cd").offsetWidth;
+      document.getElementById("cd").classList.add("shake");
+      document.getElementById("hb").classList.add("show");
+      msg.className="msg try"; msg.innerHTML=`Try again! 💪 <span class="ar">حاول مرة أخرى — شوف المساعدة 👆</span>`;
+    }
+  });
+}
+
+/* ============ PART B ============ */
+function partB(){
+  const words=shuffle(PART_B), defs=shuffle(PART_B);
+  let selW=null, selD=null, matched=0; const missed=new Set();
+  updTop(`B 0/${PART_B.length}`);
+  $app.innerHTML = `
+  <div class="card" id="cd">
+    <span class="chip" style="background:var(--blue)">Part B · Vocabulary</span>
+    <p class="ins">Match each word with its meaning 🔗</p>
+    <p class="ar">اضغط على الكلمة ثم اضغط على معناها. الصورة بجانب الكلمة تساعدك 🖼️</p>
+    <div class="match" style="margin-top:14px">
+      <div class="col">${words.map(x=>`<button class="m w" data-k="${x.w}"><span class="e">${x.e}</span><span>${x.w}<small>${x.ar}</small></span></button>`).join("")}</div>
+      <div class="col">${defs.map(x=>`<button class="m d" data-k="${x.w}">${x.d}</button>`).join("")}</div>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>`;
+  const msg=document.getElementById("msg");
+  const check=()=>{
+    if(!selW||!selD) return;
+    const w=selW, d=selD; selW=selD=null;
+    if(w.dataset.k===d.dataset.k){
+      [w,d].forEach(b=>{b.classList.remove("sel");b.classList.add("done");b.disabled=true;});
+      if(!missed.has(w.dataset.k)) addPoint("B");
+      matched++; done++;
+      const p=praise(); msg.className="msg good"; msg.innerHTML=`${p[0]} <span class="ar">${p[1]}</span>`;
+      speak(w.dataset.k);
+      updTop(`B ${matched}/${PART_B.length}`);
+      if(matched===PART_B.length) setTimeout(()=>partC(0),1600);
+    }else{
+      missed.add(w.dataset.k);
+      [w,d].forEach(b=>{b.classList.remove("sel");b.classList.add("no");});
+      setTimeout(()=>[w,d].forEach(b=>b.classList.remove("no")),600);
+      msg.className="msg try"; msg.innerHTML=`Not this one 🙂 <span class="ar">فكّر في الصورة وجرّب مرة ثانية</span>`;
+    }
+  };
+  $app.querySelectorAll(".m.w").forEach(b=>b.onclick=()=>{
+    if(selW) selW.classList.remove("sel"); selW=b; b.classList.add("sel"); speak(b.dataset.k); check();
+  });
+  $app.querySelectorAll(".m.d").forEach(b=>b.onclick=()=>{
+    if(selD) selD.classList.remove("sel"); selD=b; b.classList.add("sel"); check();
+  });
+}
+
+/* ============ PART C ============ */
+function partC(i){
+  if(i>=PART_C.length) return result();
+  const q=PART_C[i], words=q.s.split(" "); let tries=0; const picked=[];
+  updTop(`C ${i+1}/${PART_C.length}`);
+  $app.innerHTML = `
+  <div class="card" id="cd">
+    <span class="chip" style="background:var(--pink)">Part C · Your turn to write</span>
+    <p class="ins">Put the words in order 🧩 <span class="ar">رتّب الكلمات لتكوين جملة</span></p>
+    <div class="pic">${q.pic}</div>
+    <div class="tools">
+      <button class="tool" id="ls">🔊 Listen</button>
+      <button class="tool" id="ht">💡 Hint · مساعدة</button>
+    </div>
+    <div class="hint ar" id="hb">🇸🇦 ${q.ar}<br>أول كلمة: <b>${esc(words[0])}</b></div>
+    <div class="slots" id="sl"></div>
+    <div class="tiles" id="tl">${shuffle(words.map((w,k)=>({w,k}))).map(t=>`<button class="tile" data-k="${t.k}">${esc(t.w)}</button>`).join("")}</div>
+    <div class="row-btns">
+      <button class="tool" id="rs">↺ Reset · امسح</button>
+      <button class="tool" id="ck" style="border-color:var(--gold)">✔ Check · تحقق</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>`;
+  const sl=document.getElementById("sl"), msg=document.getElementById("msg");
+  const draw=()=>{ sl.innerHTML=picked.map((k,n)=>`<button class="tile in" data-n="${n}">${esc(words[k])}</button>`).join("");
+    sl.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{ const k=picked.splice(+t.dataset.n,1)[0];
+      $app.querySelector(`#tl .tile[data-k="${k}"]`).disabled=false; draw(); }); };
+  document.getElementById("ls").onclick=()=>speak(q.s);
+  document.getElementById("ht").onclick=()=>document.getElementById("hb").classList.add("show");
+  $app.querySelectorAll("#tl .tile").forEach(t=>t.onclick=()=>{ picked.push(+t.dataset.k); t.disabled=true; draw(); });
+  document.getElementById("rs").onclick=()=>{ picked.length=0; $app.querySelectorAll("#tl .tile").forEach(t=>t.disabled=false); draw(); };
+  document.getElementById("ck").onclick=()=>{
+    if(picked.length<words.length){ msg.className="msg try"; msg.innerHTML=`Use all the words 🙂 <span class="ar">استخدم كل الكلمات</span>`; return; }
+    if(picked.map(k=>words[k]).join(" ")===q.s){
+      if(tries===0) addPoint("C");
+      done++; sl.classList.add("ok"); sl.querySelectorAll(".tile").forEach(t=>t.disabled=true);
+      $app.querySelectorAll(".row-btns button").forEach(b=>b.disabled=true);
+      const p=praise(); msg.className="msg good"; msg.innerHTML=`${p[0]} <span class="ar">${p[1]}</span>`;
+      speak(q.s); updTop();
+      setTimeout(()=>partC(i+1),2400);
+    }else{
+      tries++;
+      document.getElementById("hb").classList.add("show");
+      const cd=document.getElementById("cd"); cd.classList.remove("shake"); void cd.offsetWidth; cd.classList.add("shake");
+      msg.className="msg try"; msg.innerHTML=`Almost! 💪 <span class="ar">قريب! شوف المساعدة وجرّب مرة ثانية</span>`;
+    }
+  };
+}
+
+/* ============ RESULT ============ */
+function result(){
+  updTop("Done ✔");
+  const pct=score/TOTAL;
+  const [en,ar,emo] = pct===1 ? ["Perfect! You're a star!","ممتاز! أنت نجم!","🏆"]
+    : pct>=.75 ? ["Great work!","عمل رائع! استمر","🌟"]
+    : pct>=.5 ? ["Good job! Keep practicing","جيد! واصل التدريب","👍"]
+    : ["Nice try! Let's practice again","محاولة جميلة! لنتدرب مرة أخرى","💪"];
+  $app.innerHTML = `
+  <div class="result">
+    <div class="mascot">${emo}</div>
+    <p style="font-weight:800;font-size:1.3rem;margin-top:6px">${name?esc(name)+" — ":""}${en}</p>
+    <p class="ar" style="font-size:1.1rem">${ar}</p>
+    <div class="big-score" style="margin-top:16px">${score}/${TOTAL}</div>
+    <div class="breakdown">
+      <div class="brow"><span>A · Grammar 📝</span><span>${sec.A}/${PART_A.length}</span></div>
+      <div class="brow"><span>B · Vocabulary 🔤</span><span>${sec.B}/${PART_B.length}</span></div>
+      <div class="brow"><span>C · Build it 🧩</span><span>${sec.C}/${PART_C.length}</span></div>
+    </div>
+    <p class="ar" style="margin-top:14px">⭐ = إجابة صحيحة من أول محاولة</p>
+    <button class="big-btn" id="again">↺ Try again · أعد المحاولة</button>
+  </div>`;
+  document.getElementById("again").onclick=()=>{ score=0; done=0; sec={A:0,B:0,C:0}; updTop(); bankScreen(); };
+  if(pct===1 && window.confetti){
+    confetti({particleCount:160,spread:90,origin:{y:.6}});
+    setTimeout(()=>confetti({particleCount:120,spread:120,origin:{y:.4}}),600);
+  }
+}
+
+startScreen();
+</script>
+</body>
+</html>
