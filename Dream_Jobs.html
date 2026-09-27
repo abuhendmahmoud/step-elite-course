@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dream Jobs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);background-color:var(--navy);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+.bg span{position:fixed;border-radius:50%;opacity:.07;z-index:-1;animation:float 14s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-40px)}}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+.home{background:none;border:none;font-size:1.3rem;min-width:36px;min-height:36px}
+
+/* start */
+.start{text-align:center;padding:34px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2.2rem,9vw,3.4rem);color:var(--gold);line-height:1.1;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:20px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 36px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.3rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.big-btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.mbtn{background:var(--navy2);border:2px solid var(--line);border-radius:16px;padding:12px 8px;color:var(--text);font-weight:800;font-size:1.02rem;min-height:74px;transition:transform .15s}
+.mbtn:hover{border-color:var(--gold);transform:translateY(-2px)}
+.mbtn .e{font-size:1.6rem;display:block;line-height:1.2}
+.mbtn .ar{font-size:.85rem;display:block}
+.mbtn.wide{grid-column:1/-1;border-color:var(--gold);background:rgba(212,175,55,.1)}
+.tips{margin-top:20px;background:var(--navy2);border-radius:16px;padding:12px 14px;border:1px dashed var(--line);text-align:right}
+
+/* card */
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy);background:var(--gold)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.q{font-size:clamp(1.25rem,5vw,1.6rem);font-weight:800;margin:16px 0 6px;line-height:1.5;text-align:center}
+.q.word{font-family:'Playfair Display';font-size:clamp(2rem,9vw,2.6rem);color:var(--gold)}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.pic{font-size:clamp(3rem,14vw,4.4rem);text-align:center;margin:8px 0;letter-spacing:4px;line-height:1.3}
+.tools{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tool{min-height:44px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{min-height:64px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.15rem;padding:8px 12px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30}
+.opt.arx{direction:rtl;font-size:1.1rem}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}
+.msg .ar{font-size:.95rem}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:62px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1rem;padding:6px 8px;line-height:1.3}
+.m.w{font-size:1.1rem;color:var(--gold2)}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2)}
+.m.done{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1);cursor:default}
+
+/* spelling */
+.slots{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:14px 0 18px;direction:ltr}
+.slot{width:34px;height:44px;border-bottom:3px solid var(--line);font-size:1.6rem;font-weight:900;text-align:center;color:var(--gold);text-transform:lowercase}
+.slot.cur{border-color:var(--gold);animation:blink 1s infinite}
+.slot.full{border-color:var(--ok);color:var(--ok)}
+@keyframes blink{50%{border-color:transparent}}
+.letters{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;direction:ltr}
+.let{width:52px;height:56px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:900;font-size:1.5rem;box-shadow:0 4px 0 #0c1a30}
+.let:disabled{opacity:.15;cursor:default}
+.let.bad{background:var(--bad);color:var(--navy)}
+
+/* splash */
+.splash{text-align:center;padding:30px 10px}
+.splash .e{font-size:5rem}
+.splash h2{font-family:'Playfair Display';font-size:2.2rem;color:var(--gold)}
+
+/* flashcards */
+.flip{perspective:1200px;margin-top:16px;cursor:pointer}
+.flip-in{position:relative;min-height:440px;transition:transform .6s;transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--navy2);border:2px solid var(--line);border-radius:26px;padding:20px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.face.back{transform:rotateY(180deg);justify-content:flex-start;border-color:var(--gold);overflow:auto}
+.face .big{font-size:clamp(3.6rem,17vw,5rem);letter-spacing:6px;animation:bob 3s ease-in-out infinite}
+.face .word{font-family:'Playfair Display';font-size:clamp(2.2rem,10vw,3rem);color:var(--gold);line-height:1.1;margin-top:10px}
+.face .tap{color:var(--muted);margin-top:18px;font-size:.95rem}
+.pos{display:inline-block;padding:2px 12px;border-radius:20px;font-weight:800;font-size:.85rem;color:var(--navy);margin-top:8px}
+.pos.v{background:var(--pink)}.pos.n{background:var(--blue)}.pos.adj{background:var(--purple)}
+.arm{font-size:1.9rem;font-weight:900;color:var(--gold2);direction:rtl;line-height:1.3;margin-top:4px}
+.enm{font-size:1.05rem;margin-top:6px}
+.exb{width:100%;background:var(--navy3);border-radius:14px;padding:10px 12px;margin-top:12px;border:1px solid var(--line);color:var(--text);text-align:start;font-size:1.05rem}
+.exb mark{background:none;color:var(--gold);font-weight:900}
+.exb .ar{font-size:.95rem;display:block;text-align:right}
+.trick{width:100%;direction:rtl;text-align:right;background:rgba(79,163,255,.1);border-radius:14px;padding:10px 12px;margin-top:10px;font-size:1rem;line-height:1.8}
+.trick b{color:var(--gold)}
+.say-btn{min-height:44px;min-width:44px;border-radius:50%;border:2px solid var(--gold);background:rgba(212,175,55,.12);color:var(--gold);font-size:1.3rem;margin-top:10px}
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+.lesson-nav .big-btn{margin:0;font-size:1.05rem;padding:8px 20px;min-height:52px}
+.dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block;transition:all .3s}
+.dots i.on{background:var(--gold);width:26px;border-radius:6px}
+
+/* word list */
+.wl{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.wl button{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:10px 12px;color:var(--text);text-align:start}
+.wl .e{font-size:1.6rem}
+.wl .w{font-weight:900;color:var(--gold2);font-size:1.1rem}
+.wl .ar{font-size:1rem;color:var(--text)}
+
+/* end */
+.end{text-align:center}
+.end .score{font-family:'Playfair Display';font-size:4rem;color:var(--gold);line-height:1}
+.rate{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.review{text-align:start;margin-top:18px}
+.review li{list-style:none;background:var(--navy3);border-radius:12px;padding:8px 12px;margin-top:8px;border-inline-start:4px solid var(--bad)}
+.review li b{color:var(--ok)}
+.row-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row-btns .big-btn{margin:16px 0 0;font-size:1.05rem;padding:10px 22px}
+
+/* 3D scenes */
+.scene{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:4px 6px;padding:18px 6px 26px;margin:6px auto 8px;max-width:420px;
+  background:radial-gradient(ellipse at 50% 100%,rgba(212,175,55,.18) 0%,transparent 60%);border-radius:22px}
+.scene::after{content:'';position:absolute;left:12%;right:12%;bottom:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(6px);z-index:0}
+.scene figure{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;margin:0}
+.scene figcaption{font-size:.8rem;font-weight:800;color:var(--muted);line-height:1.2;margin-top:2px}
+.i3{width:clamp(56px,18vw,92px);height:auto;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5));animation:bob3 3.2s ease-in-out infinite;user-select:none;-webkit-user-drag:none}
+.i3.big{width:clamp(80px,26vw,124px)}
+.i3.sm{width:clamp(40px,12vw,58px)}
+.i3.xs{width:34px;animation:none;filter:drop-shadow(0 4px 4px rgba(0,0,0,.4));vertical-align:middle}
+@keyframes bob3{0%,100%{transform:translateY(0) rotateY(-12deg)}50%{transform:translateY(-8px) rotateY(12deg)}}
+.d1{animation-delay:-.8s}.d2{animation-delay:-1.6s}.d3{animation-delay:-2.4s}
+.op{position:relative;z-index:1;align-self:center;font-size:clamp(1.5rem,6vw,2.1rem);font-weight:900;color:var(--gold);text-shadow:0 3px 0 #8a6a1e}
+.cap{position:relative;z-index:1;width:100%;text-align:center;font-weight:900;font-size:1.4rem;color:var(--gold2);letter-spacing:2px}
+.fall{animation:fall 2.2s ease-in infinite}
+@keyframes fall{0%{transform:translateY(-50px) scale(.7);opacity:0}25%{opacity:1}80%{transform:translateY(12px) scale(1);opacity:1}100%{transform:translateY(22px) scale(.6);opacity:0}}
+.rise{position:absolute;top:-34px;left:50%;margin-left:-22px;width:44px;animation:rise 2.6s ease-out infinite}
+@keyframes rise{0%{transform:translateY(20px) scale(.6);opacity:0}30%{opacity:.9}100%{transform:translateY(-26px) scale(1.2);opacity:0}}
+.blink{animation:blink3 3s infinite}
+@keyframes blink3{0%,44%,52%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+.glow{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 18px rgba(255,230,138,.9))}}
+.no{filter:grayscale(.6) drop-shadow(0 8px 8px rgba(0,0,0,.5));opacity:.8}
+.no-x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.4rem;pointer-events:none}
+.badge{position:absolute;top:-10px;right:-10px}
+.moon{position:absolute;top:0;left:8%;z-index:1}
+.step0{margin-bottom:44px!important}.step1{margin-bottom:22px!important}
+.fade-bad{animation:fadebad 4s ease-in-out infinite}
+@keyframes fadebad{0%,30%{filter:none}60%,100%{filter:sepia(.6) brightness(.8)}}
+.mascot img{width:110px;filter:drop-shadow(0 14px 12px rgba(0,0,0,.5))}
+.face .scene{width:100%}
+
+.tts-pill{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gold);color:var(--navy);font-weight:800;border-radius:20px;padding:6px 16px;transition:transform .25s;z-index:99;pointer-events:none}
+body.tts-wait .tts-pill{transform:translateX(-50%) translateY(0)}
+/* reading */
+.txt{margin-top:14px;background:var(--navy2);border:1px solid var(--line);border-radius:22px;padding:16px;animation:in .4s ease}
+.txt h3{font-family:'Playfair Display';color:var(--gold);font-size:1.5rem;line-height:1.2}
+.txt .scene{margin-top:4px}
+.para{font-size:1.12rem;line-height:1.95;margin-top:6px}
+.s{cursor:pointer;border-radius:6px;padding:1px 2px;transition:background .2s}
+.s:hover{background:rgba(79,163,255,.12)}
+.s.now{background:rgba(212,175,55,.25)}
+.keys .s.key{background:rgba(61,220,151,.18);box-shadow:inset 0 -2px 0 var(--ok)}
+.vw{color:var(--gold2);font-weight:800;border-bottom:2px dotted var(--gold)}
+.trans{position:sticky;bottom:10px;z-index:15;margin-top:12px;background:#132a4a;border:2px solid var(--gold);border-radius:16px;padding:10px 14px;direction:rtl;text-align:right;font-size:1.08rem;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none}
+.trans.show{display:block;animation:in .25s}
+.trans .en{direction:ltr;text-align:left;color:var(--muted);font-size:.9rem}
+.trans b{color:var(--gold)}
+.rbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.rbar .tool.on{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1)}
+.intro{font-style:italic;color:var(--muted)}
+/* grammar */
+.formula{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:12px 0;font-weight:900;font-size:1.1rem}
+.formula span{padding:6px 12px;border-radius:12px;color:var(--navy)}
+.formula .plus{color:var(--muted);padding:0}
+.f1{background:var(--blue)}.f2{background:var(--gold)}.f3{background:var(--ok)}.f4{background:var(--pink)}.f5{background:var(--purple)}
+.l-exp{direction:rtl;text-align:right;font-size:1.08rem;line-height:1.9;background:rgba(79,163,255,.08);border-radius:16px;padding:12px 16px;margin-top:10px}
+.l-exp b{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.box{background:var(--navy3);border-radius:14px;padding:10px;text-align:center;border-top:4px solid}
+.box h4{font-size:1.1rem}
+.box .ar{font-size:.9rem}
+.who-o{display:flex;flex-direction:column;align-items:center;gap:2px}
+.who-o img{width:46px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.4))}
+.opts.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opts.three .opt{font-size:1rem;padding:8px 4px;min-width:0;overflow-wrap:anywhere}
+.opt small{display:block;font-size:.8rem;font-weight:700}
+.fix{margin-top:10px;background:rgba(61,220,151,.1);border:1px solid var(--ok);border-radius:14px;padding:8px 12px;text-align:center}
+.q.passage{font-size:1.05rem;font-weight:500;text-align:left;line-height:1.8;background:var(--navy3);border-radius:16px;padding:12px 14px}
+</style>
+</head>
+<body>
+<div class="bg">
+  <span style="width:260px;height:260px;background:var(--gold);top:8%;left:-80px"></span>
+  <span style="width:200px;height:200px;background:var(--blue);bottom:10%;right:-60px;animation-delay:-4s"></span>
+  <span style="width:140px;height:140px;background:var(--pink);top:50%;left:60%;animation-delay:-8s"></span>
+</div>
+
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <button class="home" id="homeBtn" title="Home">🏠</button>
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars" id="stars">⭐ 0</span>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+<div class="tts-pill">🔊 …</div>
+
+<script>
+/* ================== 3D PICTURES (Fluent 3D icons in img/jobs) ================== */
+const im=(n,c='')=>`<img src="img/jobs/${n}.webp" alt="" class="i3 ${c}" draggable="false">`;
+const fig=(inner,cap='',c='')=>`<figure class="${c}">${inner}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;
+const op=s=>`<span class="op">${s}</span>`;
+
+/* ================== VOCABULARY (Dream Jobs, p. 20) ================== */
+const VOCAB=[
+ {w:'daily grind',pos:'n',posT:'Noun phrase',posAr:'عبارة اسمية',ar:'الروتين اليومي المُتعِب',en:'the boring work you do every day',
+  ex:"You're getting tired of the *daily grind*.",exAr:'بدأت تتعب من الروتين اليومي الممل.',icon:'tired',mean:'boring everyday work',
+  trick:'<b>grind</b> = يطحن ⚙️<br>كأن الشغل كل يوم <b>يطحنك</b> بنفس الطريقة ← روتين ممل 😫',
+  scene:fig(im('alarm'),'every day')+op('➜')+fig(im('repeat','sm d1'),'again')+op('➜')+fig(im('tired','d2'),'tired')},
+ {w:'inspiration',pos:'n',posT:'Noun',posAr:'اسم',ar:'إلهام',en:'a good new idea you get from someone or something',
+  ex:'Maybe you can get *inspiration* from these lucky people.',exAr:'ربما تأخذ إلهامًا من هؤلاء الأشخاص المحظوظين.',icon:'bulb',mean:'a new idea from someone',
+  trick:'فكرة 💡 تنوّر فجأة في عقلك 🧠<br>لما تشوف شخص ناجح ← <b>inspiration</b>',spell:1,
+  scene:fig(im('brain'))+op('➜')+fig(im('bulb','big glow d1'))+fig(im('sparkles','sm d2'))},
+ {w:'sculptor',pos:'n',posT:'Noun',posAr:'اسم',ar:'نحّات',en:'an artist who makes shapes from clay, stone or wood',
+  ex:'Salim ended up as a *sculptor* for General Motors.',exAr:'أصبح سالم في النهاية نحّاتًا في جنرال موتورز.',icon:'artist',mean:'an artist who shapes things',
+  trick:'<b>sculpt</b> = ينحت + <b>or</b> = الشخص<br>(زي actor و doctor) ← الشخص اللي ينحت 🗿',spell:1,
+  scene:fig(im('artist'),'sculptor')+fig(im('hands','sm d1'))+op('➜')+fig(im('car','d2'),'car model')},
+ {w:'clay',pos:'n',posT:'Noun',posAr:'اسم',ar:'صلصال / طين',en:'soft earth that you can shape with your hands',
+  ex:'Working with *clay* is normally associated with artists.',exAr:'العمل بالصلصال يرتبط عادةً بالفنانين.',icon:'amphora',mean:'soft earth you can shape',
+  trick:'زي <b>الصلصال</b> اللي كنت تلعب فيه وانت صغير 🤲<br>تشكّله بإيدك وبعدين يقسى 🏺',spell:1,
+  scene:fig(im('hands'),'shape it')+op('➜')+fig(im('amphora','big d1'),'clay')},
+ {w:'miniature',pos:'adj',posT:'Adjective',posAr:'صفة',ar:'مُصغَّر / صغير جدًا',en:'a very small copy of something',
+  ex:'Salim makes *miniature* clay models.',exAr:'سالم يصنع نماذج صلصال مصغّرة.',icon:'car',mean:'very small',
+  trick:'<b>mini</b> = صغير 🤏 (زي minibus)<br>miniature car = سيارة صغيرة زي اللعبة 🚗',spell:1,
+  scene:fig(im('car','sm'),'miniature ✅')+op('vs')+fig(im('car','big d1'),'actual size')},
+ {w:'sterile',pos:'adj',posT:'Adjective',posAr:'صفة',ar:'مُعقَّم',en:'completely clean, with no germs',
+  ex:'A lab has *sterile* surroundings.',exAr:'المختبر فيه مكان معقّم.',icon:'soap',mean:'very clean, no germs',
+  trick:'زي المستشفى 🏥 والمختبر 🧪<br>نظيف 100% ومافيه ولا جرثومة ✨',spell:1,
+  scene:fig(im('testtube'))+fig(im('soap','d1'))+fig(im('sparkles','sm glow d2'),'no germs')},
+ {w:'flavor',pos:'n',posT:'Noun',posAr:'اسم',ar:'نكهة / طعم',en:'the special taste of a food or drink',
+  ex:'He has created several new *flavors*.',exAr:'ابتكر عدة نكهات جديدة.',icon:'icecream',mean:'a special taste',
+  trick:'آيس كريم 🍨 فراولة 🍓 أو شوكولاتة 🍫<br>كل واحد له <b>flavor</b> مختلف',spell:1,
+  scene:fig(im('strawberry','sm'),'strawberry')+fig(im('icecream','big d1'))+fig(im('chocolate','sm d2'),'chocolate')},
+ {w:'market research',pos:'n',posT:'Noun phrase',posAr:'عبارة اسمية',ar:'أبحاث السوق',en:'finding out what customers want and like',
+  ex:"One part of Matthew's job involves *market research*.",exAr:'جزء من عمل ماثيو يتضمّن أبحاث السوق.',icon:'chart',mean:'asking customers what they want',
+  trick:'<b>market</b> = سوق 🛒 + <b>research</b> = بحث 🔍<br>تسأل الناس: وش تحبون؟ وتجمع النتائج 📊',
+  scene:fig(im('magnifier','sm'))+fig(im('people','d1'),'customers')+op('➜')+fig(im('chart','d2'),'results')},
+ {w:'input',pos:'n',posT:'Noun',posAr:'اسم',ar:'رأي / ملاحظات',en:'ideas and opinions that people give you',
+  ex:'He presents new products to customers and gets their *input*.',exAr:'يعرض المنتجات الجديدة على الزبائن ويأخذ آراءهم.',icon:'speech',mean:'opinions and ideas',
+  trick:'<b>in</b> = داخل + <b>put</b> = يضع<br>الناس <b>يضعون</b> آراءهم 💬 في عملك',spell:1,
+  scene:fig(im('scientist'))+op('⇄')+fig(im('speech','sm d1'))+fig(im('people','d2'),'customers')},
+ {w:'in high demand',pos:'n',posT:'Phrase',posAr:'عبارة',ar:'مطلوب بشدة',en:'wanted by many people',
+  ex:'Animation has been *in high demand*.',exAr:'الرسوم المتحركة مطلوبة بشدة.',icon:'chartup',mean:'wanted by many people',
+  trick:'<b>high</b> = عالي 📈 + <b>demand</b> = طلب<br>طلب عالي ← الكل يبغاه',
+  scene:fig(im('film','sm'))+fig(im('game','sm d1'))+op('➜')+fig(im('chartup','big d2'),'everyone wants it')},
+ {w:'portray',pos:'v',posT:'Verb',posAr:'فعل',ar:'يُجسِّد / يُصوِّر',en:'to show someone or their feelings in a film, picture or story',
+  ex:'Animators *portray* character emotions.',exAr:'مصممو الرسوم المتحركة يجسّدون مشاعر الشخصيات.',icon:'masks',mean:'to show people or feelings',
+  trick:'<b>portrait</b> = صورة شخص 🖼️<br><b>portray</b> = تُظهر الشخصية ومشاعرها 😀😢',spell:1,
+  scene:fig(im('masks'))+op('➜')+fig(im('grin','sm d1'),'happy')+fig(im('cry','sm d2'),'sad')},
+ {w:'crucial',pos:'adj',posT:'Adjective',posAr:'صفة',ar:'مهم جدًا / ضروري',en:'extremely important',
+  ex:'Clear communication with team members is *crucial*.',exAr:'التواصل الواضح مع أعضاء الفريق مهم جدًا.',icon:'key',mean:'very, very important',
+  trick:'زي <b>المفتاح</b> 🔑 بدونه ما تقدر تدخل<br>شيء ضروري جدًا ولا غنى عنه ⚠️',spell:1,
+  scene:fig(im('key','big glow'))+fig(im('warning','sm d1'),'very important')}
+];
+const V=Object.fromEntries(VOCAB.map(x=>[x.w,x]));
+
+/* ================== READING TEXTS (p. 20) ================== */
+// '!' at the start = a sentence that says exactly what the person does
+const TEXTS=[
+ {id:'intro',title:'Dream Jobs',ar:'وظائف الأحلام',intro:1,scene:fig(im('briefcase'))+fig(im('bulb','sm glow d1'))+fig(im('trophy','sm d2')),s:[
+  ['Have you ever wondered how people get really cool jobs?','هل تساءلت يومًا كيف يحصل الناس على وظائف رائعة حقًا؟'],
+  ["Imagine you've been working at the same job for a long time, and you're getting tired of the daily grind.",'تخيّل أنك تعمل في نفس الوظيفة منذ وقت طويل، وبدأت تتعب من الروتين اليومي.'],
+  ['Maybe you can get inspiration from these lucky people and do something creative and interesting.','ربما تأخذ إلهامًا من هؤلاء الأشخاص المحظوظين وتعمل شيئًا مبدعًا وممتعًا.']]},
+ {id:'S',title:'Car Sculptor',ar:'نحّات السيارات — سالم سيف',scene:fig(im('artist'))+fig(im('amphora','sm d1'))+op('➜')+fig(im('car','d2')),s:[
+  ['Working with clay is normally associated with artists, not with the automotive industry.','العمل بالصلصال يرتبط عادةً بالفنانين، وليس بصناعة السيارات.'],
+  ["However, some of the world's largest automobile companies have a permanent staff of sculptors to help them make designs for cars and visualize ideas for future products.",'لكن بعض أكبر شركات السيارات في العالم لديها فريق دائم من النحّاتين يساعدها في تصميم السيارات وتخيّل أفكار المنتجات المستقبلية.'],
+  ['Salim Saif went to art school and was going to be an artist, but he ended up as a sculptor for General Motors.','درس سالم سيف في مدرسة الفنون وكان سيصبح فنانًا، لكنه أصبح في النهاية نحّاتًا في شركة جنرال موتورز.'],
+  ['!Salim spends his days using his hands to craft anything from miniature clay models to actual-size car sculptures.','يقضي سالم أيامه يستخدم يديه لصنع كل شيء، من نماذج صلصال صغيرة إلى مجسّمات سيارات بالحجم الحقيقي.'],
+  ["!He's been working for the company since he left college, and he and his team have helped design the latest models to come off the showroom floor.",'يعمل سالم في الشركة منذ أن تخرّج من الكلية، وقد ساعد هو وفريقه في تصميم أحدث الموديلات في صالات العرض.']]},
+ {id:'M',title:'Food Scientist',ar:'عالِم الأغذية — ماثيو دوفال',scene:fig(im('scientist'))+fig(im('microscope','sm d1'))+fig(im('icecream','d2')),s:[
+  ['When someone says that he is a laboratory scientist, what immediately comes to your mind?','عندما يقول شخص إنه عالِم في مختبر، ما الذي يخطر في بالك فورًا؟'],
+  ['You probably think of a white lab coat, sterile surroundings, a microscope, and test tubes.','غالبًا تفكّر في معطف أبيض ومكان معقّم ومجهر وأنابيب اختبار.'],
+  ['But that is not the case of Matthew Duval.','لكن هذا ليس حال ماثيو دوفال.'],
+  ["!For the last three years, he's been working as a food scientist for the makers of Tasty's ice cream, and he has created several new flavors.","منذ ثلاث سنوات وهو يعمل عالِم أغذية لدى صانعي آيس كريم Tasty's، وقد ابتكر عدة نكهات جديدة."],
+  ["!He's constantly searching for new combinations of flavors to keep the products fresh and interesting for the company's customers.",'هو يبحث دائمًا عن خلطات نكهات جديدة ليبقى المنتج جديدًا وممتعًا لزبائن الشركة.'],
+  ['!In his lab, he experiments with different products and flavors until he gets them just right.','في مختبره، يجرّب منتجات ونكهات مختلفة حتى تصبح مضبوطة تمامًا.'],
+  ['!And, of course, he always gets to taste the results.','وبالطبع، هو دائمًا يتذوّق النتائج.'],
+  ["!One part of Matthew's job involves market research.",'جزء من عمل ماثيو يتضمّن أبحاث السوق.'],
+  ["!He's good at presenting his new products to customers and getting their input.",'هو ماهر في عرض منتجاته الجديدة على الزبائن وأخذ آرائهم.']]},
+ {id:'A',title:'Animation Designer',ar:'مصمّم الرسوم المتحركة',scene:fig(im('techie'))+fig(im('film','sm d1'))+fig(im('game','sm d2')),s:[
+  ['Animation has been in high demand in advertising, special effects, video games, and films.','الرسوم المتحركة مطلوبة بشدة في الإعلانات والمؤثرات الخاصة وألعاب الفيديو والأفلام.'],
+  ['Animators need to have artistic ability, creativity, storytelling ability, technical skills, scientific and technical knowledge, and the ability to work with others.','يحتاج مصممو الرسوم المتحركة إلى موهبة فنية وإبداع ومهارة في رواية القصص ومهارات تقنية ومعرفة علمية وتقنية والقدرة على العمل مع الآخرين.'],
+  ['!Animators need to understand character development and be able to portray character emotions in a convincing way.','يجب أن يفهموا تطوّر الشخصيات وأن يستطيعوا تجسيد مشاعرها بطريقة مقنعة.'],
+  ['!As computer generated imagery (CGI) technology is used in both live action films and animated movies and interactive games, it has become necessary for designers to have scientific and technical knowledge.','بما أن تقنية الصور المولّدة بالحاسب (CGI) تُستخدم في الأفلام الحيّة وأفلام الكرتون والألعاب التفاعلية، أصبح من الضروري أن يمتلك المصممون معرفة علمية وتقنية.'],
+  ['!Animation projects involve many people who work as a team.','مشاريع الرسوم المتحركة يشارك فيها أشخاص كثيرون يعملون كفريق.'],
+  ['Clear and effective communication with team members and clients is crucial.','التواصل الواضح والفعّال مع أعضاء الفريق والعملاء أمر مهم جدًا.']]}
+];
+// word forms in the text → vocab entry
+const FORMS={'daily grind':'daily grind','inspiration':'inspiration','sculptors':'sculptor','sculptor':'sculptor','clay':'clay','miniature':'miniature','sterile':'sterile','flavors':'flavor','market research':'market research','input':'input','in high demand':'in high demand','portray':'portray','crucial':'crucial'};
+
+/* ================== QUALITIES (p. 21) ================== */
+const QUALS=[
+ ['Communication skills','مهارات التواصل (الكلام والكتابة)','Omar explains his ideas clearly and writes good emails.','عمر يشرح أفكاره بوضوح ويكتب رسائل جيدة.','speech'],
+ ['Honesty / Integrity','الأمانة والنزاهة','Sara always tells the truth, even when it is hard.','سارة تقول الحقيقة دائمًا حتى لو كانت صعبة.','handshake'],
+ ['Teamwork skills','العمل الجماعي','Ali works well with others in a group project.','علي يعمل بشكل جيد مع الآخرين في مشروع جماعي.','people'],
+ ['Interpersonal skills','مهارات التعامل مع الناس','Noura gets along well with everyone at work.','نورة علاقتها طيبة مع الجميع في العمل.','smile'],
+ ['Strong work ethic','الجدّية والاجتهاد في العمل','Khalid works hard and is never late.','خالد يعمل بجد ولا يتأخر أبدًا.','muscle'],
+ ['Motivation / Initiative','الحماس والمبادرة','Reem starts new tasks without waiting to be told.','ريم تبدأ المهام الجديدة بدون أن ينتظرها أحد يطلب منها.','rocket'],
+ ['Flexibility / Adaptability','المرونة والتكيّف','Fahad stays calm and changes easily when plans change.','فهد يبقى هادئًا ويتأقلم بسهولة عندما تتغيّر الخطط.','arrows'],
+ ['Analytical skills','مهارات التحليل','Huda studies numbers and information to understand a problem.','هدى تدرس الأرقام والمعلومات لتفهم المشكلة.','chart'],
+ ['Computer skills','مهارات الحاسب','Majed uses computer programs and the internet very well.','ماجد يستخدم برامج الحاسب والإنترنت بمهارة.','laptop'],
+ ['Organizational skills','مهارات التنظيم','Lama keeps her files and her desk in order.','لمى تحافظ على ملفاتها ومكتبها مرتّبة.','dividers'],
+ ['Time management skills','إدارة الوقت','Saad always finishes his work before the deadline.','سعد ينهي عمله دائمًا قبل الموعد النهائي.','alarm'],
+ ['Critical thinking & problem solving','التفكير الناقد وحل المشكلات','Yara finds smart solutions when something goes wrong.','يارا تجد حلولًا ذكية عندما يحدث خطأ.','puzzle']
+];
+
+/* ================== WHO DOES IT? ================== */
+const WHO={S:['Salim','car sculptor','artist'],M:['Matthew','food scientist','scientist'],A:['Animator','animation designer','techie']};
+const WHOQ=[
+ ['He uses his hands to make clay models of cars.','S','يصنع نماذج سيارات من الصلصال 🚗'],
+ ['He helps design the latest car models.','S','يصمّم أحدث موديلات السيارات'],
+ ['He went to art school.','S','درس في مدرسة الفنون 🎨'],
+ ["He's been working for the company since he left college.",'S','يعمل في الشركة منذ الكلية'],
+ ['He creates new ice cream flavors.','M','يبتكر نكهات آيس كريم 🍨'],
+ ['He experiments with products in his lab.','M','يجرّب المنتجات في مختبره 🔬'],
+ ['He always gets to taste the results.','M','يتذوّق النتائج 😋'],
+ ["He does market research and gets customers' input.",'M','أبحاث السوق وآراء الزبائن 📊'],
+ ['This person portrays character emotions in a convincing way.','A','يجسّد مشاعر الشخصيات 🎭'],
+ ['This person uses CGI technology for films and games.','A','يستخدم تقنية CGI في الأفلام والألعاب 🎬'],
+ ['This person works in a big team on every project.','A','يعمل مع فريق كبير في كل مشروع 👥']
+];
+
+/* ================== TRUE / FALSE (Quick Check B + extra) ================== */
+const TF=[
+ ['Salim works as a car driver.',false,'Salim works as a car sculptor.','سالم يعمل نحّات سيارات وليس سائقًا',1],
+ ["He's been working for an auto company since he left school.",false,'He has been working there since he left college.','منذ أن تخرّج من الكلية وليس المدرسة',1],
+ ['Matthew has created several new flavors of yogurt.',false,'He has created new flavors of ice cream.','نكهات آيس كريم وليس زبادي',1],
+ ['Matthew enjoys presenting his new products to customers.',true,"He's good at presenting his new products to customers.",'هو ماهر في عرض منتجاته على الزبائن',1],
+ ['Animators usually work alone on their creative projects.',false,'Animators work as a team.','يعملون كفريق وليس وحدهم',1],
+ ['Matthew has been working as a food scientist for three years.',true,"For the last three years, he's been working as a food scientist.",'صحيح: منذ ثلاث سنوات',0],
+ ['Salim only makes small models.',false,'He makes miniature models AND actual-size cars.','يصنع نماذج صغيرة وأيضًا بالحجم الحقيقي',0],
+ ['Animators need scientific and technical knowledge.',true,'Designers need scientific and technical knowledge.','صحيح: يحتاجون معرفة علمية وتقنية',0]
+];
+
+/* ================== GRAMMAR: present perfect progressive (Pair Work) ================== */
+const GRAM=[
+ ['How long ___ Matthew been working as a food scientist?','has',['has','have','is'],'Matthew = he → has','مع he / she / اسم شخص واحد نستخدم has'],
+ ["He's been ___ as a food scientist for three years.",'working',['working','work','worked'],'been + verb-ing','بعد been يأتي الفعل + ing'],
+ ['Salim has been working for the company ___ he left college.','since',['since','for'],'since + starting point','since = منذ + بداية الحدث'],
+ ['Matthew has been working there ___ three years.','for',['for','since'],'for + period of time','for + مدة زمنية (3 سنوات)'],
+ ['Animators ___ been using CGI technology for many years.','have',['have','has','are'],'They → have','مع الجمع نستخدم have'],
+ ['I have been ___ English since 2020.','studying',['studying','study','studied'],'been + verb-ing','بعد been نضيف ing للفعل'],
+ ['She ___ been teaching for ten years.','has',['has','have','is'],'She → has','مع She نستخدم has'],
+ ["We have been waiting ___ 8 o'clock.",'since',['since','for'],"8 o'clock = starting point",'8 o\'clock بداية الانتظار ← since'],
+ ["What job are you interested in? — I'm interested in ___ a child psychologist.",'becoming',['becoming','become','became'],'interested in + verb-ing','بعد interested in يأتي الفعل + ing'],
+ ['What skills do you need to be a car sculptor? — You must be ___.','creative',['creative','create','creation'],'must be + adjective','بعد must be نستخدم صفة: creative = مبدع']
+];
+
+/* ================== WORKBOOK p. 229 — Exercise A ================== */
+const WB_BANK=['initiative','teamwork skills','honesty','work ethic','integrity'];
+const WB=[
+ {q:"Faisal works in a clothing store. He helps customers choose clothes, and he answers their questions. Faisal thinks that the store needs to sell hip and cool clothes. He has asked some customers about this, and they are interested in buying that style of clothes. He talked to his manager, and his manager was very happy with Faisal and his idea. In fact, the manager gave Faisal a promotion! Faisal has ___.",
+  a:'initiative',o:WB_BANK,scene:fig(im('manwork'))+fig(im('shirt','sm d1'))+op('➜')+fig(im('bulb','sm glow d2'),'new idea'),
+  h:'He had an idea and did it himself 💡',hAr:'فيصل فكّر في فكرة جديدة وبادر بها بنفسه بدون أن يطلب منه أحد ← <b>initiative</b> = مبادرة'},
+ {q:"Sahar is a doctor and works at a hospital. She has worked there for three years. She has never been late for work. Sahar has always done her job well, and she has never missed a day of work. She loves her job and always helps others. She often stays late to see her patients. Sahar has a strong ___.",
+  a:'work ethic',o:WB_BANK,scene:fig(im('doctor'))+fig(im('hospital','sm d1'))+fig(im('alarm','sm d2'),'never late'),
+  h:'She works hard and is never late 💪',hAr:'سحر لا تتأخر أبدًا ولا تغيب وتبقى بعد الدوام لمرضاها ← <b>work ethic</b> = الجدّية والاجتهاد'},
+ {q:"Adel works in a bank. Yesterday morning he had a new customer. He lost his wallet at the bank. After lunch, Adel saw the wallet on the floor by his desk. He immediately called him. He returned to the bank, and Adel gave him the wallet. All his money was still in the wallet, and he was very happy. He gave Adel 75 riyals as a reward. Adel received the reward because of his ___.",
+  a:'honesty and integrity',o:['honesty and integrity','initiative and teamwork skills','work ethic and initiative','teamwork skills and work ethic'],
+  scene:fig(im('manwork'))+fig(im('wallet','sm d1'))+fig(im('money','sm d2'),'all the money'),
+  h:'He gave back the wallet with ALL the money 👛',hAr:'عادل أرجع المحفظة وكل المال فيها ← <b>honesty and integrity</b> = الأمانة والنزاهة (كلمتين!)'},
+ {q:"Nawal has always liked to work with people. She's a manager in an advertising agency. Nawal is always interested in working with new clients. She is good at getting people to work together. That is an important part of her job. And she has always been successful because of this. Nawal has a lot of success at work because of her ___.",
+  a:'teamwork skills',o:WB_BANK,scene:fig(im('womanwork'))+op('+')+fig(im('people','d1'),'together'),
+  h:'She gets people to work together 👥',hAr:'نوال تجعل الناس يعملون معًا ← <b>teamwork skills</b> = مهارات العمل الجماعي'}
+];
+
+/* ================== ENGINE ================== */
+const app=document.getElementById('app');
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const others=(arr,x,n=3)=>shuffle(arr.filter(y=>y!==x)).slice(0,n);
+const mark=s=>s.replace(/\*(.+?)\*/g,'<mark>$1</mark>');
+const plain=s=>s.replace(/<[^>]+>/g,'').replace(/\*/g,'');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const PRAISE=[['Great job','أحسنت!'],['Excellent','ممتاز!'],['Super','رائع!'],['Well done','عمل جميل!'],['Perfect','مثالي!']];
+let items=[],idx=0,points=0,maxPts=0,mistakes=[],student='',lastGame=null;
+
+/* ---- read aloud: Gemini natural voice (Netlify function), browser voice as fallback ---- */
+const TTS_URL='/.netlify/functions/tts';
+const audioCache=new Map();let ttsFails=0,curAudio=null,speakId=0;
+const ttsOn=()=>location.protocol.startsWith('http')&&ttsFails<2;
+const cleanSay=t=>plain(t).replace(/___/g,' blank ').replace(/—/g,',').replace(/\s+/g,' ').trim();
+function fetchVoice(t){
+  if(!audioCache.has(t))audioCache.set(t,fetch(TTS_URL+'?text='+encodeURIComponent(t))
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.blob()}).then(b=>{ttsFails=0;return URL.createObjectURL(b)})
+    .catch(e=>{audioCache.delete(t);ttsFails++;throw e}));
+  return audioCache.get(t);
+}
+function prefetchSay(...ts){if(ttsOn())ts.filter(Boolean).map(cleanSay).filter(Boolean).forEach(t=>fetchVoice(t).catch(()=>{}))}
+function stopSay(){speakId++;try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}document.body.classList.remove('tts-wait')}
+let bestVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB)/i.test(v.lang));
+  bestVoice=v.find(v=>/natural|neural|online/i.test(v.name))||v.find(v=>/google/i.test(v.name))||v.find(v=>/samantha|aria|jenny|daniel|karen/i.test(v.name))||v[0]||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function browserSay(t){return new Promise(res=>{try{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.8;if(bestVoice)u.voice=bestVoice;
+  u.onend=u.onerror=()=>res();speechSynthesis.speak(u)}catch(e){res()}})}
+// plays one text and resolves when it has finished (or was stopped)
+async function sayOne(t,id){
+  if(ttsOn()){
+    document.body.classList.add('tts-wait');
+    try{const url=await fetchVoice(t);if(id!==speakId)return;document.body.classList.remove('tts-wait');
+      curAudio=new Audio(url);await new Promise((res,rej)=>{curAudio.onended=res;curAudio.onpause=res;curAudio.play().catch(rej)});return}
+    catch(e){if(id!==speakId)return}
+    finally{if(id===speakId)document.body.classList.remove('tts-wait')}
+  }
+  await browserSay(t);
+}
+function speak(raw){const t=cleanSay(raw);if(!t)return;stopSay();const id=speakId;
+  if(t.length<=280)return sayOne(t,id);
+  const parts=t.match(/[^.!?]+[.!?]*/g).map(x=>x.trim()).filter(Boolean);parts.forEach(x=>prefetchSay(x));
+  (async()=>{for(const x of parts){if(id!==speakId)return;await sayOne(x,id)}})()}
+function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+
+/* ================== GAMES ================== */
+const TFO=['True','False'];
+const whoBtn=k=>`<span class="who-o">${im(WHO[k][2],'xs')}${WHO[k][0]}<small class="ar">${WHO[k][1]}</small></span>`;
+const GAMES={
+ pics:{e:'🖼️',t:'Picture Game',ar:'لعبة الصور',build:()=>shuffle(VOCAB).map(x=>({t:'mcq',w:x.w,ins:'Look at the picture. Choose the word.',insAr:'انظر إلى الصورة واختر الكلمة.',
+   scene:x.scene,q:'',a:x.w,o:shuffle([x.w,...others(VOCAB,x).map(o=>o.w)]),h:x.en,hAr:x.ar,say:x.w}))},
+ arabic:{e:'🇸🇦',t:'Arabic Meaning',ar:'المعنى بالعربي',build:()=>shuffle(VOCAB).map(x=>({t:'mcq',w:x.w,ins:'What does it mean in Arabic?',insAr:'ما معنى الكلمة بالعربي؟',
+   q:x.w,big:true,a:x.ar,o:shuffle([x.ar,...others(VOCAB,x).map(o=>o.ar)]),arx:true,h:im(x.icon,'xs'),hAr:plain(x.ex),say:x.w}))},
+ match:{e:'🔗',t:'Match It',ar:'صِل الكلمة بمعناها',build:()=>{const s=shuffle(VOCAB);return [s.slice(0,4),s.slice(4,8),s.slice(8)].map(g=>({t:'match',ins:'Match the word with its meaning.',insAr:'اضغط على الكلمة ثم على معناها.',
+   pairs:g.map(x=>[x.w,x.mean]),help:g.map(x=>[x.w,x.ar])}))}},
+ who:{e:'🕵️',t:'Who Does It?',ar:'مَن يفعل ذلك؟',build:()=>shuffle(WHOQ).map(([q,a,hAr])=>({t:'mcq',w:q,ins:'Who does this job? Choose the person.',insAr:'اقرأ الجملة: مَن يفعل هذا؟',
+   q:`“${q}”`,a,o:['S','M','A'],oh:whoBtn,cls:'three',h:'Read the texts again 📖',hAr,say:q,note:WHO[a][0]}))},
+ tf:{e:'✅',t:'True or False',ar:'صح أم خطأ',build:()=>shuffle(TF).map(([q,a,fix,hAr,book])=>({t:'mcq',w:q,ins:(book?'📘 Quick Check B — ':'')+'True or false?',insAr:'هل الجملة صحيحة أم خاطئة؟',
+   q:`“${q}”`,a:a?'True':'False',o:TFO,oh:o=>o==='True'?'True ✅<small class="ar">صح</small>':'False ❌<small class="ar">خطأ</small>',fix,h:'Look at the text again 📖',hAr,say:q}))},
+ quals:{e:'🌟',t:'Job Qualities',ar:'صفات يبحث عنها أصحاب العمل',build:()=>shuffle(QUALS).map(([n,ar,ex,exAr,ic])=>({t:'mcq',w:n,ins:'Which quality does this person have?',insAr:'أي صفة عند هذا الشخص؟',
+   scene:fig(im(ic,'big')),q:ex,a:n,o:shuffle([n,...others(QUALS.map(x=>x[0]),n)]),h:exAr,hAr:n+' = '+ar,say:ex,long:true}))},
+ gram:{e:'🧠',t:'Grammar',ar:'تدريب على القواعد',build:()=>shuffle(GRAM).map(([q,a,o,h,hAr])=>({t:'mcq',w:q,ins:'Choose the correct word.',insAr:'اختر الكلمة الصحيحة.',
+   q,a,o:shuffle(o),h,hAr,say:q.replace('___',a),long:true}))},
+ wb:{e:'📝',t:'Workbook p. 229',ar:'اكتب الصفة المناسبة لكل شخص',build:()=>WB.map(x=>({t:'mcq',w:x.a,ins:'Read. Choose the word that describes the person.',insAr:'اقرأ القصة واختر الكلمة التي تصف الشخص.',
+   scene:x.scene,q:x.q,passage:true,a:x.a,o:shuffle(x.o),h:x.h,hAr:x.hAr,say:x.q.replace('___',x.a),long:x.a.includes(' and ')}))},
+ spell:{e:'🔤',t:'Spelling',ar:'تهجئة الكلمة',build:()=>shuffle(VOCAB.filter(x=>x.spell)).map(x=>({t:'spell',w:x.w,ins:'Listen 🔊 and build the word.',insAr:'استمع للكلمة ثم رتّب الحروف.',scene:x.scene,hAr:x.ar}))}
+};
+const ORDER=['pics','arabic','match','who','tf','quals','wb','gram','spell'];
+// the Big Test takes a few items from each game so it stays short
+const BIG={pics:5,arabic:5,match:1,who:5,tf:5,quals:5,wb:4,gram:6,spell:4};
+
+function buildItems(keys,big){
+  const out=[];keys.forEach(k=>{if(keys.length>1)out.push({splash:k});
+    let list=GAMES[k].build();if(big)list=list.slice(0,BIG[k]);list.forEach(q=>q.g=k);out.push(...list)});return out;
+}
+const countPts=list=>list.reduce((n,q)=>n+(q.splash?0:q.t==='match'?q.pairs.length:1),0);
+
+function startGame(keys,custom){
+  lastGame=keys;items=custom||buildItems(keys,keys.length>1);idx=0;points=0;mistakes=[];maxPts=countPts(items);
+  document.getElementById('top').classList.remove('hidden');render();
+}
+function updateTop(){
+  const qs=items.filter(q=>!q.splash),done=items.slice(0,idx).filter(q=>!q.splash).length;
+  document.getElementById('fill').style.width=(done/qs.length*100)+'%';
+  document.getElementById('qn').textContent=Math.min(done+1,qs.length)+' / '+qs.length;
+  document.getElementById('stars').textContent='⭐ '+points;
+}
+function next(){idx++;render()}
+function nextBtn(){const b=document.createElement('button');b.className='big-btn';b.textContent='Next ➜';b.onclick=next;document.getElementById('foot').appendChild(b);b.focus({preventScroll:true})}
+function praise(el){const p=PRAISE[Math.floor(Math.random()*PRAISE.length)];el.className='msg good';el.innerHTML=`✅ ${p[0]}! <span class="ar">${p[1]}</span>`}
+function tryAgain(el){el.className='msg try';el.innerHTML='💪 Try again! <span class="ar">حاول مرة أخرى! أنت تستطيع</span>'}
+function addMistake(q){if(!mistakes.includes(q))mistakes.push(q)}
+
+function render(){
+  stopSay();window.scrollTo({top:0,behavior:'smooth'});
+  if(idx>=items.length)return finish();
+  updateTop();
+  const q=items[idx];
+  if(q.splash){const g=GAMES[q.splash];
+    app.innerHTML=`<div class="card splash"><div class="e">${g.e}</div><h2>${g.t}</h2><div class="ar" style="font-size:1.3rem">${g.ar}</div><button class="big-btn" id="go">Let's go! 🚀</button></div>`;
+    document.getElementById('go').onclick=next;return}
+  ({mcq:renderMcq,match:renderMatch,spell:renderSpell})[q.t](q);
+}
+const head=q=>`<span class="chip">${GAMES[q.g].e} ${GAMES[q.g].t}</span><div class="ins">${q.ins}</div><div class="ar">${q.insAr}</div>`;
+
+function renderMcq(q){
+  let first=true;
+  app.innerHTML=`<div class="card">${head(q)}
+   ${q.scene?`<div class="scene">${q.scene}</div>`:''}
+   ${q.q?`<div class="q ${q.big?'word':''}${q.passage?' passage':''}">${q.q.replace('___','<span class="blank" id="bl">?</span>')}</div>`:''}
+   <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+   <div class="hint" id="hint">${q.h}<div class="ar">${q.hAr}</div></div>
+   <div class="opts ${q.cls||''}" id="opts"></div><div class="msg" id="msg"></div><div id="fixbox"></div><div id="foot"></div></div>`;
+  const opts=document.getElementById('opts'),msg=document.getElementById('msg');
+  if(q.long&&innerWidth<460)opts.style.gridTemplateColumns='1fr';
+  const sayTxt=q.say||q.q;
+  document.getElementById('say').onclick=()=>speak(sayTxt);
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  q.o.forEach(o=>{const b=document.createElement('button');b.className='opt'+(q.arx?' arx':'');if(q.oh)b.innerHTML=q.oh(o);else b.textContent=o;opts.appendChild(b);
+    b.onclick=()=>{
+      if(o===q.a){
+        beep(true);b.classList.add('right');opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        if(first)points++;praise(msg);
+        const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.classList.add('done')}
+        if(q.fix)document.getElementById('fixbox').innerHTML=`<div class="fix">📖 ${q.fix}<div class="ar">${q.hAr}</div></div>`;
+        speak(q.fix||q.say||q.a);nextBtn();updateTop();
+      }else{
+        beep(false);first=false;b.classList.add('wrong','shake');b.disabled=true;tryAgain(msg);
+        document.getElementById('hint').classList.add('show');addMistake(q);
+      }}});
+  prefetchSay(sayTxt);
+}
+
+function renderMatch(q){
+  const L=q.pairs.map(p=>p[0]),R=shuffle(q.pairs.map(p=>p[1])),bad=new Set();let sel=null,left=q.pairs.length;
+  app.innerHTML=`<div class="card">${head(q)}
+   <div class="tools" style="margin-top:12px"><button class="tool" id="hb">💡 Arabic help</button></div>
+   <div class="hint" id="hint">${q.help.map(([w,a])=>`<div>${w} = <span class="ar" style="color:var(--gold2)">${a}</span></div>`).join('')}</div>
+   <div class="match"><div class="col" id="cl"></div><div class="col" id="cr"></div></div>
+   <div class="msg" id="msg"></div><div id="foot"></div></div>`;
+  const cl=document.getElementById('cl'),cr=document.getElementById('cr'),msg=document.getElementById('msg');
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  L.forEach(l=>{const b=document.createElement('button');b.className='m w';b.textContent=l;cl.appendChild(b);
+    b.onclick=()=>{if(b.classList.contains('done'))return;cl.querySelectorAll('.m').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;speak(l)}});
+  R.forEach(r=>{const b=document.createElement('button');b.className='m';b.textContent=r;cr.appendChild(b);
+    b.onclick=()=>{
+      if(b.classList.contains('done'))return;
+      if(!sel){msg.className='msg try';msg.innerHTML='👈 Choose a word first <span class="ar">اختر كلمة أولًا من اليسار</span>';return}
+      const w=sel.textContent,ok=q.pairs.find(p=>p[0]===w)[1]===r;
+      if(ok){beep(true);sel.classList.remove('sel');sel.classList.add('done');b.classList.add('done');
+        if(!bad.has(w))points++;sel=null;left--;updateTop();
+        if(left===0){praise(msg);nextBtn()}else{msg.className='msg good';msg.textContent='✅'}}
+      else{beep(false);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),450);
+        bad.add(w);addMistake(q);tryAgain(msg)}}});
+}
+
+function renderSpell(q){
+  const word=q.w,letters=shuffle(word.split(''));let pos=0,slip=false;
+  app.innerHTML=`<div class="card">${head(q)}
+   <div class="scene">${q.scene}</div>
+   <div class="q ar" style="color:var(--gold2)">${q.hAr}</div>
+   <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Next letter</button></div>
+   <div class="slots">${word.split('').map(()=>'<span class="slot"></span>').join('')}</div>
+   <div class="letters" id="lets"></div><div class="msg" id="msg"></div><div id="foot"></div></div>`;
+  const slots=[...document.querySelectorAll('.slot')],lets=document.getElementById('lets'),msg=document.getElementById('msg');
+  const cur=()=>slots.forEach((s,i)=>s.classList.toggle('cur',i===pos));cur();
+  const put=btn=>{slots[pos].textContent=word[pos];slots[pos].classList.add('full');btn.disabled=true;pos++;cur();
+    if(pos===word.length){beep(true);if(!slip)points++;else addMistake(q);praise(msg);speak(word);
+      lets.querySelectorAll('.let').forEach(x=>x.disabled=true);nextBtn();updateTop()}};
+  letters.forEach(c=>{const b=document.createElement('button');b.className='let';b.textContent=c;lets.appendChild(b);
+    b.onclick=()=>{if(pos>=word.length||b.disabled)return;
+      if(c===word[pos])put(b);
+      else{beep(false);slip=true;b.classList.add('bad','shake');setTimeout(()=>b.classList.remove('bad','shake'),450);tryAgain(msg)}}});
+  document.getElementById('say').onclick=()=>speak(word);
+  document.getElementById('hb').onclick=()=>{if(pos>=word.length)return;slip=true;
+    const b=[...lets.querySelectorAll('.let')].find(x=>!x.disabled&&x.textContent===word[pos]);if(b)put(b)};
+  prefetchSay(word);setTimeout(()=>speak(word),400);
+}
+
+function reviewLine(q){
+  if(q.t==='match')return q.help.map(([w,a])=>`<b>${w}</b> = <span class="ar" style="color:var(--text)">${a}</span>`).join('<br>');
+  if(q.t==='spell')return `<b>${q.w}</b> = <span class="ar" style="color:var(--text)">${q.hAr}</span>`;
+  if(q.g==='pics'||q.g==='arabic')return `${im(V[q.w].icon,'xs')} <b>${q.w}</b> = <span class="ar" style="color:var(--text)">${V[q.w].ar}</span>`;
+  const a=q.g==='who'?WHO[q.a][0]:q.a;
+  return `${q.q.replace('___','<b>'+a+'</b>')}${q.q.includes('___')?'':' → <b>'+a+'</b>'}${q.fix?`<div style="font-size:.9rem;color:var(--muted)">${q.fix}</div>`:''}`;
+}
+
+function finish(){
+  stopSay();document.getElementById('fill').style.width='100%';document.getElementById('stars').textContent='⭐ '+points;
+  const pct=maxPts?Math.round(points/maxPts*100):0;
+  const [rate,en,ar]=pct===100?['⭐⭐⭐','Amazing! Perfect score!','رائع جدًا! الدرجة كاملة 🏆']:pct>=80?['⭐⭐⭐','Excellent work!','عمل ممتاز! 🌟']:pct>=60?['⭐⭐','Good job! Keep practicing.','أحسنت! استمر في التدريب 👍']:['⭐','Nice try! Let\'s practice again.','محاولة جيدة! لنتدرّب مرة أخرى 💪'];
+  app.innerHTML=`<div class="card end">
+   <div class="mascot">${im('trophy')}</div>
+   <div class="score">${points} / ${maxPts}</div><div class="rate">${rate}</div>
+   <div style="font-weight:900;font-size:1.3rem">${student?esc(student)+', ':''}${en}</div><div class="ar" style="font-size:1.15rem">${ar}</div>
+   ${mistakes.length?`<div class="review"><div style="font-weight:800">📝 Review these <span class="ar">راجع هذه</span></div>
+     <ul>${mistakes.map(q=>`<li>${reviewLine(q)}</li>`).join('')}</ul></div>`:''}
+   <div class="row-btns">
+    ${mistakes.length?'<button class="big-btn" id="redo">🔁 Practice my mistakes</button>':''}
+    <button class="big-btn ghost" id="again">🎮 Play again</button>
+    <button class="big-btn ghost" id="home2">🏠 Home</button></div></div>`;
+  if(mistakes.length)document.getElementById('redo').onclick=()=>{
+    const it=shuffle(mistakes).map(q=>({...q,o:q.o&&q.g!=='who'&&q.g!=='tf'?shuffle(q.o):q.o}));startGame(lastGame,it)};
+  document.getElementById('again').onclick=()=>startGame(lastGame);
+  document.getElementById('home2').onclick=home;
+  if(pct>=80&&window.confetti){confetti({particleCount:160,spread:90,origin:{y:.6}});
+    if(pct===100)setTimeout(()=>confetti({particleCount:200,spread:120,origin:{y:.4},colors:['#d4af37','#ffe68a','#3ddc97']}),500)}
+}
+
+/* ================== LEARN (flashcards) ================== */
+function learn(i=0){
+  document.getElementById('top').classList.remove('hidden');
+  document.getElementById('fill').style.width=((i+1)/VOCAB.length*100)+'%';
+  document.getElementById('qn').textContent=(i+1)+' / '+VOCAB.length;
+  document.getElementById('stars').textContent='📖';
+  const x=VOCAB[i];
+  app.innerHTML=`<div class="flip" id="flip"><div class="flip-in">
+    <div class="face"><div class="scene">${x.scene}</div><div class="word">${x.w}</div>
+      <span class="pos ${x.pos}">${x.posT} · ${x.posAr}</span>
+      <button class="say-btn" data-say="${x.w}">🔊</button>
+      <div class="tap">👆 Tap the card to see the meaning<br><span class="ar">اضغط على البطاقة لترى المعنى</span></div></div>
+    <div class="face back">
+      <div style="font-family:'Playfair Display';font-size:1.8rem;color:var(--gold)">${x.w} <button class="say-btn" style="margin:0 0 0 6px;font-size:1rem" data-say="${x.w}">🔊</button></div>
+      <div class="arm">${x.ar}</div>
+      <div class="enm">${x.en}</div>
+      <button class="exb" data-say="${esc(plain(x.ex))}">🔊 ${mark(x.ex)}<span class="ar">${x.exAr}</span></button>
+      <div class="trick">🧠 <b>فكرة للحفظ:</b><br>${x.trick}</div>
+    </div></div></div>
+   <div class="dots">${VOCAB.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div>
+   <div class="lesson-nav">
+    <button class="big-btn ghost" id="prev" ${i===0?'style="visibility:hidden"':''}>⬅ Back</button>
+    <button class="big-btn" id="nx">${i===VOCAB.length-1?'Done ✅':'Next ➜'}</button></div>`;
+  const flip=document.getElementById('flip');
+  flip.onclick=e=>{if(e.target.closest('[data-say]'))return;flip.classList.toggle('on')};
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('prev').onclick=()=>learn(i-1);
+  document.getElementById('nx').onclick=()=>i===VOCAB.length-1?home():learn(i+1);
+  prefetchSay(x.w,plain(x.ex));setTimeout(()=>speak(x.w),300);
+}
+
+/* ================== READ THE TEXTS ================== */
+const FORM_RE=new RegExp('\\b('+Object.keys(FORMS).sort((a,b)=>b.length-a.length).join('|')+')\\b','gi');
+function readTexts(){
+  document.getElementById('top').classList.add('hidden');
+  let n=0;const all=[];
+  app.innerHTML=`<div class="card" style="text-align:center"><span class="chip">📰 Dream Jobs · p. 20</span>
+    <div class="ins">Read the three texts. Find the sentences that say exactly what each person does.</div>
+    <div class="ar">اقرأ النصوص الثلاثة. ابحث عن الجمل التي تقول بالضبط ماذا يعمل كل شخص.</div>
+    <div class="rbar"><button class="tool" id="keys">🎯 Show the job sentences</button></div>
+    <div class="ar" style="margin-top:8px;font-size:.95rem">👆 اضغط على أي جملة لتسمعها وترى ترجمتها — والكلمات <span class="vw">الذهبية</span> كلمات جديدة</div></div>
+   <div id="texts">${TEXTS.map(t=>`<div class="txt">
+     <h3>${t.title}</h3><div class="ar">${t.ar}</div>
+     <div class="scene">${t.scene}</div>
+     <div class="rbar"><button class="tool" data-all="${t.id}">🔊 Read all</button></div>
+     <p class="para ${t.intro?'intro':''}">${t.s.map(([en,ar])=>{const key=en[0]==='!';const e=key?en.slice(1):en;all.push({e,ar});
+       return `<span class="s ${key?'key':''}" data-n="${n++}" data-t="${t.id}">${e.replace(FORM_RE,m=>`<span class="vw" data-v="${FORMS[m.toLowerCase()]}">${m}</span>`)}</span> `}).join('')}</p></div>`).join('')}</div>
+   <div class="trans" id="trans"></div>
+   <button class="big-btn" id="back">🏠 Home</button>`;
+  const trans=document.getElementById('trans'),texts=document.getElementById('texts');
+  const hl=i=>{app.querySelectorAll('.s.now').forEach(x=>x.classList.remove('now'));const el=app.querySelector(`.s[data-n="${i}"]`);if(el)el.classList.add('now');
+    trans.innerHTML=`${all[i].ar}<div class="en">${esc(all[i].e)}</div>`;trans.classList.add('show')};
+  app.querySelectorAll('.s').forEach(s=>s.onclick=e=>{
+    const v=e.target.closest('.vw');
+    if(v){const x=V[v.dataset.v];stopSay();sayOne(x.w,speakId);app.querySelectorAll('.s.now').forEach(y=>y.classList.remove('now'));
+      trans.innerHTML=`${im(x.icon,'xs')} <b>${x.w}</b> = ${x.ar}<div class="en">${x.en}</div>`;trans.classList.add('show');return}
+    const i=+s.dataset.n;hl(i);speak(all[i].e)});
+  app.querySelectorAll('[data-all]').forEach(b=>b.onclick=async()=>{
+    stopSay();const id=speakId,list=[...app.querySelectorAll(`.s[data-t="${b.dataset.all}"]`)].map(s=>+s.dataset.n);
+    list.forEach(i=>prefetchSay(all[i].e));
+    for(const i of list){if(id!==speakId)return;hl(i);app.querySelector(`.s[data-n="${i}"]`).scrollIntoView({block:'center',behavior:'smooth'});await sayOne(cleanSay(all[i].e),id)}});
+  document.getElementById('keys').onclick=e=>{const on=texts.classList.toggle('keys');e.currentTarget.classList.toggle('on',on)};
+  document.getElementById('back').onclick=home;
+}
+
+/* ================== GRAMMAR LESSON ================== */
+function grammar(){
+  document.getElementById('top').classList.add('hidden');
+  const ex=[["For the last three years, he's been working as a food scientist.",'منذ ثلاث سنوات وهو يعمل عالِم أغذية.'],
+    ["He's been working for the company since he left college.",'يعمل في الشركة منذ أن تخرّج من الكلية.'],
+    ['How long has Matthew been working as a food scientist?','منذ متى وماثيو يعمل عالِم أغذية؟']];
+  app.innerHTML=`<div class="card"><span class="chip">🧠 Grammar · Pair Work p. 21</span>
+   <h2 style="font-family:'Playfair Display';color:var(--gold);margin-top:8px;line-height:1.2">Present Perfect Progressive</h2>
+   <div class="ar">المضارع التام المستمر</div>
+   <div class="scene">${fig(im('calendar','sm'),'started')+op('➜')+fig(im('scientist','d1'),'still working')+op('➜')+fig(im('clock','sm d2'),'now')}</div>
+   <div class="l-exp">نستخدمه لشيء <b>بدأ في الماضي</b> وما زال <b>مستمرًا حتى الآن</b>.<br>مثل ماثيو: بدأ الشغل قبل 3 سنوات وما زال يشتغل 👨‍🔬</div>
+   <div class="formula"><span class="f1">I / You / We / They</span><span class="f2">have</span><span class="plus">+</span><span class="f3">been</span><span class="plus">+</span><span class="f4">verb-ing</span></div>
+   <div class="formula"><span class="f1">He / She / It</span><span class="f2">has</span><span class="plus">+</span><span class="f3">been</span><span class="plus">+</span><span class="f4">verb-ing</span></div>
+   <div class="two">
+    <div class="box" style="border-color:var(--blue)"><h4>for ⏳</h4><div>+ period of time</div><div class="ar">مدة زمنية</div><div style="font-weight:800;margin-top:4px">for three years</div></div>
+    <div class="box" style="border-color:var(--pink)"><h4>since 📅</h4><div>+ starting point</div><div class="ar">بداية الحدث (منذ)</div><div style="font-weight:800;margin-top:4px">since he left college</div></div></div>
+   <div class="formula" style="margin-top:16px"><span class="f5">How long</span><span class="f2">has / have</span><span class="f1">subject</span><span class="f3">been</span><span class="f4">verb-ing ?</span></div>
+   <div class="exs" style="display:flex;flex-direction:column;gap:8px">${ex.map(([e,a])=>`<button class="exb" data-say="${esc(e)}">🔊 ${e.replace(/('s been|has been|been) (\w+ing)/,'<mark>$1 $2</mark>')}<span class="ar">${a}</span></button>`).join('')}</div>
+   <div class="l-exp">💡 بعد <b>interested in</b> يأتي الفعل + <b>ing</b>:
+    <button class="exb" style="direction:ltr" data-say="What job are you interested in? I'm interested in becoming a child psychologist.">🔊 What job are you interested in?<br>— I'm interested in <mark>becoming</mark> a child psychologist.<span class="ar">أنا مهتم بأن أصبح أخصائي نفسي للأطفال.</span></button></div>
+   <div class="row-btns"><button class="big-btn" id="play">🎮 Practice now</button><button class="big-btn ghost" id="back">🏠 Home</button></div></div>`;
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('play').onclick=()=>startGame(['gram']);
+  document.getElementById('back').onclick=home;
+}
+
+/* ================== QUALITIES LIST ================== */
+function qualities(){
+  document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="card"><span class="chip">🌟 Top Twelve Qualities · p. 21</span>
+   <div class="ins">Qualities employers look for when hiring</div><div class="ar">صفات يبحث عنها أصحاب العمل عند التوظيف — اضغط لتسمع</div>
+   <div class="wl">${QUALS.map(([n,ar,ex,exAr,ic],i)=>`<button data-say="${esc(n+'. '+ex)}"><span class="e">${im(ic,'sm')}</span>
+     <span><span class="w">${i+1}. ${n}</span><div class="ar">${ar}</div><div style="font-size:.88rem;color:var(--muted)">e.g. ${ex}</div></span><span>🔊</span></button>`).join('')}</div>
+   <div class="row-btns"><button class="big-btn" id="play">🎮 Play the game</button><button class="big-btn ghost" id="back">🏠 Home</button></div></div>`;
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('play').onclick=()=>startGame(['quals']);
+  document.getElementById('back').onclick=home;
+}
+
+function wordList(){
+  document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="card"><span class="chip">📋 Word List</span><div class="ar" style="margin-top:6px">اضغط على الكلمة لتسمعها</div>
+   <div class="wl">${VOCAB.map(x=>`<button data-say="${x.w}"><span class="e">${im(x.icon,'sm')}</span><span><span class="w">${x.w}</span> <span class="pos ${x.pos}" style="margin:0 4px">${x.posT}</span><div class="ar">${x.ar}</div></span><span>🔊</span></button>`).join('')}</div>
+   <button class="big-btn" id="back">🏠 Home</button></div>`;
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('back').onclick=home;
+}
+
+/* ================== HOME ================== */
+function home(){
+  stopSay();document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="start">
+   <div class="mascot">${im('briefcase')}</div>
+   <h1>Dream Jobs</h1>
+   <div class="sub">Student Book pp. 20–21 · Workbook p. 229</div>
+   <div class="ar">وظائف الأحلام — تعلّم الكلمات، اقرأ النصوص، والعب!</div>
+   <input class="name" id="nm" placeholder="Your name · اسمك" value="${esc(student)}" maxlength="24"/>
+   <div class="menu">
+    <button class="mbtn wide" data-go="learn"><span class="e">📖</span>1. Learn the words<span class="ar">١. تعلّم الكلمات الجديدة (بطاقات)</span></button>
+    <button class="mbtn wide" data-go="read"><span class="e">📰</span>2. Read the texts<span class="ar">٢. اقرأ النصوص مع الترجمة والصوت</span></button>
+    <button class="mbtn" data-go="qlist"><span class="e">🌟</span>Top 12 Qualities<span class="ar">الصفات الـ 12</span></button>
+    <button class="mbtn" data-go="grammar"><span class="e">🧠</span>Grammar Lesson<span class="ar">شرح القاعدة</span></button>
+    ${ORDER.map((k,i)=>`<button class="mbtn${i===ORDER.length-1&&ORDER.length%2?' wide':''}" data-go="${k}"><span class="e">${GAMES[k].e}</span>${GAMES[k].t}<span class="ar">${GAMES[k].ar}</span></button>`).join('')}
+    <button class="mbtn wide" data-go="list"><span class="e">📋</span>Word List<span class="ar">قائمة الكلمات</span></button>
+    <button class="mbtn wide" data-go="all"><span class="e">🏆</span>3. Big Test — all games<span class="ar">٣. الاختبار الكبير — من كل الألعاب</span></button>
+   </div>
+   <div class="tips ar" style="color:var(--text)">💡 <b>الترتيب المقترح:</b> تعلّم الكلمات 📖 ← اقرأ النصوص 📰 ← العب الألعاب واحدة واحدة ← الاختبار الكبير 🏆<br>🔊 اضغط زر السماعة لتسمع النطق.</div>
+  </div>`;
+  const nm=document.getElementById('nm');nm.oninput=()=>{student=nm.value.trim();try{localStorage.setItem('dj-name',student)}catch(e){}};
+  const go={learn:()=>learn(0),read:readTexts,qlist:qualities,grammar,list:wordList,all:()=>startGame(ORDER)};
+  app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const g=b.dataset.go;(go[g]||(()=>startGame([g])))()});
+}
+document.getElementById('homeBtn').onclick=home;
+try{student=localStorage.getItem('dj-name')||''}catch(e){}
+home();
+</script>
+</body>
+</html>
