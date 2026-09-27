@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Turkeys Vocabulary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);background-color:var(--navy);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+.bg span{position:fixed;border-radius:50%;opacity:.07;z-index:-1;animation:float 14s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-40px)}}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+.home{background:none;border:none;font-size:1.3rem;min-width:36px;min-height:36px}
+
+/* start */
+.start{text-align:center;padding:34px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2.2rem,9vw,3.4rem);color:var(--gold);line-height:1.1;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:20px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 36px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.3rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.big-btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.mbtn{background:var(--navy2);border:2px solid var(--line);border-radius:16px;padding:12px 8px;color:var(--text);font-weight:800;font-size:1.02rem;min-height:74px;transition:transform .15s}
+.mbtn:hover{border-color:var(--gold);transform:translateY(-2px)}
+.mbtn .e{font-size:1.6rem;display:block;line-height:1.2}
+.mbtn .ar{font-size:.85rem;display:block}
+.mbtn.wide{grid-column:1/-1;border-color:var(--gold);background:rgba(212,175,55,.1)}
+.tips{margin-top:20px;background:var(--navy2);border-radius:16px;padding:12px 14px;border:1px dashed var(--line);text-align:right}
+
+/* card */
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy);background:var(--gold)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.q{font-size:clamp(1.25rem,5vw,1.6rem);font-weight:800;margin:16px 0 6px;line-height:1.5;text-align:center}
+.q.word{font-family:'Playfair Display';font-size:clamp(2rem,9vw,2.6rem);color:var(--gold)}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.pic{font-size:clamp(3rem,14vw,4.4rem);text-align:center;margin:8px 0;letter-spacing:4px;line-height:1.3}
+.tools{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tool{min-height:44px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{min-height:64px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.15rem;padding:8px 12px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30}
+.opt.arx{direction:rtl;font-size:1.1rem}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}
+.msg .ar{font-size:.95rem}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:62px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1rem;padding:6px 8px;line-height:1.3}
+.m.w{font-size:1.1rem;color:var(--gold2)}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2)}
+.m.done{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1);cursor:default}
+
+/* spelling */
+.slots{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:14px 0 18px;direction:ltr}
+.slot{width:34px;height:44px;border-bottom:3px solid var(--line);font-size:1.6rem;font-weight:900;text-align:center;color:var(--gold);text-transform:lowercase}
+.slot.cur{border-color:var(--gold);animation:blink 1s infinite}
+.slot.full{border-color:var(--ok);color:var(--ok)}
+@keyframes blink{50%{border-color:transparent}}
+.letters{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;direction:ltr}
+.let{width:52px;height:56px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:900;font-size:1.5rem;box-shadow:0 4px 0 #0c1a30}
+.let:disabled{opacity:.15;cursor:default}
+.let.bad{background:var(--bad);color:var(--navy)}
+
+/* splash */
+.splash{text-align:center;padding:30px 10px}
+.splash .e{font-size:5rem}
+.splash h2{font-family:'Playfair Display';font-size:2.2rem;color:var(--gold)}
+
+/* flashcards */
+.flip{perspective:1200px;margin-top:16px;cursor:pointer}
+.flip-in{position:relative;min-height:440px;transition:transform .6s;transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--navy2);border:2px solid var(--line);border-radius:26px;padding:20px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.face.back{transform:rotateY(180deg);justify-content:flex-start;border-color:var(--gold);overflow:auto}
+.face .big{font-size:clamp(3.6rem,17vw,5rem);letter-spacing:6px;animation:bob 3s ease-in-out infinite}
+.face .word{font-family:'Playfair Display';font-size:clamp(2.2rem,10vw,3rem);color:var(--gold);line-height:1.1;margin-top:10px}
+.face .tap{color:var(--muted);margin-top:18px;font-size:.95rem}
+.pos{display:inline-block;padding:2px 12px;border-radius:20px;font-weight:800;font-size:.85rem;color:var(--navy);margin-top:8px}
+.pos.v{background:var(--pink)}.pos.n{background:var(--blue)}.pos.adj{background:var(--purple)}
+.arm{font-size:1.9rem;font-weight:900;color:var(--gold2);direction:rtl;line-height:1.3;margin-top:4px}
+.enm{font-size:1.05rem;margin-top:6px}
+.exb{width:100%;background:var(--navy3);border-radius:14px;padding:10px 12px;margin-top:12px;border:1px solid var(--line);color:var(--text);text-align:start;font-size:1.05rem}
+.exb mark{background:none;color:var(--gold);font-weight:900}
+.exb .ar{font-size:.95rem;display:block;text-align:right}
+.trick{width:100%;direction:rtl;text-align:right;background:rgba(79,163,255,.1);border-radius:14px;padding:10px 12px;margin-top:10px;font-size:1rem;line-height:1.8}
+.trick b{color:var(--gold)}
+.say-btn{min-height:44px;min-width:44px;border-radius:50%;border:2px solid var(--gold);background:rgba(212,175,55,.12);color:var(--gold);font-size:1.3rem;margin-top:10px}
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+.lesson-nav .big-btn{margin:0;font-size:1.05rem;padding:8px 20px;min-height:52px}
+.dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block;transition:all .3s}
+.dots i.on{background:var(--gold);width:26px;border-radius:6px}
+
+/* word list */
+.wl{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.wl button{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:10px 12px;color:var(--text);text-align:start}
+.wl .e{font-size:1.6rem}
+.wl .w{font-weight:900;color:var(--gold2);font-size:1.1rem}
+.wl .ar{font-size:1rem;color:var(--text)}
+
+/* end */
+.end{text-align:center}
+.end .score{font-family:'Playfair Display';font-size:4rem;color:var(--gold);line-height:1}
+.rate{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.review{text-align:start;margin-top:18px}
+.review li{list-style:none;background:var(--navy3);border-radius:12px;padding:8px 12px;margin-top:8px;border-inline-start:4px solid var(--bad)}
+.review li b{color:var(--ok)}
+.row-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row-btns .big-btn{margin:16px 0 0;font-size:1.05rem;padding:10px 22px}
+
+/* 3D scenes */
+.scene{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:4px 6px;padding:18px 6px 26px;margin:6px auto 8px;max-width:420px;
+  background:radial-gradient(ellipse at 50% 100%,rgba(212,175,55,.18) 0%,transparent 60%);border-radius:22px}
+.scene::after{content:'';position:absolute;left:12%;right:12%;bottom:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(6px);z-index:0}
+.scene figure{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;margin:0}
+.scene figcaption{font-size:.8rem;font-weight:800;color:var(--muted);line-height:1.2;margin-top:2px}
+.i3{width:clamp(56px,18vw,92px);height:auto;filter:drop-shadow(0 12px 10px rgba(0,0,0,.5));animation:bob3 3.2s ease-in-out infinite;user-select:none;-webkit-user-drag:none}
+.i3.big{width:clamp(80px,26vw,124px)}
+.i3.sm{width:clamp(40px,12vw,58px)}
+.i3.xs{width:34px;animation:none;filter:drop-shadow(0 4px 4px rgba(0,0,0,.4));vertical-align:middle}
+@keyframes bob3{0%,100%{transform:translateY(0) rotateY(-12deg)}50%{transform:translateY(-8px) rotateY(12deg)}}
+.d1{animation-delay:-.8s}.d2{animation-delay:-1.6s}.d3{animation-delay:-2.4s}
+.op{position:relative;z-index:1;align-self:center;font-size:clamp(1.5rem,6vw,2.1rem);font-weight:900;color:var(--gold);text-shadow:0 3px 0 #8a6a1e}
+.cap{position:relative;z-index:1;width:100%;text-align:center;font-weight:900;font-size:1.4rem;color:var(--gold2);letter-spacing:2px}
+.fall{animation:fall 2.2s ease-in infinite}
+@keyframes fall{0%{transform:translateY(-50px) scale(.7);opacity:0}25%{opacity:1}80%{transform:translateY(12px) scale(1);opacity:1}100%{transform:translateY(22px) scale(.6);opacity:0}}
+.rise{position:absolute;top:-34px;left:50%;margin-left:-22px;width:44px;animation:rise 2.6s ease-out infinite}
+@keyframes rise{0%{transform:translateY(20px) scale(.6);opacity:0}30%{opacity:.9}100%{transform:translateY(-26px) scale(1.2);opacity:0}}
+.blink{animation:blink3 3s infinite}
+@keyframes blink3{0%,44%,52%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+.glow{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 18px rgba(255,230,138,.9))}}
+.no{filter:grayscale(.6) drop-shadow(0 8px 8px rgba(0,0,0,.5));opacity:.8}
+.no-x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.4rem;pointer-events:none}
+.badge{position:absolute;top:-10px;right:-10px}
+.moon{position:absolute;top:0;left:8%;z-index:1}
+.step0{margin-bottom:44px!important}.step1{margin-bottom:22px!important}
+.fade-bad{animation:fadebad 4s ease-in-out infinite}
+@keyframes fadebad{0%,30%{filter:none}60%,100%{filter:sepia(.6) brightness(.8)}}
+.mascot img{width:110px;filter:drop-shadow(0 14px 12px rgba(0,0,0,.5))}
+.face .scene{width:100%}
+
+.tts-pill{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gold);color:var(--navy);font-weight:800;border-radius:20px;padding:6px 16px;transition:transform .25s;z-index:99;pointer-events:none}
+body.tts-wait .tts-pill{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg">
+  <span style="width:260px;height:260px;background:var(--gold);top:8%;left:-80px"></span>
+  <span style="width:200px;height:200px;background:var(--blue);bottom:10%;right:-60px;animation-delay:-4s"></span>
+  <span style="width:140px;height:140px;background:var(--pink);top:50%;left:60%;animation-delay:-8s"></span>
+</div>
+
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <button class="home" id="homeBtn" title="Home">🏠</button>
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars" id="stars">⭐ 0</span>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+<div class="tts-pill">🔊 …</div>
+
+<script>
+/* ================== WORDS (Turkeys — Unit 1, p. 26) ================== */
+// ex / exAr: example sentence with *marked* word
+const WORDS=[
+ {w:'degraded',pos:'v',posT:'Verb',posAr:'فعل',pic:'🏞️➡️🏜️',ar:'أفسدَ / جعله أسوأ',en:'made worse',
+  ex:'The dirty water *degraded* the land.',exAr:'الماء المتّسخ أفسد الأرض (جعلها أسوأ).',
+  trick:'<b>de</b> = لتحت ⬇️ و <b>grade</b> = درجة<br>يعني الشيء <b>نزل درجة</b> ← صار أسوأ 👎',
+  mean:'made worse'},
+ {w:'dilution',pos:'n',posT:'Noun',posAr:'اسم',pic:'🧃➕💧',ar:'تخفيف (بالماء)',en:'making a liquid weaker by adding water',
+  ex:'Add water for the juice\'s *dilution*.',exAr:'أضف الماء لتخفيف العصير.',
+  trick:'عصير 🧃 + ماء 💧 = عصير <b>خفيف</b><br>تذكّر: <b>dilution</b> = تخفيف',
+  mean:'watered down'},
+ {w:'ratio',pos:'n',posT:'Noun',posAr:'اسم',pic:'👦👦 : 👧',ar:'نسبة',en:'a comparison of two numbers or amounts',
+  ex:'The *ratio* of boys to girls is 2 to 1.',exAr:'نسبة الأولاد إلى البنات 2 إلى 1.',
+  trick:'ratio تشبه <b>رياضيات</b> ➗<br>نكتبها هكذا <b>2 : 1</b> (اثنين إلى واحد)',
+  mean:'compares two amounts'},
+ {w:'vigilance',pos:'n',posT:'Noun',posAr:'اسم',pic:'💂🌙👀',ar:'يقظة / انتباه شديد',en:'careful watching to stay safe',
+  ex:'The guard showed *vigilance* at night.',exAr:'أظهر الحارس يقظةً في الليل.',
+  trick:'الحارس 💂 <b>صاحي</b> طول الليل 🌙 وعيونه مفتوحة 👀<br>ما ينام أبدًا ← <b>vigilance</b>',
+  mean:'careful watching'},
+ {w:'descendants',pos:'n',posT:'Noun',posAr:'اسم',pic:'👴➡️👨➡️👦',ar:'أحفاد / ذُرّية',en:'people (or animals) who come from an earlier family member',
+  ex:'We are the *descendants* of our grandparents.',exAr:'نحن أحفاد أجدادنا.',
+  trick:'<b>descend</b> = ينزل ⬇️<br>في شجرة العائلة 🌳 الأبناء والأحفاد <b>ينزلون</b> من الجد',
+  mean:'offspring'},
+ {w:'domestic',pos:'adj',posT:'Adjective',posAr:'صفة',pic:'🐱🏠🐄',ar:'أليف / منزلي',en:'related to the home; animals that are not wild',
+  ex:'A cat can be a *domestic* animal.',exAr:'القطة يمكن أن تكون حيوانًا أليفًا.',
+  trick:'<b>domus</b> باللاتيني = بيت 🏠<br>حيوان <b>domestic</b> يعيش مع الناس وليس متوحّشًا 🦁❌',
+  mean:'from the home, not wild'},
+ {w:'taint',pos:'n',posT:'Noun',posAr:'اسم',pic:'🍗💨🤢',ar:'أثر يُفسد الشيء / شائبة',en:'a small amount of something bad that spoils quality',
+  ex:'The food had a *taint* of smoke.',exAr:'كان في الطعام أثر (طعم) دخان أفسده.',
+  trick:'نقطة حبر 🖋️ صغيرة في كوب ماء 🥛<br>شيء <b>صغير</b> لكنه <b>يفسد</b> كل شيء ← <b>taint</b>',
+  mean:'something small that spoils'}
+];
+const W=Object.fromEntries(WORDS.map(x=>[x.w,x]));
+
+/* ---- 3D pictures (Fluent 3D icons in img/turkeys) ---- */
+const im=(n,c='')=>`<img src="img/turkeys/${n}.webp" alt="" class="i3 ${c}" draggable="false">`;
+const fig=(inner,cap='',c='')=>`<figure class="${c}">${inner}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;
+const op=s=>`<span class="op">${s}</span>`;
+const nope=n=>fig(im(n,'sm no')+'<span class="no-x">❌</span>','wild');
+const ICON={degraded:'desert',dilution:'drop',ratio:'boy',vigilance:'guard',descendants:'oldman',domestic:'cat',taint:'sick'};
+const SCENE={
+ degraded:fig(im('park'),'before')+op('➜')+fig(im('desert','d1 fade-bad')+`<span class="badge">${im('thumbdown','sm d2')}</span>`,'worse'),
+ dilution:fig(im('juice'),'juice')+op('+')+fig(im('drop','sm fall'),'water')+op('=')+fig(im('cup','d2'),'weaker'),
+ ratio:fig(im('boy'))+fig(im('boy','d1'))+op(':')+fig(im('girl','d2'))+'<div class="cap">2 : 1</div>',
+ vigilance:`<span class="moon">${im('moon','sm glow')}</span>`+fig(im('guard','big'))+fig(im('eyes','sm blink'))+fig(im('flashlight','sm glow d2')),
+ descendants:fig(im('oldman'),'grandpa','step0')+op('➜')+fig(im('man','d1'),'father','step1')+op('➜')+fig(im('boy','d2'),'son'),
+ domestic:fig(im('cat'),'✅')+fig(im('house','big d1'),'home')+fig(im('cow','d2'),'✅')+nope('lion'),
+ taint:fig(im('chicken')+im('smoke','rise'),'smoke')+op('➜')+fig(im('sick','d1'),'spoiled')
+};
+const icon=w=>im(ICON[w],'xs');
+
+/* new sentences for the gap-fill game: [sentence, answer, Arabic hint, 3D scene] */
+const SENT=[
+ ['The heavy rain ___ the old road.','degraded','ما الذي حدث للطريق؟ صار أسوأ 👎',fig(im('rain'))+op('➜')+fig(im('road','d1 fade-bad'))],
+ ['Mom added a lot of water to the juice. The ___ made it less sweet.','dilution','ماء + عصير = تخفيف 💧',fig(im('juice'))+op('+')+fig(im('drop','sm fall'))],
+ ['There are 3 cats and 1 dog. The ___ of cats to dogs is 3 to 1.','ratio','3 إلى 1 ← نسبة ➗',fig(im('cat','sm'))+fig(im('cat','sm d1'))+fig(im('cat','sm d2'))+op(':')+fig(im('dog','sm d3'))],
+ ['The mother bird watched her babies with great ___.','vigilance','انتباه شديد لحمايتهم 👀',fig(im('bird'))+fig(im('eyes','sm blink'))+fig(im('chick','sm d2'))],
+ ['The old king\'s ___ still live in the palace today.','descendants','أبناء وأحفاد الملك 👴➡️👦',fig(im('crown','sm glow'),'','step1')+fig(im('man','d1'))+fig(im('boy','d2'))],
+ ['A sheep is a ___ animal, but a lion is wild.','domestic','الخروف يعيش مع الناس ← أليف 🏠',fig(im('sheep'),'✅')+fig(im('house','d1'))+nope('lion')],
+ ['The milk had a ___ of garlic, so nobody drank it.','taint','شيء صغير أفسد الحليب 🤢',fig(im('milk'))+op('+')+fig(im('garlic','sm d1'))+op('➜')+fig(im('sick','d2'))]
+];
+
+/* ================== ENGINE ================== */
+const app=document.getElementById('app');
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const others=(w,n=3)=>shuffle(WORDS.filter(x=>x.w!==w)).slice(0,n);
+const mark=s=>s.replace(/\*(.+?)\*/g,'<mark>$1</mark>');
+const plain=s=>s.replace(/\*/g,'');
+const PRAISE=[['Great job','أحسنت!'],['Excellent','ممتاز!'],['Super','رائع!'],['Well done','عمل جميل!'],['Perfect','مثالي!']];
+let items=[],idx=0,points=0,maxPts=0,mistakes=[],student='',lastGame=null;
+
+/* ---- read aloud: Gemini natural voice (Netlify function), browser voice as fallback ---- */
+const TTS_URL='/.netlify/functions/tts';
+const audioCache=new Map();let ttsFails=0,curAudio=null,speakId=0;
+const ttsOn=()=>location.protocol.startsWith('http')&&ttsFails<2;
+const cleanSay=t=>t.replace(/___/g,' blank ').replace(/[*👉]/g,'').replace(/\s+/g,' ').trim();
+function fetchVoice(t){
+  if(!audioCache.has(t))audioCache.set(t,fetch(TTS_URL+'?text='+encodeURIComponent(t))
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.blob()}).then(b=>{ttsFails=0;return URL.createObjectURL(b)})
+    .catch(e=>{audioCache.delete(t);ttsFails++;throw e}));
+  return audioCache.get(t);
+}
+function prefetchSay(...ts){if(ttsOn())ts.filter(Boolean).map(cleanSay).filter(Boolean).forEach(t=>fetchVoice(t).catch(()=>{}))}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}}
+let bestVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB)/i.test(v.lang));
+  bestVoice=v.find(v=>/natural|neural|online/i.test(v.name))||v.find(v=>/google/i.test(v.name))||v.find(v=>/samantha|aria|jenny|daniel|karen/i.test(v.name))||v[0]||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function browserSay(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.8;if(bestVoice)u.voice=bestVoice;speechSynthesis.speak(u)}catch(e){}}
+async function speak(raw){
+  const t=cleanSay(raw),id=++speakId;if(!t)return;
+  stopSay();
+  if(ttsOn()){
+    document.body.classList.add('tts-wait');
+    try{const url=await fetchVoice(t);if(id!==speakId)return;
+      curAudio=new Audio(url);await curAudio.play();return}
+    catch(e){if(id!==speakId)return}
+    finally{if(id===speakId)document.body.classList.remove('tts-wait')}
+  }
+  browserSay(t);
+}
+function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+
+/* ================== GAMES ================== */
+const GAMES={
+ pics:{e:'🖼️',t:'Picture Game',ar:'لعبة الصور',build:()=>shuffle(WORDS).map(x=>({t:'mcq',w:x.w,ins:'Look at the picture. Choose the word.',insAr:'انظر إلى الصورة واختر الكلمة.',
+   scene:SCENE[x.w],q:'',a:x.w,o:shuffle([x.w,...others(x.w).map(o=>o.w)]),h:x.en,hAr:x.ar,say:x.w}))},
+ arabic:{e:'🇸🇦',t:'Arabic Meaning',ar:'المعنى بالعربي',build:()=>shuffle(WORDS).map(x=>({t:'mcq',w:x.w,ins:'What does it mean in Arabic?',insAr:'ما معنى الكلمة بالعربي؟',
+   q:x.w,big:true,a:x.ar,o:shuffle([x.ar,...others(x.w).map(o=>o.ar)]),arx:true,h:icon(x.w),hAr:plain(x.ex),say:x.w}))},
+ match:{e:'🔗',t:'Match It',ar:'صِل الكلمة بمعناها',build:()=>{const s=shuffle(WORDS);return [s.slice(0,4),s.slice(4)].map(g=>({t:'match',ins:'Match the word with its meaning.',insAr:'اضغط على الكلمة ثم على معناها.',pairs:g.map(x=>[x.w,x.mean])}))}},
+ sent:{e:'✏️',t:'Complete the Sentence',ar:'أكمل الجملة',build:()=>shuffle(SENT).map(([q,a,hAr,sc])=>({t:'mcq',w:a,ins:'Choose the correct word.',insAr:'اختر الكلمة المناسبة للفراغ.',
+   scene:sc,q,a,o:shuffle([a,...others(a).map(o=>o.w)]),h:icon(a),hAr,say:q.replace('___',a),long:true}))},
+ spell:{e:'🔤',t:'Spelling',ar:'تهجئة الكلمة',build:()=>shuffle(WORDS).map(x=>({t:'spell',w:x.w,ins:'Listen 🔊 and build the word.',insAr:'استمع للكلمة ثم رتّب الحروف.',scene:SCENE[x.w],hAr:x.ar}))}
+};
+const ORDER=['pics','arabic','match','sent','spell'];
+
+function buildItems(keys){
+  const out=[];keys.forEach(k=>{if(keys.length>1)out.push({splash:k});out.push(...GAMES[k].build())});return out;
+}
+const countPts=list=>list.reduce((n,q)=>n+(q.splash?0:q.t==='match'?q.pairs.length:1),0);
+
+function startGame(keys,custom){
+  lastGame=keys;items=custom||buildItems(keys);idx=0;points=0;mistakes=[];maxPts=countPts(items);
+  document.getElementById('top').classList.remove('hidden');render();
+}
+function updateTop(){
+  const qs=items.filter(q=>!q.splash),done=items.slice(0,idx).filter(q=>!q.splash).length;
+  document.getElementById('fill').style.width=(done/qs.length*100)+'%';
+  document.getElementById('qn').textContent=Math.min(done+1,qs.length)+' / '+qs.length;
+  document.getElementById('stars').textContent='⭐ '+points;
+}
+function next(){idx++;render()}
+function nextBtn(){const b=document.createElement('button');b.className='big-btn';b.textContent='Next ➜';b.onclick=next;document.getElementById('foot').appendChild(b);b.focus({preventScroll:true})}
+function praise(el){const p=PRAISE[Math.floor(Math.random()*PRAISE.length)];el.className='msg good';el.innerHTML=`✅ ${p[0]}! <span class="ar">${p[1]}</span>`}
+function tryAgain(el){el.className='msg try';el.innerHTML='💪 Try again! <span class="ar">حاول مرة أخرى! أنت تستطيع</span>'}
+function addMistake(w,note){if(!mistakes.some(m=>m.w===w&&m.note===note))mistakes.push({w,note})}
+
+function render(){
+  stopSay();window.scrollTo({top:0,behavior:'smooth'});
+  if(idx>=items.length)return finish();
+  updateTop();
+  const q=items[idx];
+  if(q.splash){const g=GAMES[q.splash];
+    app.innerHTML=`<div class="card splash"><div class="e">${g.e}</div><h2>${g.t}</h2><div class="ar" style="font-size:1.3rem">${g.ar}</div><button class="big-btn" id="go">Let's go! 🚀</button></div>`;
+    document.getElementById('go').onclick=next;return}
+  if(q.t==='mcq')return renderMcq(q);
+  if(q.t==='match')return renderMatch(q);
+  if(q.t==='spell')return renderSpell(q);
+}
+
+function head(q){return `<span class="chip">${GAMES[findGame(q)].e} ${GAMES[findGame(q)].t}</span>
+  <div class="ins">${q.ins}</div><div class="ar">${q.insAr}</div>`}
+function findGame(q){for(let i=idx;i>=0;i--)if(items[i].splash)return items[i].splash;return q.g||lastGame[0]}
+
+function renderMcq(q){
+  let first=true;
+  app.innerHTML=`<div class="card">${head(q)}
+   ${q.scene?`<div class="scene">${q.scene}</div>`:''}
+   ${q.q?`<div class="q ${q.big?'word':''}" id="qq">${q.q.replace('___','<span class="blank" id="bl">?</span>')}</div>`:''}
+   <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Hint</button></div>
+   <div class="hint" id="hint">${q.h}<div class="ar">${q.hAr}</div></div>
+   <div class="opts" id="opts"></div><div class="msg" id="msg"></div><div id="foot"></div></div>`;
+  const opts=document.getElementById('opts'),msg=document.getElementById('msg');
+  if(q.long&&innerWidth<460)opts.style.gridTemplateColumns='1fr';
+  const sayTxt=q.say||q.q;
+  document.getElementById('say').onclick=()=>speak(sayTxt);
+  document.getElementById('hb').onclick=()=>document.getElementById('hint').classList.add('show');
+  q.o.forEach(o=>{const b=document.createElement('button');b.className='opt'+(q.arx?' arx':'');b.textContent=o;opts.appendChild(b);
+    b.onclick=()=>{
+      if(o===q.a){
+        beep(true);b.classList.add('right');opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        if(first)points++;praise(msg);
+        const bl=document.getElementById('bl');if(bl){bl.textContent=q.a;bl.classList.add('done')}
+        speak(q.say||q.a);nextBtn();updateTop();
+      }else{
+        beep(false);first=false;b.classList.add('wrong','shake');b.disabled=true;tryAgain(msg);
+        document.getElementById('hint').classList.add('show');
+        addMistake(q.w,W[q.w].ar);
+      }}});
+  prefetchSay(sayTxt);
+}
+
+function renderMatch(q){
+  const L=q.pairs.map(p=>p[0]),R=shuffle(q.pairs.map(p=>p[1])),bad=new Set();let sel=null,left=q.pairs.length;
+  app.innerHTML=`<div class="card">${head(q)}
+   <div class="tools" style="margin-top:12px"><button class="tool" id="hb">💡 Arabic help</button></div>
+   <div class="hint" id="hint">${L.map(w=>`<div>${w} = <span class="ar" style="color:var(--gold2)">${W[w].ar}</span></div>`).join('')}</div>
+   <div class="match"><div class="col" id="cl"></div><div class="col" id="cr"></div></div>
+   <div class="msg" id="msg"></div><div id="foot"></div></div>`;
+  const cl=document.getElementById('cl'),cr=document.getElementById('cr'),msg=document.getElementById('msg');
+  let usedHelp=false;
+  document.getElementById('hb').onclick=()=>{usedHelp=true;document.getElementById('hint').classList.add('show')};
+  L.forEach(l=>{const b=document.createElement('button');b.className='m w';b.textContent=l;cl.appendChild(b);
+    b.onclick=()=>{if(b.classList.contains('done'))return;cl.querySelectorAll('.m').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;speak(l)}});
+  R.forEach(r=>{const b=document.createElement('button');b.className='m';b.textContent=r;cr.appendChild(b);
+    b.onclick=()=>{
+      if(b.classList.contains('done'))return;
+      if(!sel){msg.className='msg try';msg.innerHTML='👈 Choose a word first <span class="ar">اختر كلمة أولًا من اليسار</span>';return}
+      const w=sel.textContent,ok=q.pairs.find(p=>p[0]===w)[1]===r;
+      if(ok){beep(true);sel.classList.remove('sel');sel.classList.add('done');b.classList.add('done');
+        if(!bad.has(w))points++;sel=null;left--;updateTop();
+        if(left===0){praise(msg);nextBtn()}else{msg.className='msg good';msg.textContent='✅'}}
+      else{beep(false);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),450);
+        bad.add(w);addMistake(w,W[w].mean+' — '+W[w].ar);tryAgain(msg)}}});
+}
+
+function renderSpell(q){
+  const word=q.w,letters=shuffle(word.split('').map((c,i)=>({c,i})));let pos=0,slip=false;
+  app.innerHTML=`<div class="card">${head(q)}
+   <div class="scene">${q.scene}</div>
+   <div class="q ar" style="color:var(--gold2)">${q.hAr}</div>
+   <div class="tools"><button class="tool" id="say">🔊 Listen</button><button class="tool" id="hb">💡 Next letter</button></div>
+   <div class="slots" id="slots">${word.split('').map(()=>'<span class="slot"></span>').join('')}</div>
+   <div class="letters" id="lets"></div><div class="msg" id="msg"></div><div id="foot"></div></div>`;
+  const slots=[...document.querySelectorAll('.slot')],lets=document.getElementById('lets'),msg=document.getElementById('msg');
+  const mark=()=>slots.forEach((s,i)=>s.classList.toggle('cur',i===pos));mark();
+  const put=btn=>{slots[pos].textContent=word[pos];slots[pos].classList.add('full');btn.disabled=true;pos++;mark();
+    if(pos===word.length){beep(true);if(!slip)points++;else addMistake(word,'spelling: '+word);praise(msg);speak(word);
+      lets.querySelectorAll('.let').forEach(x=>x.disabled=true);nextBtn();updateTop()}};
+  letters.forEach(({c})=>{const b=document.createElement('button');b.className='let';b.textContent=c;lets.appendChild(b);
+    b.onclick=()=>{if(pos>=word.length||b.disabled)return;
+      if(c===word[pos])put(b);
+      else{beep(false);slip=true;b.classList.add('bad','shake');setTimeout(()=>b.classList.remove('bad','shake'),450);tryAgain(msg)}}});
+  document.getElementById('say').onclick=()=>speak(word);
+  document.getElementById('hb').onclick=()=>{if(pos>=word.length)return;slip=true;
+    const b=[...lets.querySelectorAll('.let')].find(x=>!x.disabled&&x.textContent===word[pos]);if(b)put(b)};
+  prefetchSay(word);setTimeout(()=>speak(word),400);
+}
+
+function finish(){
+  stopSay();document.getElementById('fill').style.width='100%';document.getElementById('stars').textContent='⭐ '+points;
+  const pct=maxPts?Math.round(points/maxPts*100):0;
+  const [rate,en,ar]=pct===100?['⭐⭐⭐','Amazing! Perfect score!','رائع جدًا! الدرجة كاملة 🏆']:pct>=80?['⭐⭐⭐','Excellent work!','عمل ممتاز! 🌟']:pct>=60?['⭐⭐','Good job! Keep practicing.','أحسنت! استمر في التدريب 👍']:['⭐','Nice try! Let\'s practice again.','محاولة جيدة! لنتدرّب مرة أخرى 💪'];
+  const uniq=[...new Set(mistakes.map(m=>m.w))];
+  app.innerHTML=`<div class="card end">
+   <div class="mascot">${im('trophy')}</div>
+   <div class="score">${points} / ${maxPts}</div><div class="rate">${rate}</div>
+   <div style="font-weight:900;font-size:1.3rem">${student?student+', ':''}${en}</div><div class="ar" style="font-size:1.15rem">${ar}</div>
+   ${uniq.length?`<div class="review"><div style="font-weight:800">📝 Words to review <span class="ar">كلمات تحتاج مراجعة</span></div>
+     <ul>${uniq.map(w=>`<li>${icon(w)} <b>${w}</b> = <span class="ar" style="color:var(--text)">${W[w].ar}</span><div style="font-size:.9rem;color:var(--muted)">${mark(W[w].ex)}</div></li>`).join('')}</ul></div>`:''}
+   <div class="row-btns">
+    ${uniq.length?'<button class="big-btn" id="redo">🔁 Practice my mistakes</button>':''}
+    <button class="big-btn ghost" id="again">🎮 Play again</button>
+    <button class="big-btn ghost" id="home2">🏠 Home</button></div></div>`;
+  if(uniq.length)document.getElementById('redo').onclick=()=>{
+    const it=[];uniq.forEach(w=>{const x=W[w];
+      it.push({t:'mcq',g:'arabic',w,ins:'What does it mean in Arabic?',insAr:'ما معنى الكلمة بالعربي؟',q:w,big:true,a:x.ar,o:shuffle([x.ar,...others(w).map(o=>o.ar)]),arx:true,h:icon(w),hAr:plain(x.ex),say:w});
+      const s=SENT.find(s=>s[1]===w);it.push({t:'mcq',g:'sent',w,ins:'Choose the correct word.',insAr:'اختر الكلمة المناسبة للفراغ.',q:s[0],scene:s[3],a:w,o:shuffle([w,...others(w).map(o=>o.w)]),h:icon(w),hAr:s[2],say:s[0].replace('___',w),long:true});
+      it.push({t:'spell',g:'spell',w,ins:'Listen 🔊 and build the word.',insAr:'استمع للكلمة ثم رتّب الحروف.',scene:SCENE[w],hAr:x.ar})});
+    startGame(['arabic'],shuffle(it))};
+  document.getElementById('again').onclick=()=>startGame(lastGame);
+  document.getElementById('home2').onclick=home;
+  if(pct>=80&&window.confetti){confetti({particleCount:160,spread:90,origin:{y:.6}});
+    if(pct===100)setTimeout(()=>confetti({particleCount:200,spread:120,origin:{y:.4},colors:['#d4af37','#ffe68a','#3ddc97']}),500)}
+}
+
+/* ================== LEARN (flashcards) ================== */
+function learn(i=0){
+  document.getElementById('top').classList.remove('hidden');
+  document.getElementById('fill').style.width=((i+1)/WORDS.length*100)+'%';
+  document.getElementById('qn').textContent=(i+1)+' / '+WORDS.length;
+  document.getElementById('stars').textContent='📖';
+  const x=WORDS[i];
+  app.innerHTML=`<div class="flip" id="flip"><div class="flip-in">
+    <div class="face"><div class="scene">${SCENE[x.w]}</div><div class="word">${x.w}</div>
+      <span class="pos ${x.pos}">${x.posT} · ${x.posAr}</span>
+      <button class="say-btn" data-say="${x.w}">🔊</button>
+      <div class="tap">👆 Tap the card to see the meaning<br><span class="ar">اضغط على البطاقة لترى المعنى</span></div></div>
+    <div class="face back">
+      <div style="font-family:'Playfair Display';font-size:1.8rem;color:var(--gold)">${x.w} <button class="say-btn" style="margin:0 0 0 6px;font-size:1rem" data-say="${x.w}">🔊</button></div>
+      <div class="arm">${x.ar}</div>
+      <div class="enm">${x.en}</div>
+      <button class="exb" data-say="${plain(x.ex)}">🔊 ${mark(x.ex)}<span class="ar">${x.exAr}</span></button>
+      <div class="trick">🧠 <b>فكرة للحفظ:</b><br>${x.trick}</div>
+    </div></div></div>
+   <div class="dots">${WORDS.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div>
+   <div class="lesson-nav">
+    <button class="big-btn ghost" id="prev" ${i===0?'style="visibility:hidden"':''}>⬅ Back</button>
+    <button class="big-btn" id="nx">${i===WORDS.length-1?'Play 🎮':'Next ➜'}</button></div>`;
+  const flip=document.getElementById('flip');
+  flip.onclick=e=>{if(e.target.closest('[data-say]'))return;flip.classList.toggle('on')};
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('prev').onclick=()=>learn(i-1);
+  document.getElementById('nx').onclick=()=>i===WORDS.length-1?home():learn(i+1);
+  prefetchSay(x.w,plain(x.ex));setTimeout(()=>speak(x.w),300);
+}
+
+function wordList(){
+  document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="card"><span class="chip">📋 Word List</span><div class="ar" style="margin-top:6px">اضغط على الكلمة لتسمعها</div>
+   <div class="wl">${WORDS.map(x=>`<button data-say="${x.w}"><span class="e">${im(ICON[x.w],'sm')}</span><span><span class="w">${x.w}</span> <span class="pos ${x.pos}" style="margin:0 4px">${x.posT}</span><div class="ar">${x.ar}</div></span><span>🔊</span></button>`).join('')}</div>
+   <button class="big-btn" id="back">🏠 Home</button></div>`;
+  app.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  document.getElementById('back').onclick=home;
+}
+
+/* ================== HOME ================== */
+function home(){
+  stopSay();document.getElementById('top').classList.add('hidden');
+  app.innerHTML=`<div class="start">
+   <div class="mascot">${im('turkey')}</div>
+   <h1>Turkeys<br>Vocabulary</h1>
+   <div class="sub">"Turkeys" by Bailey White · Unit 1 · p. 26 · Grade 6</div>
+   <div class="ar">٧ كلمات جديدة — تعلّمها والعب معها!</div>
+   <input class="name" id="nm" placeholder="Your name · اسمك" value="${student.replace(/"/g,'&quot;')}" maxlength="24"/>
+   <div class="menu">
+    <button class="mbtn wide" data-go="learn"><span class="e">📖</span>1. Learn the words<span class="ar">١. تعلّم الكلمات (بطاقات)</span></button>
+    ${ORDER.map(k=>`<button class="mbtn" data-go="${k}"><span class="e">${GAMES[k].e}</span>${GAMES[k].t}<span class="ar">${GAMES[k].ar}</span></button>`).join('')}
+    <button class="mbtn" data-go="list"><span class="e">📋</span>Word List<span class="ar">قائمة الكلمات</span></button>
+    <button class="mbtn wide" data-go="all"><span class="e">🏆</span>2. Big Test — all games<span class="ar">٢. الاختبار الكبير — كل الألعاب</span></button>
+   </div>
+   <div class="tips ar" style="color:var(--text)">💡 <b>نصيحة:</b> ابدأ بـ <b>تعلّم الكلمات</b> 📖 ثم العب الألعاب واحدة واحدة، وفي النهاية جرّب <b>الاختبار الكبير</b> 🏆<br>🔊 اضغط زر السماعة لتسمع نطق الكلمة.</div>
+  </div>`;
+  const nm=document.getElementById('nm');nm.oninput=()=>{student=nm.value.trim();try{localStorage.setItem('tv-name',student)}catch(e){}};
+  app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const g=b.dataset.go;
+    if(g==='learn')learn(0);else if(g==='list')wordList();else if(g==='all')startGame(ORDER);else startGame([g])});
+}
+document.getElementById('homeBtn').onclick=home;
+try{student=localStorage.getItem('tv-name')||''}catch(e){}
+home();
+</script>
+</body>
+</html>
