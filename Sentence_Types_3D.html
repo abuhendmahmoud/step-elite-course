@@ -46,13 +46,13 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 .formula{margin:14px 0;padding:12px;border-radius:14px;background:var(--navy);border:1px dashed var(--gold);text-align:center;font-weight:900;font-size:1.1rem}
 
 /* ===== 3D BLOCKS ===== */
-.stage{perspective:900px;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:10px;padding:30px 4px 20px;min-height:170px}
+.stage{perspective:900px;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:22px 12px;padding:24px 4px 16px;min-height:150px}
 .block{--c:var(--subj);position:relative;transform-style:preserve-3d;transform:rotateX(-14deg) rotateY(-18deg);animation:drop .7s cubic-bezier(.3,1.4,.5,1) both;cursor:pointer;transition:transform .5s}
 .block:hover,.block.spin{transform:rotateX(-10deg) rotateY(20deg) translateY(-6px)}
 .block .face{padding:12px 16px;min-width:74px;text-align:center;font-weight:900;font-size:1.05rem;color:#0a1628;background:var(--c);border-radius:8px;position:relative;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18)}
 .block .face::before{content:"";position:absolute;left:6px;right:-10px;top:-12px;height:12px;background:var(--c);filter:brightness(1.25);transform:skewX(-40deg);border-radius:6px 6px 0 0}
 .block .face::after{content:"";position:absolute;top:-6px;right:-12px;width:12px;bottom:6px;background:var(--c);filter:brightness(.7);transform:skewY(-50deg);border-radius:0 6px 6px 0}
-.block .lbl{position:absolute;left:50%;top:-44px;transform:translateX(-50%);font-size:.72rem;font-weight:800;white-space:nowrap;color:var(--c);letter-spacing:.5px}
+.block .lbl{display:block;margin-top:10px;text-align:center;font-size:.72rem;line-height:1.3;font-weight:800;white-space:nowrap;color:var(--c);letter-spacing:.5px}
 .block .lbl b{display:block;font-size:.7rem;color:var(--muted);direction:rtl}
 .subj{--c:var(--subj)}.pred{--c:var(--pred)}.conj{--c:var(--conj)}.dep{--c:var(--dep)}.ind{--c:var(--ind)}.comma{--c:#fff}
 .comma .face{min-width:30px;padding:12px 8px}
@@ -157,8 +157,8 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
       <div class="ar">فاعل واحد + مُسند واحد = جملة كاملة لوحدها (تُسمّى Independent Clause)</div></div>
     <div class="formula">🔵 Subject + 🩷 Predicate</div>
     <div class="stage" id="st1">
-      <div class="block subj"><span class="lbl">SUBJECT<b>فاعل</b></span><div class="face">She</div></div>
-      <div class="block pred"><span class="lbl">PREDICATE<b>مُسند</b></span><div class="face">likes turkeys.</div></div>
+      <div class="block subj"><div class="face">She</div><span class="lbl">SUBJECT<b>فاعل</b></span></div>
+      <div class="block pred"><div class="face">likes turkeys.</div><span class="lbl">PREDICATE<b>مُسند</b></span></div>
     </div>
     <button class="replay" onclick="replay('st1')">🔁 Build again</button>
     <div class="note">✅ <b>More examples:</b> The birds fly. / Ali plays football.<div class="ar">الطيور تطير. / علي يلعب كرة القدم.</div></div>
@@ -171,10 +171,10 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
       <div class="ar">جملتين بسيطتين، نربطهم بـ فاصلة + أداة ربط (and / but / or / so)</div></div>
     <div class="formula">🟩 Sentence&nbsp; <span style="color:#fff">,</span> 🟨 and &nbsp;🟩 Sentence</div>
     <div class="stage" id="st2">
-      <div class="block ind"><span class="lbl">SIMPLE SENTENCE<b>جملة بسيطة</b></span><div class="face">She had the measles</div></div>
-      <div class="block comma"><span class="lbl">COMMA</span><div class="face">,</div></div>
-      <div class="block conj"><span class="lbl">CONJUNCTION<b>أداة ربط</b></span><div class="face">and</div></div>
-      <div class="block ind"><span class="lbl">SIMPLE SENTENCE<b>جملة بسيطة</b></span><div class="face">she stayed in bed.</div></div>
+      <div class="block ind"><div class="face">She had the measles</div><span class="lbl">SIMPLE SENTENCE<b>جملة بسيطة</b></span></div>
+      <div class="block comma"><div class="face">,</div><span class="lbl">COMMA</span></div>
+      <div class="block conj"><div class="face">and</div><span class="lbl">CONJUNCTION<b>أداة ربط</b></span></div>
+      <div class="block ind"><div class="face">she stayed in bed.</div><span class="lbl">SIMPLE SENTENCE<b>جملة بسيطة</b></span></div>
     </div>
     <button class="replay" onclick="replay('st2')">🔁 Build again</button>
     <div class="fanboys">
@@ -193,9 +193,9 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
       <div class="ar">الجملة التابعة بتبدأ بأداة زي: because, when, if, before, after, although</div></div>
     <div class="formula">🟪 When she was better <span style="color:#fff">,</span> 🟩 she went outside.</div>
     <div class="stage" id="st3">
-      <div class="block dep"><span class="lbl">DEPENDENT<b>تابعة 🙋 محتاجة مساعدة</b></span><div class="face">When she was better</div></div>
-      <div class="block comma"><span class="lbl">COMMA</span><div class="face">,</div></div>
-      <div class="block ind"><span class="lbl">INDEPENDENT<b>مستقلة 💪</b></span><div class="face">she went outside.</div></div>
+      <div class="block dep"><div class="face">When she was better</div><span class="lbl">DEPENDENT<b>تابعة 🙋 محتاجة مساعدة</b></span></div>
+      <div class="block comma"><div class="face">,</div><span class="lbl">COMMA</span></div>
+      <div class="block ind"><div class="face">she went outside.</div><span class="lbl">INDEPENDENT<b>مستقلة 💪</b></span></div>
     </div>
     <button class="replay" onclick="replay('st3')">🔁 Build again</button>
     <div class="note">🤔 Say only “<b>When she was better.</b>” → Incomplete! What happened? 😕
@@ -318,7 +318,7 @@ function render(){
 function answer(btn){
   const q=Q[i], ok=btn.dataset.v===q.a;
   document.querySelectorAll('.opt').forEach(b=>{b.disabled=true; if(b.dataset.v===q.a) b.classList.add('ok');});
-  if(ok){score++; confetti&&confetti({particleCount:40,spread:60,origin:{y:.7}});}
+  if(ok){score++; window.confetti&&confetti({particleCount:40,spread:60,origin:{y:.7}});}
   else {btn.classList.add('no'); wrong.push(q);}
   $('fb').innerHTML=`<div class="fb ${ok?'ok':'no'}">${ok?'✅ Correct! ممتاز':'❌ Not quite — الإجابة: <b>'+q.a+'</b>'}
     <div style="margin-top:6px">💡 ${q.why}</div><div class="ar">${q.wa}</div></div>
