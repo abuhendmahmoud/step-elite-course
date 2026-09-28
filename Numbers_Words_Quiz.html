@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Words &amp; Numbers Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;
+  --gold:#d4af37;--gold2:#ffe68a;--text:#eef2f8;--muted:#9fb0c8;
+  --ok:#3ddc97;--bad:#ff6b6b;--blue:#4fa3ff;--pink:#ff8ac4;--purple:#c58cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#15294a 0%,var(--navy) 55%);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+.hidden{display:none!important}
+
+.bg span{position:fixed;border-radius:50%;opacity:.07;z-index:-1;animation:float 14s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-40px)}}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.92);backdrop-filter:blur(6px);padding:10px 16px;border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.track{flex:1;height:14px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px;transition:width .5s}
+.stars{font-weight:900;color:var(--gold);white-space:nowrap;font-size:1.05rem}
+.qn{color:var(--muted);font-weight:700;font-size:.85rem;white-space:nowrap}
+
+.start{text-align:center;padding:40px 0}
+.mascot{font-size:5rem;animation:bob 2.5s ease-in-out infinite;display:inline-block}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.start h1{font-family:'Playfair Display';font-size:clamp(2.2rem,9vw,3.4rem);color:var(--gold);line-height:1.1;margin-top:6px}
+.start .sub{color:var(--muted);margin-top:4px}
+.name{margin-top:22px;width:100%;max-width:320px;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy2);color:var(--text);font-size:1.2rem;text-align:center}
+.name:focus{outline:none;border-color:var(--gold)}
+.big-btn{display:block;margin:16px auto 0;min-height:60px;padding:10px 40px;border:none;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:900;font-size:1.35rem;box-shadow:0 6px 0 #8a6a1e;transition:transform .1s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6a1e}
+.parts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.part{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700}
+
+.card{margin-top:20px;background:var(--navy2);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 20px 40px rgba(0,0,0,.25);animation:in .4s ease}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.chip{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:800;font-size:.8rem;color:var(--navy)}
+.ins{font-weight:800;font-size:1.05rem;margin-top:10px}
+.q{font-size:clamp(1.3rem,5vw,1.7rem);font-weight:800;margin:18px 0 6px;line-height:1.5;text-align:center}
+.blank{display:inline-block;min-width:80px;border-bottom:3px solid var(--gold);color:var(--gold);padding:0 6px}
+.blank.small{min-width:34px}
+.blank.done{color:var(--ok);border-color:var(--ok)}
+.pic{font-size:clamp(3.5rem,16vw,5rem);text-align:center;margin:10px 0;line-height:1.2}
+.tools{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tool{min-height:44px;padding:4px 16px;border-radius:12px;border:1px solid var(--line);background:var(--navy3);color:var(--text);font-weight:700}
+.hint{display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:center;font-size:1.05rem}
+.hint.show{display:block;animation:in .3s}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opts.one{grid-template-columns:1fr}
+.opts.three{grid-template-columns:repeat(3,1fr)}
+.opt{min-height:64px;border-radius:16px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.2rem;padding:8px 12px;transition:transform .12s,background .2s;box-shadow:0 4px 0 #0c1a30}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);border-color:var(--ok);color:var(--navy);animation:pulse .5s}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:var(--navy);opacity:.7}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.msg{text-align:center;font-weight:800;font-size:1.2rem;min-height:1.8em;margin-top:14px}
+.msg.good{color:var(--ok)}.msg.try{color:var(--gold)}
+.msg .ar{font-size:.95rem}
+.next{margin-top:10px}
+
+/* match */
+.match{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:16px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.m{min-height:62px;border-radius:14px;border:2px solid var(--line);background:var(--navy3);color:var(--text);font-weight:800;font-size:1.05rem;padding:6px 8px;box-shadow:0 4px 0 #0c1a30}
+.m.sel{border-color:var(--gold);background:rgba(212,175,55,.2)}
+.m.done{border-color:var(--ok);color:var(--ok);background:rgba(61,220,151,.1);cursor:default;box-shadow:none}
+.m .tagn{display:inline-block;min-width:24px;height:24px;border-radius:50%;background:var(--ok);color:var(--navy);font-size:.8rem;margin-inline-end:4px;line-height:24px}
+
+/* heights picture */
+.boys{display:flex;justify-content:center;align-items:flex-end;gap:18px;margin:14px 0;height:150px}
+.boy{display:flex;flex-direction:column;align-items:center;line-height:1}
+.boy .fig{line-height:1}
+.boy.pick .fig{filter:drop-shadow(0 0 10px var(--gold))}
+.boy small{margin-top:6px;color:var(--muted);font-weight:800}
+.boy.pick small{color:var(--gold)}
+
+/* calendar picture */
+.cal{display:inline-block;width:110px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 6px 0 #0c1a30;text-align:center}
+.cal b{display:block;background:var(--blue);color:#fff;font-size:1rem;padding:2px 0}
+.cal span{display:block;color:var(--navy);font-size:3.4rem;font-weight:900;line-height:1.2}
+
+.splash{text-align:center;padding:30px 10px}
+.splash .e{font-size:5rem}
+.splash h2{font-family:'Playfair Display';font-size:2.2rem;color:var(--gold)}
+
+.end{text-align:center}
+.end .score{font-family:'Playfair Display';font-size:4rem;color:var(--gold);line-height:1}
+.rate{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.review{text-align:start;margin-top:18px}
+.review li{list-style:none;background:var(--navy3);border-radius:12px;padding:8px 12px;margin-top:8px;border-inline-start:4px solid var(--bad)}
+.review li b{color:var(--ok)}
+.row-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.row-btns .big-btn{margin:16px 0 0;font-size:1.1rem;padding:10px 24px}
+.big-btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+
+.tts-pill{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gold);color:var(--navy);font-weight:800;border-radius:20px;padding:6px 16px;transition:transform .25s;z-index:99;pointer-events:none}
+body.tts-wait .tts-pill{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="bg">
+  <span style="width:260px;height:260px;background:var(--gold);top:8%;left:-80px"></span>
+  <span style="width:200px;height:200px;background:var(--blue);bottom:10%;right:-60px;animation-delay:-4s"></span>
+  <span style="width:140px;height:140px;background:var(--pink);top:50%;left:60%;animation-delay:-8s"></span>
+</div>
+<div class="top hidden" id="top">
+  <div class="top-in">
+    <span class="qn" id="qn"></span>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span class="stars" id="stars">⭐ 0</span>
+  </div>
+</div>
+<div class="wrap" id="app"></div>
+<div class="tts-pill">🔊 …</div>
+<script>
+/* ================== QUESTIONS ================== */
+const COL={match:'#4fa3ff',pic:'#ff8ac4',mcq:'#d4af37',sent:'#c58cff',letter:'#3ddc97'};
+const QS=[
+ {splash:'Match',e:'🔗',ar:'التوصيل',col:COL.match},
+ {type:'match',col:COL.match,ins:'Match the numbers with their words.',insAr:'صل كل رقم بالكلمات المناسبة.',
+  pairs:[['975','nine hundred seventy-five'],['February','is the shortest month'],['1000','one thousand']],
+  hint:'975 = 900 + 75',hintAr:'فبراير هو أقصر شهر في السنة 📅'},
+
+ {splash:'Pictures',e:'🖼️',ar:'الصور',col:COL.pic},
+ ...[
+  ['🐌','snail','حلزون'],
+  ['📚💥','comic book','كتاب قصص مصورة'],
+  ['📅','calendar','تقويم / رزنامة'],
+  ['🌈','rainbow','قوس قزح'],
+ ].map(([pic,a,ar])=>({type:'mcq',col:COL.pic,ins:'What is this? Choose the word.',insAr:'ما هذا؟ اختر الكلمة المناسبة للصورة.',
+   pic,q:'This is a ___ .',a,opts:['snail','comic book','calendar','rainbow'],hint:'👀 Look at the picture carefully.',hintAr:'معناها: '+ar})),
+
+ {splash:'Choose',e:'✅',ar:'اختر الإجابة الصحيحة',col:COL.mcq},
+ {type:'mcq',col:COL.mcq,ins:'Choose the correct answer.',insAr:'اختر الإجابة الصحيحة.',pic:'🍎⏰',
+  q:'___ is the lunch break?',a:'How long',opts:['How long','How many','How much'],
+  hint:'How long → time (minutes, hours)',hintAr:'How long نسأل بها عن المدة (كم من الوقت؟)'},
+ {type:'mcq',col:COL.mcq,ins:'Choose the correct answer.',insAr:'اختر الإجابة الصحيحة.',pic:'👧👦👧👦',
+  q:'___ students are in your class?',a:'How many',opts:['How long','How many','How much'],
+  hint:'How many + things we can count',hintAr:'How many نسأل بها عن العدد (أشياء نقدر نعدّها مثل students)'},
+ {type:'mcq',col:COL.mcq,ins:'Choose the correct answer.',insAr:'اختر الإجابة الصحيحة.',pic:'🏫🎒',
+  q:'I ___ to school yesterday.',a:'went',opts:['go','going','went'],
+  hint:'yesterday → past: go → went',hintAr:'yesterday = أمس ← نستخدم الماضي: go ← went'},
+
+ {splash:'Sentence',e:'📏',ar:'اختر الجملة الصحيحة',col:COL.sent},
+ {type:'mcq',col:COL.sent,ins:'Look at the boy in the middle. Choose the correct sentence.',insAr:'انظر إلى الولد في المنتصف واختر الجملة الصحيحة.',
+  boys:true,q:'',a:'He is the tallest.',opts:['He is tired.','He is the tallest.','He is crying.'],one:true,
+  hint:'Compare the three boys. Who is the biggest?',hintAr:'قارن بين الأولاد الثلاثة… من الأطول؟ the tallest = الأطول'},
+
+ {splash:'Letters',e:'🔤',ar:'أكمل الحرف الناقص',col:COL.letter},
+ ...[
+  ['😩','ti','ed','r','tired','متعب'],
+  ['cal','da','e','t','date','تاريخ'],
+  ['🦁','lio','','n','lion','أسد'],
+ ].map(([pic,pre,post,a,word,ar])=>({type:'mcq',col:COL.letter,ins:'Fill in the missing letter: n – t – r',insAr:'أكمل الحرف الناقص: n – t – r',
+   pic,q:`${pre}<span class="blank small">?</span>${post}`,word,a,opts:['n','t','r'],three:true,
+   hint:`🔊 Listen: "${word}"`,hintAr:'معنى الكلمة: '+ar})),
+];
+
+/* ================== ENGINE ================== */
+const app=document.getElementById('app'),topBar=document.getElementById('top');
+let idx=0,points=0,maxPts=0,mistakes=[],student='';
+const qCount=QS.filter(q=>!q.splash).length;
+QS.forEach(q=>{if(q.type==='match')maxPts+=q.pairs.length;else if(q.type)maxPts++});
+
+/* ---- read aloud: Gemini natural voice (Netlify function), browser voice as fallback ---- */
+const TTS_URL='/.netlify/functions/tts';
+const audioCache=new Map();let ttsFails=0,curAudio=null,speakId=0;
+const ttsOn=()=>location.protocol.startsWith('http')&&ttsFails<2;
+const cleanSay=t=>t.replace(/<[^>]+>/g,' ').replace(/___|\?/g,' ').replace(/\s+/g,' ').trim();
+function fetchVoice(t){
+  if(!audioCache.has(t))audioCache.set(t,fetch(TTS_URL+'?text='+encodeURIComponent(t))
+    .then(r=>{if(!r.ok)throw new Error(r.status);return r.blob()}).then(b=>{ttsFails=0;return URL.createObjectURL(b)})
+    .catch(e=>{audioCache.delete(t);ttsFails++;throw e}));
+  return audioCache.get(t);
+}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}if(curAudio){curAudio.pause();curAudio=null}}
+let bestVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB)/i.test(v.lang));
+  bestVoice=v.find(v=>/natural|neural|online/i.test(v.name))||v.find(v=>/google/i.test(v.name))||v.find(v=>/samantha|aria|jenny|daniel|karen/i.test(v.name))||v[0]||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function browserSay(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.85;if(bestVoice)u.voice=bestVoice;speechSynthesis.speak(u)}catch(e){}}
+async function speak(raw){
+  const t=cleanSay(raw),id=++speakId;if(!t)return;
+  stopSay();
+  if(ttsOn()){
+    document.body.classList.add('tts-wait');
+    try{const url=await fetchVoice(t);if(id!==speakId)return;
+      curAudio=new Audio(url);await curAudio.play();return}
+    catch(e){if(id!==speakId)return}
+    finally{if(id===speakId)document.body.classList.remove('tts-wait')}
+  }
+  browserSay(t);
+}
+function beep(ok){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+  o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,c.currentTime);if(ok)o.frequency.setValueAtTime(880,c.currentTime+.12);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const PRAISE=[['Excellent!','ممتاز!'],['Great job!','أحسنت!'],['Super!','رائع!'],['Well done!','عمل رائع!']];
+const TRY=['Try again! 💪','حاول مرة أخرى!'];
+
+function hud(){
+  const n=QS.slice(0,idx+1).filter(q=>!q.splash).length;
+  document.getElementById('qn').textContent=`${n}/${qCount}`;
+  document.getElementById('fill').style.width=(idx/QS.length*100)+'%';
+  document.getElementById('stars').textContent='⭐ '+points;
+}
+
+function startScreen(){
+  topBar.classList.add('hidden');
+  app.innerHTML=`<div class="start">
+    <div class="mascot">🧒</div>
+    <h1>Words &amp; Numbers</h1>
+    <p class="sub">Quick English Quiz · ${qCount} questions</p>
+    <p class="ar">اختبار سريع في الإنجليزي</p>
+    <input class="name" id="nm" placeholder="Your name · اسمك" value="${esc(student)}">
+    <button class="big-btn" id="go">Start ▶</button>
+    <div class="parts">
+      <span class="part">🔗 Match</span><span class="part">🖼️ Pictures</span>
+      <span class="part">✅ Choose</span><span class="part">📏 Sentence</span><span class="part">🔤 Letters</span>
+    </div></div>`;
+  document.getElementById('go').onclick=()=>{student=document.getElementById('nm').value.trim();idx=0;points=0;mistakes=[];topBar.classList.remove('hidden');show()};
+}
+
+function show(){
+  if(idx>=QS.length)return endScreen();
+  hud();window.scrollTo({top:0,behavior:'smooth'});
+  const q=QS[idx];
+  if(q.splash){
+    app.innerHTML=`<div class="card splash"><div class="e">${q.e}</div><h2>${q.splash}</h2><p class="ar" style="font-size:1.2rem">${q.ar}</p>
+      <button class="big-btn" id="nx">Let's go! ▶</button></div>`;
+    document.getElementById('nx').onclick=()=>{idx++;show()};return;
+  }
+  q.type==='match'?renderMatch(q):renderMcq(q);
+}
+
+function head(q){
+  return `<span class="chip" style="background:${q.col}">${QS.slice(0,idx).reverse().find(x=>x.splash).splash}</span>
+    <p class="ins">${q.ins}</p><p class="ar">${q.insAr}</p>`;
+}
+function hintBlock(q){
+  return `<div class="tools"><button class="tool" id="hb">💡 Hint</button>${q.say!==false?'<button class="tool" id="sb">🔊 Listen</button>':''}</div>
+    <div class="hint" id="hn">${q.hint}<div class="ar">${q.hintAr}</div></div>`;
+}
+function wireHint(sayText){
+  document.getElementById('hb').onclick=()=>document.getElementById('hn').classList.toggle('show');
+  const sb=document.getElementById('sb');if(sb)sb.onclick=()=>speak(sayText);
+}
+function nextBtn(){
+  const b=document.createElement('button');b.className='big-btn next';b.textContent=idx===QS.length-1?'Finish 🏁':'Next ▶';
+  b.onclick=()=>{stopSay();idx++;show()};return b;
+}
+function picHTML(q){
+  if(q.boys)return `<div class="boys">
+      <div class="boy"><span class="fig" style="font-size:3.4rem">🧍</span><small>1</small></div>
+      <div class="boy pick"><span class="fig" style="font-size:6.6rem">🧍</span><small>👇 this boy</small></div>
+      <div class="boy"><span class="fig" style="font-size:4.6rem">🧍</span><small>3</small></div></div>`;
+  if(q.pic==='cal')return `<div class="pic"><div class="cal"><b>June</b><span>7</span></div></div>`;
+  return `<div class="pic">${q.pic}</div>`;
+}
+
+function renderMcq(q){
+  const opts=q.three?q.opts:shuffle(q.opts);
+  const cls=q.three?'three':(q.one||opts.some(o=>o.length>12))?'one':'';
+  const sayText=q.word||(q.q?q.q.replace('___',' blank '):q.opts.join(' … '));
+  app.innerHTML=`<div class="card">${head(q)}${picHTML(q)}
+    ${q.q?`<div class="q" id="qt">${q.q.replace('___','<span class="blank">?</span>')}</div>`:''}
+    ${hintBlock(q)}
+    <div class="opts ${cls}" id="op">${opts.map(o=>`<button class="opt" data-v="${esc(o)}">${o}</button>`).join('')}</div>
+    <div class="msg" id="ms"></div><div id="nxw"></div></div>`;
+  wireHint(sayText);
+  let first=true;
+  const ms=document.getElementById('ms');
+  document.querySelectorAll('#op .opt').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v===q.a){
+      b.classList.add('right');beep(true);
+      document.querySelectorAll('#op .opt').forEach(x=>x.disabled=true);
+      const bl=document.querySelector('#qt .blank');if(bl){bl.textContent=q.a;bl.classList.add('done')}
+      if(first){points++;hud()}else mistakes.push({q:q.word?q.q.replace(/<[^>]+>/g,'_'):(q.q||q.ins),a:q.word||q.a});
+      const p=PRAISE[Math.random()*PRAISE.length|0];
+      ms.className='msg good';ms.innerHTML=first?`🎉 ${p[0]} <div class="ar">${p[1]}</div>`:`✅ Correct: ${q.a}`;
+      if(q.word)setTimeout(()=>speak(q.word),250);
+      else if(first)setTimeout(()=>speak((q.q||'').replace('___',q.a)||q.a),250);
+      document.getElementById('nxw').appendChild(nextBtn());
+    }else{
+      b.classList.add('wrong');b.disabled=true;beep(false);first=false;
+      const c=document.querySelector('.card');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');
+      ms.className='msg try';ms.innerHTML=`❌ ${TRY[0]} <div class="ar">${TRY[1]}</div>`;
+      document.getElementById('hn').classList.add('show');
+    }
+  });
+}
+
+function renderMatch(q){
+  const left=shuffle(q.pairs.map(p=>p[0])),right=shuffle(q.pairs.map(p=>p[1]));
+  app.innerHTML=`<div class="card">${head(q)}
+    <p class="ar" style="text-align:center;margin-top:8px">اضغط على كلمة من اليسار ثم على معناها من اليمين</p>
+    <div class="match"><div class="col" id="L">${left.map(v=>`<button class="m" data-v="${esc(v)}">${v}</button>`).join('')}</div>
+    <div class="col" id="R">${right.map(v=>`<button class="m" data-v="${esc(v)}">${v}</button>`).join('')}</div></div>
+    <div class="tools" style="margin-top:14px"><button class="tool" id="hb">💡 Hint</button></div>
+    <div class="hint" id="hn">${q.hint}<div class="ar">${q.hintAr}</div></div>
+    <div class="msg" id="ms"></div><div id="nxw"></div></div>`;
+  document.getElementById('hb').onclick=()=>document.getElementById('hn').classList.toggle('show');
+  const ms=document.getElementById('ms'),wrongOnce=new Set();let sel=null,done=0;
+  const map=Object.fromEntries(q.pairs);
+  document.querySelectorAll('#L .m').forEach(b=>b.onclick=()=>{
+    if(b.classList.contains('done'))return;
+    document.querySelectorAll('#L .m').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;speak(b.dataset.v);
+  });
+  document.querySelectorAll('#R .m').forEach(b=>b.onclick=()=>{
+    if(b.classList.contains('done'))return;
+    if(!sel){ms.className='msg try';ms.innerHTML='👈 Choose from the left first <div class="ar">اختر من اليسار أولاً</div>';return}
+    const k=sel.dataset.v;
+    if(map[k]===b.dataset.v){
+      done++;const tag=`<span class="tagn">${done}</span>`;
+      sel.innerHTML=tag+sel.innerHTML;b.innerHTML=tag+b.innerHTML;
+      sel.classList.remove('sel');sel.classList.add('done');b.classList.add('done');beep(true);
+      if(!wrongOnce.has(k)){points++;hud()}else mistakes.push({q:k,a:map[k]});
+      speak(k+' — '+map[k]);sel=null;
+      ms.className='msg good';ms.innerHTML='✅ '+PRAISE[Math.random()*PRAISE.length|0][0];
+      if(done===q.pairs.length){ms.innerHTML='🎉 All matched! <div class="ar">أحسنت! وصلت الكل</div>';document.getElementById('nxw').appendChild(nextBtn())}
+    }else{
+      wrongOnce.add(k);beep(false);b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),450);
+      ms.className='msg try';ms.innerHTML=`❌ ${TRY[0]} <div class="ar">${TRY[1]}</div>`;
+    }
+  });
+}
+
+function endScreen(){
+  document.getElementById('fill').style.width='100%';hud();
+  const pct=points/maxPts,starsN=pct===1?3:pct>=.7?2:pct>=.4?1:0;
+  const [en,ar]=pct===1?['Perfect! You are a star!','ممتاز! أنت نجم! 🌟']:pct>=.7?['Great work! Keep going!','عمل رائع! استمر!']:pct>=.4?['Good try! Practise a little more.','محاولة جيدة! تدرّب أكثر قليلاً.']:["Don't give up! Try again.",'لا تستسلم! حاول مرة أخرى.'];
+  app.innerHTML=`<div class="card end">
+    <div style="font-size:4rem">${pct===1?'🏆':pct>=.7?'🥳':'💪'}</div>
+    ${student?`<p style="font-weight:800;font-size:1.3rem">${esc(student)}</p>`:''}
+    <div class="score">${points} / ${maxPts}</div>
+    <div class="rate">${'⭐'.repeat(starsN)}${'☆'.repeat(3-starsN)}</div>
+    <p style="font-weight:800;font-size:1.2rem">${en}</p><p class="ar" style="font-size:1.1rem">${ar}</p>
+    ${mistakes.length?`<ul class="review"><p style="font-weight:800">📝 Review · راجع هذه:</p>${mistakes.map(m=>`<li>${m.q} → <b>${m.a}</b></li>`).join('')}</ul>`:''}
+    <div class="row-btns"><button class="big-btn" id="again">🔁 Try again</button><button class="big-btn ghost" id="home">🏠 Home</button></div></div>`;
+  document.getElementById('again').onclick=()=>{idx=0;points=0;mistakes=[];show()};
+  document.getElementById('home').onclick=startScreen;
+  if(pct===1&&window.confetti){const end=Date.now()+2500;(function f(){confetti({particleCount:6,angle:60,spread:60,origin:{x:0}});confetti({particleCount:6,angle:120,spread:60,origin:{x:1}});if(Date.now()<end)requestAnimationFrame(f)})()}
+}
+
+startScreen();
+</script>
+</body>
+</html>
