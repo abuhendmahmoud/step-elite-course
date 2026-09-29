@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turkeys Revision W5+6</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{--navy:#0a1628;--navy2:#12233f;--navy3:#1b3157;--gold:#d4af37;--text:#f3efe2;--muted:#a9b4c8;--ok:#3ecf8e;--bad:#ff6b6b;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--navy);color:var(--text);font-family:'Cairo',sans-serif;line-height:1.7;font-size:17px}
+h1,h2,h3{font-family:'Playfair Display','Cairo',serif;color:var(--gold);margin:.3em 0}
+.ar{direction:rtl;text-align:right;font-family:'Cairo',sans-serif}
+.en{direction:ltr;text-align:left}
+#top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.96);border-bottom:1px solid var(--navy3);padding:8px 14px}
+#top .row{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:820px;margin:auto;font-weight:700;font-size:14px}
+#bar{height:10px;background:var(--navy3);border-radius:9px;max-width:820px;margin:6px auto 0;overflow:hidden}
+#fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#f5dd7a);transition:width .5s}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:820px;margin:8px auto 0;padding-bottom:4px}
+nav button{flex:none;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--navy3);background:var(--navy2);color:var(--text);font:700 14px 'Cairo';cursor:pointer}
+nav button.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+main{max-width:820px;margin:auto;padding:14px}
+section{display:none}section.on{display:block}
+.card{background:var(--navy2);border:1px solid var(--navy3);border-radius:16px;padding:16px;margin:14px 0}
+.hero{text-align:center;padding:22px 10px}
+.hero .big{font-size:52px}
+.tip{background:#1d2c17;border:1px solid #3d5a2c;border-radius:12px;padding:10px 14px;margin:10px 0}
+.tip b{color:#9be37d}
+.note{background:#2b2410;border:1px solid #6b5a1c;border-radius:12px;padding:10px 14px;margin:10px 0}
+/* flashcards */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.fc{perspective:900px;height:230px;cursor:pointer;border:0;background:none;padding:0;color:inherit;font:inherit}
+.fc .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.fc.flip .in{transform:rotateY(180deg)}
+.fc .f,.fc .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;padding:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:2px solid var(--gold)}
+.fc .f{background:linear-gradient(145deg,var(--navy3),var(--navy2))}
+.fc .f .w{font:800 28px 'Playfair Display';color:var(--gold)}
+.fc .f .pos{color:var(--muted);font-size:14px}
+.fc .b{background:var(--navy2);transform:rotateY(180deg);font-size:14.5px;overflow:auto;gap:2px}
+.fc .b .aw{font-size:22px;font-weight:800;color:var(--gold)}
+.fc .b i{color:var(--muted)}
+.spk{margin-top:8px;min-height:44px;min-width:44px;border-radius:22px;border:1px solid var(--gold);background:transparent;color:var(--gold);font:700 14px 'Cairo';cursor:pointer;padding:0 14px}
+/* quiz */
+.q{background:var(--navy2);border:1px solid var(--navy3);border-radius:16px;padding:14px;margin:12px 0}
+.q .num{color:var(--gold);font-weight:800}
+.q .txt{font-size:18px;margin:4px 0 10px}
+.q .txt u{border-bottom:3px solid var(--gold);text-decoration:none;padding:0 6px;color:var(--gold);font-weight:700}
+.opts{display:grid;gap:8px}
+.opt{min-height:48px;text-align:left;padding:8px 14px;border-radius:12px;border:2px solid var(--navy3);background:var(--navy);color:var(--text);font:600 16px 'Cairo';cursor:pointer;transition:.15s}
+.opt:hover{border-color:var(--gold)}
+.opt.ok{background:#12382a;border-color:var(--ok)}
+.opt.no{background:#3d1a1f;border-color:var(--bad);animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fb{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-size:15.5px}
+.fb.show{display:block}.fb.g{background:#12382a}.fb.r{background:#3d1a1f}
+.hint{margin-top:8px;background:none;border:0;color:var(--muted);text-decoration:underline;font:600 14px 'Cairo';cursor:pointer;min-height:44px}
+.hbox{display:none;color:#ffd97a;font-size:15px}
+.done{text-align:center;padding:18px;border:2px dashed var(--gold);border-radius:16px;margin:16px 0;display:none}
+.done.show{display:block}
+.parts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{padding:6px 12px;border-radius:20px;background:var(--navy3);border:1px solid var(--gold)}
+.chip b{color:var(--gold)}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}
+td,th{border:1px solid var(--navy3);padding:8px;text-align:center}
+th{background:var(--navy3);color:var(--gold)}
+.sent{padding:10px 14px;border-radius:12px;margin:8px 0;background:var(--navy);border-left:5px solid var(--gold)}
+.hl{color:#7fd1ff;font-weight:700}.hl2{color:#ffb86b;font-weight:700}
+.reset{background:none;border:1px solid var(--muted);color:var(--muted);border-radius:12px;min-height:44px;padding:0 14px;font:600 14px 'Cairo';cursor:pointer;margin-top:20px}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="row"><span>🦃 Turkeys Revision</span><span id="sc">⭐ 0 / 0</span></div>
+  <div id="bar"><div id="fill"></div></div>
+  <nav id="nav"></nav>
+</div>
+<main>
+
+<!-- HOME -->
+<section id="s0" class="on">
+  <div class="card hero">
+    <div class="big">🦃</div>
+    <h1>Turkeys — Revision</h1>
+    <p class="ar">مراجعة الأسبوعين 5 و 6 · الصف السادس · "Turkeys" by Bailey White</p>
+    <p class="ar"><b>لا تخف!</b> كل شيء هنا خطوة بخطوة. ابدأ من الأول وامشِ للآخر ✨</p>
+  </div>
+  <div class="card ar">
+    <h3>خطة المذاكرة (20 دقيقة)</h3>
+    <ol>
+      <li><b>الكلمات</b> — اقلب البطاقات وتعلّم 7 كلمات 🃏</li>
+      <li><b>تدريب الكلمات</b> — أسئلة سهلة مع تلميحات 💡</li>
+      <li><b>أجزاء الكلمات</b> — كيف تفهم كلمة جديدة بتفكيكها 🧩</li>
+      <li><b>أنواع الجمل</b> — Simple / Compound / Complex ✍️</li>
+    </ol>
+    <div class="tip"><b>نصيحة:</b> إذا أخطأت لا بأس! اقرأ الشرح وجرّب مرة ثانية. النجمة ⭐ تُحسب للمحاولة الأولى الصحيحة.</div>
+  </div>
+  <button class="reset" id="rs">🔄 ابدأ من الصفر</button>
+</section>
+
+<!-- WORDS -->
+<section id="s1">
+  <h2>🃏 The 7 Words</h2>
+  <p class="ar">اضغط على البطاقة لتقلبها. اضغط 🔊 لتسمع النطق.</p>
+  <div class="fc-grid" id="fcs"></div>
+  <div class="note ar"><b>حيلة للحفظ:</b> vi<b>gil</b>ance ≈ "جيل" حارس ساهر 👀 · <b>ratio</b> ≈ "راشيو" = نسبة · <b>domestic</b> = "dome" = بيت 🏠</div>
+</section>
+
+<!-- VOCAB PRACTICE -->
+<section id="s2">
+  <h2>💡 Vocabulary Practice</h2>
+  <h3>Practice A — Which word is related?</h3>
+  <p class="ar">اختر الكلمة الأقرب في المعنى.</p>
+  <div id="qa"></div>
+  <h3>Practice B — Complete the sentence</h3>
+  <p class="ar">اختر الكلمة المناسبة للفراغ.</p>
+  <div id="qb"></div>
+  <h3>Apply — Finish the sentence</h3>
+  <p class="ar">اختر النهاية الصحيحة التي توضح المعنى.</p>
+  <div id="qc"></div>
+</section>
+
+<!-- WORD PARTS -->
+<section id="s3">
+  <h2>🧩 Greek &amp; Latin Word Parts</h2>
+  <div class="card ar">
+    <p>كثير من الكلمات الإنجليزية مصنوعة من <b>قطع</b> قديمة (يونانية ولاتينية). إذا عرفت القطع، تعرف معنى الكلمة! مثل الليغو 🧱</p>
+    <div class="parts en">
+      <span class="chip"><b>bio</b> = life حياة</span>
+      <span class="chip"><b>graph</b> = writing كتابة</span>
+      <span class="chip"><b>phon</b> = sound صوت</span>
+      <span class="chip"><b>port</b> = carry يحمل</span>
+      <span class="chip"><b>scope</b> = see يرى</span>
+      <span class="chip"><b>micro-</b> = small صغير</span>
+      <span class="chip"><b>tele-</b> = far بعيد</span>
+      <span class="chip"><b>trans-</b> = across عبر</span>
+      <span class="chip"><b>-logy</b> = study of دراسة</span>
+    </div>
+    <div class="tip en"><b>Example:</b> tele + phone = far + sound → a device to hear people who are far away 📞</div>
+  </div>
+  <div id="qd"></div>
+</section>
+
+<!-- SENTENCES -->
+<section id="s4">
+  <h2>✍️ Simple, Compound &amp; Complex</h2>
+  <div class="card ar">
+    <h3>1) Simple — جملة بسيطة</h3>
+    <p>فكرة واحدة: فاعل واحد + فعل واحد. <b>لا توجد</b> كلمة ربط.</p>
+    <div class="sent en">She <span class="hl">likes turkeys</span>.</div>
+
+    <h3>2) Compound — جملة مركبة (معطوفة)</h3>
+    <p>جملتان كاملتان <b>كل واحدة تقف وحدها</b> + رابط <b>FANBOYS</b> مع فاصلة (,) أو فاصلة منقوطة (;).</p>
+    <table class="en"><tr><th>F</th><th>A</th><th>N</th><th>B</th><th>O</th><th>Y</th><th>S</th></tr>
+    <tr><td>for</td><td>and</td><td>nor</td><td>but</td><td>or</td><td>yet</td><td>so</td></tr></table>
+    <div class="sent en">She had the measles<span class="hl2">, and</span> she stayed in bed.</div>
+    <div class="sent en">The car slowed<span class="hl2">; however,</span> it ran the stop sign.</div>
+
+    <h3>3) Complex — جملة معقدة</h3>
+    <p>جملة كاملة + جملة <b>ناقصة</b> تبدأ بكلمة تبعية (لا تقف وحدها).</p>
+    <div class="parts en">
+      <span class="chip">after</span><span class="chip">although</span><span class="chip">before</span><span class="chip">because</span><span class="chip">if</span><span class="chip">when</span><span class="chip">while</span><span class="chip">since</span><span class="chip">that</span>
+    </div>
+    <div class="sent en"><span class="hl">When she was better</span>, she went outside.</div>
+    <p>إذا بدأت الجملة الناقصة: نضع فاصلة. وإذا جاءت في الآخر: بدون فاصلة.</p>
+  </div>
+  <div class="tip ar"><b>الطريقة السحرية (3 أسئلة):</b><br>
+  ① هل فيها كلمة تبعية مثل because / when / if / while / since؟ ← <b>Complex</b><br>
+  ② هل فيها جملتان كاملتان + FANBOYS أو ; ؟ ← <b>Compound</b><br>
+  ③ غير ذلك؟ ← <b>Simple</b></div>
+  <h3>Circle the correct answer</h3>
+  <div id="qe"></div>
+</section>
+
+<div class="done" id="fin">
+  <div style="font-size:56px">🏆</div>
+  <h2 id="fint">Great job!</h2>
+  <p class="ar" id="finar"></p>
+</div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const SAVE='turkeysRev56';
+let saved={};try{saved=JSON.parse(localStorage.getItem(SAVE)||'{}')}catch(e){}
+const persist=()=>{try{localStorage.setItem(SAVE,JSON.stringify(saved))}catch(e){}};
+
+/* ---------- vocab ---------- */
+const W=[
+ {w:'degraded',p:'verb',ar:'تدهور / أصبح أسوأ',def:'made worse',ex:'The dirty water degraded the land.'},
+ {w:'dilution',p:'noun',ar:'تخفيف (بإضافة ماء)',def:'making a liquid weaker by adding water',ex:'Add water for the juice’s dilution.'},
+ {w:'ratio',p:'noun',ar:'نسبة',def:'a comparison of two numbers or amounts',ex:'The ratio of boys to girls is 2 to 1.'},
+ {w:'vigilance',p:'noun',ar:'يقظة / انتباه للأمان',def:'careful watch to stay safe',ex:'The guard showed vigilance at night.'},
+ {w:'descendants',p:'noun',ar:'الأحفاد / الذرية',def:'people who come from an earlier family member',ex:'We are the descendants of our grandparents.'},
+ {w:'domestic',p:'adjective',ar:'أليف / منزلي',def:'related to the home; farm animals and pets that are not wild',ex:'A cat can be a domestic animal.'},
+ {w:'taint',p:'noun',ar:'شائبة / أثر سيئ صغير',def:'a small amount of something bad that spoils quality',ex:'The food had a taint of smoke.'}
+];
+$('#fcs').innerHTML=W.map((x,i)=>`<div class="fc" role="button" tabindex="0" data-i="${i}"><div class="in">
+ <div class="f"><div class="w">${x.w}</div><div class="pos">${x.p}</div><button class="spk" data-w="${x.w}">🔊 Listen</button><div class="pos ar">اضغط للقلب ↻</div></div>
+ <div class="b"><div class="aw ar">${x.ar}</div><div class="en">${x.def}</div><i class="en">“${x.ex}”</i><button class="spk" data-w="${x.ex}">🔊</button></div></div></div>`).join('');
+document.querySelectorAll('.fc').forEach(c=>{
+  const t=()=>c.classList.toggle('flip');
+  c.onclick=e=>{if(e.target.closest('.spk'))return;t()};
+  c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}};
+});
+document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(!b)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(b.dataset.w);u.lang='en-US';u.rate=.8;speechSynthesis.speak(u)}catch(_){}
+});
+
+/* ---------- questions ---------- */
+const Q={
+ a:[
+  {t:'Which word is related to <u>grandchildren</u>?',o:['descendants','ratio','taint','dilution'],a:0,h:'الأحفاد = أشخاص يأتون من العائلة.',w:'Grandchildren and great-grandchildren are a person’s <b>descendants</b>. الأحفاد هم ذرية الشخص.'},
+  {t:'Which word is related to a <u>flaw</u>?',o:['vigilance','taint','domestic','degraded'],a:1,h:'flaw = عيب صغير.',w:'A <b>taint</b> is an imperfection, like a flaw. الشائبة عيب صغير.'},
+  {t:'Which word is related to <u>numbers</u>?',o:['ratio','taint','descendants','domestic'],a:0,h:'2 to 1 ... تقارن بين رقمين.',w:'A <b>ratio</b> uses numbers to compare things. النسبة تقارن بين أرقام.'}
+ ],
+ b:[
+  {t:'He made a ____ in chemistry class by adding water.',o:['dilution','vigilance','descendants','ratio'],a:0,h:'إضافة ماء = جعل السائل أضعف.',w:'<b>Dilution</b> = adding water to make a liquid weaker. تخفيف.'},
+  {t:'The TV detective’s ____ helped her solve the mystery.',o:['taint','vigilance','dilution','domestic'],a:1,h:'المحققة كانت تراقب بحذر.',w:'<b>Vigilance</b> = careful watching. يقظتها ساعدتها.'},
+  {t:'My great-grandfather created a family tree, listing his ____.',o:['ratio','taint','descendants','dilution'],a:2,h:'شجرة العائلة = الأولاد والأحفاد.',w:'A family tree lists <b>descendants</b>. شجرة العائلة تسرد الذرية.'}
+ ],
+ c:[
+  {t:'If an animal is <u>domestic</u>, it ...',o:['lives close to or with people','lives alone in the wild','can fly very high'],a:0,h:'domestic = بيتي / أليف.',w:'Domestic animals live with people, like cats. الحيوان الأليف يعيش مع الناس.'},
+  {t:'If something has <u>degraded</u>, it ...',o:['has become better','has become worse','has become bigger'],a:1,h:'degraded = made worse.',w:'Degraded = became worse. أصبح أسوأ.'},
+  {t:'If you used <u>vigilance</u> while watching children on the playground, you ...',o:['made sure they did not fall or get hurt','went to sleep','forgot about them'],a:0,h:'vigilance = مراقبة بحذر.',w:'You watched carefully so they were safe. راقبتهم بحذر ليكونوا بأمان.'}
+ ],
+ d:[
+  {t:'<b>telescope</b> = tele (far) + scope (see). What is it?',o:['something you use to see things far away','a small instrument that records sound','carry something across a distance'],a:0,h:'far + see.',w:'tele + scope → to see far away 🔭 التلسكوب لرؤية الأشياء البعيدة.'},
+  {t:'<b>microphone</b> = micro (small) + phone (sound). What is it?',o:['writing about someone’s life','a small instrument used to record sound','the study of life'],a:1,h:'small + sound.',w:'micro + phone → small instrument for sound 🎤 الميكروفون.'},
+  {t:'<b>biography</b> = bio (life) + graph (writing). What is it?',o:['the study of sound','a tool to see far','writing that is about someone’s life'],a:2,h:'life + writing.',w:'bio + graph → writing about a life 📖 السيرة الذاتية.'},
+  {t:'<b>transport</b> = trans (across) + port (carry). What is it?',o:['carry something over a distance','the science of living things','a machine that writes'],a:0,h:'across + carry.',w:'trans + port → carry across 🚚 ينقل.'}
+ ],
+ e:[
+  ['Mark became very sick later in the afternoon.',0,'Only <b>one</b> idea and no linking word. فكرة واحدة بدون رابط.'],
+  ['Jim rode the new school bus, and Tully slowly walked home.',1,'Two full sentences joined by <b>, and</b> (FANBOYS). جملتان كاملتان + and.'],
+  ['She was a good player, yet she wasn’t a top scorer.',1,'<b>, yet</b> is a FANBOYS word joining two full sentences.'],
+  ['Paul said that we were all sore losers because we complained about the game.',2,'Has <b>because</b> (and that) → dependent clause. فيها because.'],
+  ['Since Jake, Chris, and Vanessa studied so hard, they received great test scores.',2,'Starts with <b>Since</b> → dependent clause + comma. تبدأ بـ Since.'],
+  ['We were extremely sad when the party was over.',2,'<b>when</b> the party was over cannot stand alone. when كلمة تبعية.'],
+  ['We are always late to everything.',0,'One subject (We) + one predicate. Simple. فكرة واحدة.'],
+  ['The car slowed at the corner; however, it ran the stop sign.',1,'Two full sentences joined by <b>;</b> (semicolon) + however.'],
+  ['We stayed at home while our parents went to dinner.',2,'<b>while</b> is a subordinating word → Complex.'],
+  ['People will only be sorry if they live their life with regrets.',2,'<b>if</b> starts the dependent clause → Complex.']
+ ].map(x=>({t:x[0],o:['Simple','Compound','Complex'],a:x[1],w:x[2],h:'اسأل: هل فيها because / when / if / while / since؟ ثم هل فيها , and أو ; ؟',fixed:true}))
+};
+
+let total=0,earned=0;const state={}; // id -> 'first'|'retry'|undefined
+function build(id,list,host){
+  $(host).innerHTML=list.map((q,qi)=>{
+    const order=q.fixed?q.o.map((_,i)=>i):shuffle(q.o.map((_,i)=>i));
+    return `<div class="q" id="q_${id}${qi}" data-k="${id}${qi}"><div class="num">Question ${qi+1}</div>
+    <div class="txt en">${q.t}</div><div class="opts">${order.map(i=>`<button class="opt" data-i="${i}">${q.o[i]}</button>`).join('')}</div>
+    <button class="hint ar">💡 أحتاج تلميح</button><div class="hbox ar">${q.h}</div><div class="fb"></div></div>`}).join('');
+  list.forEach((q,qi)=>{
+    total++;const k=id+qi,box=$('#q_'+k);
+    box.querySelector('.hint').onclick=()=>{box.querySelector('.hbox').style.display='block'};
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(state[k]==='done'||state[k]==='doneR')return;
+      const fb=box.querySelector('.fb');
+      if(+b.dataset.i===q.a){
+        b.classList.add('ok');
+        const first=!box.dataset.miss;
+        state[k]=first?'done':'doneR';
+        if(first){earned++;}
+        box.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        fb.className='fb show g ar';fb.innerHTML='✅ '+(first?'ممتاز!':'أحسنت، أصبت هذه المرة!')+'<br>'+q.w;
+        if(id==='b'){const t=box.querySelector('.txt');t.innerHTML=t.innerHTML.replace('____','<u>'+b.textContent+'</u>')}
+        if(navigator.vibrate)try{navigator.vibrate(30)}catch(_){}
+        update();
+      }else{
+        b.classList.add('no');b.disabled=true;box.dataset.miss=1;
+        fb.className='fb show r ar';fb.innerHTML='❌ ليست صحيحة — جرّب مرة أخرى. لا تقلق! 💪';
+        box.querySelector('.hbox').style.display='block';
+      }
+    });
+  });
+}
+build('a',Q.a,'#qa');build('b',Q.b,'#qb');build('c',Q.c,'#qc');build('d',Q.d,'#qd');build('e',Q.e,'#qe');
+
+/* ---------- progress ---------- */
+let celebrated=false;
+function msg(p){return p===100?['Perfect! You are a star! 🌟','ما شاء الله! درجة كاملة، أنت بطل!']:p>=70?['Very good! Keep going! 👏','ممتاز! قريب جدًا من الكمال، راجع الأخطاء وستتقنها.']:['Good try! Review and try again 💪','محاولة جيدة! راجع البطاقات وأعد المحاولة، أنت تتحسن كل مرة.']}
+function update(){
+  const answered=Object.keys(state).length;
+  $('#sc').textContent=`⭐ ${earned} / ${total}`;
+  $('#fill').style.width=(answered/total*100)+'%';
+  saved.earned=earned;persist();
+  if(answered===total){
+    const p=Math.round(earned/total*100),m=msg(p);
+    $('#fint').textContent=`${m[0]} (${earned}/${total})`;$('#finar').textContent=m[1];
+    $('#fin').classList.add('show');
+    if(p>=70&&!celebrated){celebrated=true;try{confetti({particleCount:p===100?220:120,spread:80,origin:{y:.6}})}catch(_){}}
+  }
+}
+update();
+
+/* ---------- nav ---------- */
+const tabs=['🏠 Start','🃏 Words','💡 Practice','🧩 Word Parts','✍️ Sentences'];
+$('#nav').innerHTML=tabs.map((t,i)=>`<button data-t="${i}" class="${i?'':'on'}">${t}</button>`).join('');
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('section').forEach((s,i)=>s.classList.toggle('on',i==b.dataset.t));
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+$('#rs').onclick=()=>{try{localStorage.removeItem(SAVE)}catch(e){}location.reload()};
+</script>
+</body>
+</html>
