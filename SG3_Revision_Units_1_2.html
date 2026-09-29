@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SG3 Revision Units 1 and 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{--navy:#0a1628;--navy2:#11213a;--navy3:#1a2f50;--line:#26406a;--gold:#d4af37;--text:#eef2f8;--muted:#9fb0c8;--ok:#3ddc97;--bad:#ff6b6b;--acc:#3ddc97}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:130px}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--navy);color:var(--text);line-height:1.6;min-height:100vh}
+h1,h2,h3{font-family:'Playfair Display',serif}
+button,input,textarea{font-family:inherit;font-size:1rem;color:inherit}
+button{cursor:pointer}
+.ar{direction:rtl;color:var(--muted)}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px 90px}
+
+.bar{position:sticky;top:0;z-index:50;background:rgba(10,22,40,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:8px 16px}
+.bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar-track{flex:1;height:10px;background:var(--navy3);border-radius:10px;overflow:hidden}
+.bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#ffe68a);transition:width .5s}
+.bar-score{font-weight:800;color:var(--gold);white-space:nowrap}
+.tabs{display:flex;gap:8px;max-width:960px;margin:8px auto 0}
+.tab{flex:1;min-height:44px;background:var(--navy3);border:2px solid var(--line);border-radius:12px;font-weight:800;padding:2px 8px}
+.tab small{display:block;font-weight:600;color:var(--muted);font-size:.72rem;line-height:1.2}
+.tab.on{border-color:var(--acc);background:var(--navy2)}
+.nav{display:flex;gap:6px;overflow-x:auto;max-width:960px;margin:8px auto 0;scrollbar-width:none;padding-bottom:2px}
+.nav a{flex:none;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:700;padding:6px 12px;border:1px solid var(--line);border-radius:20px;min-height:32px}
+.nav a:hover,.nav a.done{color:var(--gold);border-color:var(--gold)}
+
+.hero{text-align:center;padding:34px 0 8px}
+.hero h1{font-size:clamp(1.9rem,6.5vw,3.2rem);line-height:1.15;color:var(--gold)}
+.hero p{color:var(--muted);margin-top:6px}
+.unit-title{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-top:26px}
+.unit-title h2{font-size:1.9rem;color:var(--acc)}
+
+section.sec{margin-top:36px}
+.sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.sec-h h3{font-size:1.5rem;color:var(--gold)}
+.sec-score{margin-inline-start:auto;font-weight:800;color:var(--acc)}
+.card{background:var(--navy2);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px}
+.part-h{font-weight:800;color:var(--acc);margin:18px 0 4px}
+.passage{background:var(--navy3);border-radius:14px;padding:14px;line-height:1.8}
+
+/* lessons */
+details.lesson{background:var(--navy2);border:1px solid var(--line);border-radius:16px;margin-top:10px}
+details.lesson summary{cursor:pointer;padding:12px 16px;font-weight:800;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:44px}
+details.lesson summary::-webkit-details-marker{display:none}
+details.lesson summary:before{content:"▸";color:var(--gold)}
+details.lesson[open] summary:before{content:"▾"}
+details.lesson .body{padding:0 16px 16px}
+.body p{margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+.box{background:var(--navy3);border-radius:12px;padding:12px;border-top:3px solid var(--acc)}
+.ex{color:#cfe0ff;display:inline-block;margin-top:2px}
+div.ex{display:block;border-inline-start:3px solid var(--gold);padding:4px 12px;margin-top:8px;background:rgba(212,175,55,.06);border-radius:0 8px 8px 0}
+.chip{display:inline-block;margin:3px 3px 0 0;padding:2px 12px;border:1px solid var(--gold);color:var(--gold);border-radius:16px;font-weight:700;font-size:.9rem}
+.mist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:12px}
+.mist div{background:var(--navy3);border-radius:10px;padding:8px 12px}
+.mist s{color:var(--bad)}.mist b{color:var(--ok)}
+.tbl{border-collapse:collapse;width:100%;margin:10px 0;text-align:center}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px}
+.tbl th{background:var(--navy3)}
+
+/* questions */
+.q{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px}
+.q.right{border-color:var(--ok)}.q.wrong{border-color:var(--bad)}
+.qt{font-weight:700;margin-bottom:8px}
+.qt .n{color:var(--gold);margin-inline-end:6px}
+.qt .blank{display:inline-block;min-width:70px;border-bottom:2px solid var(--gold);text-align:center;color:var(--ok);font-weight:800}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{min-height:44px;padding:6px 16px;border-radius:22px;border:2px solid var(--line);background:var(--navy3);font-weight:700}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.ok{background:rgba(61,220,151,.22);border-color:var(--ok);color:var(--ok)}
+.opt.no{background:rgba(255,107,107,.2);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.opt:disabled{cursor:default}
+.fb{margin-top:8px;font-weight:700;min-height:1.4em}
+.fb.good{color:var(--ok)}.fb.badc{color:var(--bad)}.fb.mid{color:var(--gold)}
+.fb .ar{display:block;font-weight:600;font-size:.92rem}
+input.ans,textarea.wr{width:100%;background:var(--navy);border:2px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+input.ans:focus,textarea.wr:focus{outline:none;border-color:var(--gold)}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.btn{min-height:44px;padding:6px 18px;border-radius:12px;border:2px solid var(--gold);background:var(--gold);color:var(--navy);font-weight:800}
+.btn.ghost{background:transparent;color:var(--gold)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* order */
+.pool,.built{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;padding:8px;border-radius:12px}
+.built{border:2px dashed var(--line);background:var(--navy);margin-bottom:8px}
+.word{min-height:44px;padding:4px 14px;border-radius:22px;border:2px solid var(--gold);background:transparent;font-weight:700}
+.built .word{background:var(--gold);color:var(--navy)}
+
+/* match */
+.mt{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+@media(max-width:640px){.mt{grid-template-columns:1fr}}
+.mcol{display:flex;flex-direction:column;gap:8px}
+.mb{min-height:44px;text-align:start;padding:6px 12px;border-radius:12px;border:2px solid var(--line);background:var(--navy3);font-weight:600}
+.mb b{font-weight:800}
+.mb small{display:block;color:var(--muted)}
+.mb.sel{border-color:var(--gold);background:rgba(212,175,55,.18)}
+.mb.ok{border-color:var(--ok);background:rgba(61,220,151,.18)}
+.mb:disabled{cursor:default}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* writing */
+.gw{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.gw .chip{opacity:.65}.gw .chip.used{opacity:1;background:rgba(61,220,151,.2);border-color:var(--ok);color:var(--ok)}
+.chk label{display:flex;gap:10px;align-items:center;min-height:44px;padding:2px 0}
+.chk input{width:22px;height:22px;accent-color:var(--gold)}
+.model{background:var(--navy3);border-radius:12px;padding:12px;margin-top:8px;line-height:1.8}
+ul.plain{list-style:none}
+ul.plain li{padding:3px 0}
+
+/* mistakes + summary */
+.miss{margin-top:34px}
+.miss summary{cursor:pointer;font-weight:800;color:var(--bad);min-height:44px}
+.miss li{margin:6px 0 6px 22px}
+.miss .a{color:var(--ok);font-weight:700}
+.final{text-align:center;padding:26px 16px;margin-top:34px;border:2px solid var(--gold);border-radius:20px;background:var(--navy2)}
+.final .big{font-family:'Playfair Display';font-size:2.6rem;color:var(--gold)}
+.top{position:fixed;bottom:16px;right:16px;width:46px;height:46px;border-radius:50%;background:var(--gold);color:var(--navy);border:0;font-weight:800;font-size:1.3rem;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.reset{margin-top:26px;text-align:center}
+</style>
+</head>
+<body>
+<div class="bar">
+ <div class="bar-in"><div class="bar-track"><div class="bar-fill" id="fill"></div></div><div class="bar-score" id="score">0 / 0</div></div>
+ <div class="tabs" id="tabs"></div>
+ <div class="nav" id="nav"></div>
+</div>
+<div class="wrap">
+ <div class="hero">
+  <h1>Super Goal 3 · Revision</h1>
+  <p>Grade 9 · 3rd Intermediate · Units 1 &amp; 2</p>
+  <p class="ar">مراجعة الوحدتين الأولى والثانية — اضغط على الإجابة الصحيحة 💪</p>
+ </div>
+ <div id="app"></div>
+ <div class="reset"><button class="btn ghost" id="resetAll">↻ Start again · ابدأ من جديد</button></div>
+</div>
+<button class="top" onclick="scrollTo({top:0})" aria-label="Back to top">↑</button>
+<script>
+/* ===== DATA ===== */
+/* mcq item: [question, CORRECT, wrong, wrong, ...]  (options are shuffled on screen) */
+/* type item: {q, a:[accepted answers], show:"model answer", hint} */
+/* order item: {w:[words in right order], show:"..."} */
+/* match item: {t, ar, d}  (term, arabic, definition) */
+
+const UNITS = [
+{
+ id:"u1", name:"Unit 1", title:"Lifestyle", ar:"نمط الحياة", color:"#3ddc97",
+ lessons:[
+  {h:"Present Simple", ar:"المضارع البسيط",
+   html:`<p>We use it for <b>habits</b> and <b>routines</b>. <span class="ar">نستخدمه للعادات والأشياء المتكررة.</span></p>
+   <div class="grid2">
+    <div class="box"><b>She / He / It</b> + V<b>s</b><br><span class="ex">She always brush<b>es</b> her teeth.</span><br><b>Does</b> she + base verb?<br><span class="ex">Does she drink coffee?</span><br><b>doesn't</b> + base verb<br><span class="ex">Ali doesn't drive to work.</span></div>
+    <div class="box"><b>I / You / We / They</b> + V<br><span class="ex">I usually eat dinner at 7.</span><br><b>Do</b> they + base verb?<br><span class="ex">Do you hang out at the mall?</span><br><b>don't</b> + base verb<br><span class="ex">I don't play the piano.</span></div>
+   </div>
+   <p><b>Adverbs of frequency</b> come <u>before</u> the main verb: <span class="chip">always</span><span class="chip">usually</span><span class="chip">often</span><span class="chip">sometimes</span><span class="chip">rarely / seldom</span><span class="chip">never</span></p>
+   <div class="mist"><div>❌ She <s>go</s> to school. → ✅ She <b>goes</b> to school.</div><div>❌ Does she <s>goes</s>? → ✅ Does she <b>go</b>?</div><div>❌ I rarely <s>sleeping</s> late. → ✅ I rarely <b>sleep</b> late.</div></div>
+   <p class="ar">💡 بعد do / does / doesn't نستخدم الفعل الأصلي بدون s.</p>`},
+  {h:"How often / How long / How much", ar:"كم مرة / كم مدة / كم كمية",
+   html:`<div class="grid3">
+    <div class="box"><b>How often</b><br>كم مرة (التكرار)<br><span class="ex">How often do you work out? — Twice a week.</span></div>
+    <div class="box"><b>How long</b><br>كم مدة (الوقت)<br><span class="ex">How long do you use your phone? — One hour a day.</span></div>
+    <div class="box"><b>How much</b><br>كم كمية (لا يُعدّ)<br><span class="ex">How much does he smoke? — Two cigarettes a day.</span></div></div>
+   <p>Then use <b>do / does</b> + subject + base verb: <span class="ex">How often <b>does</b> Ibrahim <b>talk</b> on the phone?</span></p>`},
+  {h:"All · Both · Neither · None", ar:"كل · كلاهما · لا أحد منهما · لا شيء",
+   html:`<table class="tbl"><tr><th></th><th>2 people / things<br><span class="ar">اثنان</span></th><th>3 or more<br><span class="ar">ثلاثة أو أكثر</span></th></tr>
+    <tr><td>✅ positive</td><td><b>Both</b></td><td><b>All</b></td></tr>
+    <tr><td>❌ negative</td><td><b>Neither</b></td><td><b>None</b></td></tr></table>
+   <div class="ex">My parents are from Paris. <b>Both</b> of them speak French.</div>
+   <div class="ex">There are five teachers. <b>All</b> of them teach science.</div>
+   <div class="ex">Khaled and Ali speak English. <b>Neither</b> of them <b>speaks</b> Chinese.</div>
+   <div class="ex">There are many balls, but <b>none</b> of them are yellow.</div>
+   <p class="ar">💡 Both / All + فعل جمع (are, teach). Neither + فعل مفرد (is, speaks). ولا تستخدم not معهم لأن معناهم منفي أصلاً.</p>`}
+ ],
+ sections:[
+ {id:"u1v", title:"Vocabulary", ar:"المفردات", tip:"راجع معنى الكلمة ثم حاول مرة أخرى 📖",
+  parts:[
+   {type:"match", h:"A · Match the word with its meaning", items:[
+    {t:"addict", ar:"مدمن", d:"to like an activity very much and spend much time doing it"},
+    {t:"fanatic", ar:"شغوف / متحمّس", d:"someone who likes a particular thing or activity very much"},
+    {t:"fitness", ar:"اللياقة", d:"to be physically fit and healthy"},
+    {t:"overdo", ar:"يبالغ", d:"to do something in a way that is too extreme"},
+    {t:"hate", ar:"يكره", d:"the opposite of enjoy"},
+    {t:"solve", ar:"يحلّ", d:"to find an answer to a problem"},
+    {t:"work out", ar:"يتمرّن", d:"to exercise"},
+    {t:"download", ar:"يحمّل", d:"to transfer data or software to your computer"},
+    {t:"thumb", ar:"الإبهام", d:"the short, thick finger"}]},
+   {type:"match", h:"B · Match the expression", items:[
+    {t:"exercise freak", ar:"مهووس بالرياضة", d:"someone who exercises a lot"},
+    {t:"turn (someone) off", ar:"ينفّر", d:"does not interest someone at all"},
+    {t:"anyway", ar:"على أيّ حال", d:"a word to introduce a change in topic"},
+    {t:"you see", ar:"كما ترى", d:"a phrase to introduce an explanation"}]},
+   {type:"mcq", h:"C · Choose the correct word", items:[
+    ["She's a real sports ___.","fanatic","addict","puzzle","thumb"],
+    ["He's only 24 years old and a drug ___.","addict","fanatic","puzzle","thumb"],
+    ["They're doing exercises to improve their ___.","fitness","addict","puzzle","herbal"],
+    ["Work hard but don't ___ it.","overdo","download","solve","hate"],
+    ["I'm trying to ___ this problem.","solve","work out","overdo","enjoy"],
+    ["I ___ regularly to keep fit.","work out","solve","overdo","download"]]},
+   {type:"mcq", h:"D · Who is it?", items:[
+    ["Omar spends a lot of time at the gym. He is an ___.","exercise freak","Internet addict","vegetarian","devoted employee"],
+    ["Ali always eats vegetables. He is a ___.","vegetarian","devoted employee","exercise freak","Internet addict"],
+    ["Khaled regularly chats online. He is an ___.","Internet addict","vegetarian","devoted employee","exercise freak"],
+    ["Majed often spends a lot of time at the office. He is a ___.","devoted employee","vegetarian","Internet addict","exercise freak"],
+    ["Mark likes to work out. He's really into exercise and fitness. He's an ___.","exercise freak","devoted employee"],
+    ["Jake never eats meat. He's a ___.","vegetarian","Internet addict"],
+    ["Ali is online all the time, even in the park! He is an ___.","Internet addict","exercise freak"]]},
+   {type:"mcq", h:"E · Spelling — choose the missing letter", items:[
+    ["You need more exercise, but be careful not to o__erdo it.  (o_erdo)","v","h","p","f"],
+    ["I h__te insects.  (h_te)","a","e","i","u"],
+    ["I can't solv__ her problems for her.  (solv_)","e","u","a","o"],
+    ["I'm downloa__ing the pictures now.  (downloa_ing)","d","n","g","q"]]}
+  ]},
+ {id:"u1g1", title:"Grammar · Present Simple", ar:"قواعد · المضارع البسيط", tip:"He / She / It + verb-s  ·  بعد do / does نستخدم الفعل الأصلي ✏️",
+  parts:[
+   {type:"mcq", h:"A · Choose the correct answer", items:[
+    ["I ___ at the bank.","work","worked","works","working"],
+    ["She ___ with her parents.","lives","live","to live","lived"],
+    ["Emily ___ delicious cookies.","makes","made","make","making"],
+    ["Rohan and Sania ___ to play card games.","like","likes","to like","liked"],
+    ["It ___ every afternoon in the hot season.","rains","rain","raining","rained"],
+    ["They ___ to Abha every summer.","drive","drove","driving","drives"],
+    ["He ___ to school every morning.","goes","go","went","going"],
+    ["I usually ___ my evenings with my children.","spend","spent","spending","spends"],
+    ["I rarely ___ tea in the morning.","drink","drinks","drank","to drink"],
+    ["We always ___ to school.","walk","walking","walks","walked"],
+    ["Amal usually ___ a haircut every two months.","gets","get","got"],
+    ["Nora never ___ TV on the weekend.","watches","watch","watched"],
+    ["___ you hang out with your friends at the mall?","Do","Does","Did"],
+    ["___ she drink coffee?","Does","Do","Did"],
+    ["I always ___ my homework in the afternoon.","do","does","doing"],
+    ["Sarah ___ chocolate morning, noon, and night.","eats","eat","ate"],
+    ["___ Saad usually watch T.V. in the morning?","Does","Do","Are"]]},
+   {type:"mcq", h:"B · Choose the correct structure", items:[
+    ["Which sentence is correct?","Sara usually drinks tea.","Sara usually drink tea.","Sara usually drinking tea.","Sara usually will drink tea."],
+    ["Which sentence is correct?","How often does he exercise?","How often does they exercise?","How often does you exercise?","How often does we exercise?"]]},
+   {type:"type", h:"C · Do as shown between brackets", items:[
+    {q:"Eman washes the dishes after dinner.  (use “sometimes”)", a:["eman sometimes washes the dishes after dinner"], show:"Eman sometimes washes the dishes after dinner.", hint:"sometimes goes before the main verb"},
+    {q:"Fahad (get) a haircut every week.  (correct the verb)", a:["fahad gets a haircut every week"], show:"Fahad gets a haircut every week."},
+    {q:"He (work) very hard every day.  (correct the verb)", a:["he works very hard every day"], show:"He works very hard every day."},
+    {q:"Maha arrives at work on time.  (make it negative)", a:["maha doesn't arrive at work on time","maha does not arrive at work on time"], show:"Maha doesn't arrive at work on time.", hint:"doesn't + base verb"},
+    {q:"Rana and her family hang out on the weekend.  (make it negative)", a:["rana and her family don't hang out on the weekend","rana and her family do not hang out on the weekend"], show:"Rana and her family don't hang out on the weekend."},
+    {q:"Sara checks her email on Monday.  (make a Yes/No question)", a:["does sara check her email on monday"], show:"Does Sara check her email on Monday?", hint:"Does + subject + base verb"},
+    {q:"Ahmed and Ali drive their cars carefully.  (make a Yes/No question)", a:["do ahmed and ali drive their cars carefully"], show:"Do Ahmed and Ali drive their cars carefully?"},
+    {q:"I rarely sleeping late on the weekend.  (correct the mistake)", a:["i rarely sleep late on the weekend"], show:"I rarely sleep late on the weekend."},
+    {q:"I go shopping twice a week.  (ask with “How often”)", a:["how often do you go shopping"], show:"How often do you go shopping?"}]},
+   {type:"order", h:"D · Reorder the words", items:[
+    {w:["How","often","do","you","surf","on","the","internet?"], show:"How often do you surf on the internet?"},
+    {w:["Sami","always","plays","tennis."], show:"Sami always plays tennis."}]}
+  ]},
+ {id:"u1g2", title:"Grammar · How often / All · Both", ar:"قواعد · كم مرة / كل · كلاهما", tip:"Both / Neither = 2  ·  All / None = 3 أو أكثر 👥",
+  parts:[
+   {type:"mcq", h:"A · How often / How long / How much", items:[
+    ["How often ___ you go to the supermarket?","do","does","did","done"],
+    ["How often ___ she go out?","does","do","doing","done"],
+    ["How much ___ your father smoke? — About two cigarettes a day.","does","done","doing","do"],
+    ["How long ___ they wait?","do","did","does","done"],
+    ["How long ___ she read?","does","do","doing","done"],
+    ["How ___ time do you spend in the shower?","much","many","old"],
+    ["A: How ___ do you work out at the gym?   B: Twice a week.","often","long","much"],
+    ["A: How ___ do you use your cell phone?   B: One hour a day.","long","often","many"]]},
+   {type:"mcq", h:"B · All / Both / Neither / None", items:[
+    ["___ Wafa and Afnan lived in Jeddah.","Both","All","None","Neither"],
+    ["My parents are from Paris. ___ of them live in Paris.","Both","All","None","Neither"],
+    ["Khaled and Ali speak English. ___ of them speaks Chinese.","Neither","Both","All","None"],
+    ["___ of us were ill, so we didn't go to work.","Both","Neither","All","None"],
+    ["There are five teachers in the lab. ___ of them teach science.","All","Both","None","Neither"],
+    ["There are many balls in the box. ___ of them are yellow.","None","Neither","All","Both"],
+    ["Reem and Hind are friends. ___ of them are teachers.","Both","All","Neither"],
+    ["Reem and Hind are friends. ___ of them is a teacher.","Neither","Both","All"],
+    ["I have many pens in my pencil case, but ___ of them are red.","none","both","neither"],
+    ["Dana and Nada are teachers. Both of them ___ English.","teach","teaches","teaching"],
+    ["Samar and Hanan are teachers. Neither of them ___ PE.","teaches","teach","teaching"],
+    ["These books are all Mona's. ___ of them belong to me.","None","All","Both"]]},
+   {type:"type", h:"C · Correct the mistake", items:[
+    {q:"Yara and Layan never eat meat. Neither of them are vegetarian.", a:["yara and layan never eat meat both of them are vegetarian"], show:"Yara and Layan never eat meat. Both of them are vegetarian.", hint:"They never eat meat, so they ARE vegetarian → which word?"},
+    {q:"Hala and Ghala are twins. Both of them is 16.", a:["hala and ghala are twins both of them are 16"], show:"Hala and Ghala are twins. Both of them are 16.", hint:"Both + plural verb"},
+    {q:"Ahmad and Ali born in France, but all of them could speak French.", a:["ahmad and ali were born in france but both of them could speak french","ahmad and ali born in france but both of them could speak french"], show:"Ahmad and Ali were born in France, but both of them could speak French.", hint:"Two people → ?"},
+    {q:"Neither of them like pizza.", a:["neither of them likes pizza"], show:"Neither of them likes pizza.", hint:"Neither + singular verb"},
+    {q:"How often does Ibrahim talks on the phone?", a:["how often does ibrahim talk on the phone"], show:"How often does Ibrahim talk on the phone?"}]}
+  ]},
+ {id:"u1w", title:"Writing", ar:"الكتابة", write:{
+   prompt:"Write a paragraph about <b>“A Common Habit Among Young People”</b>. Give your opinion about it.",
+   ar:"اكتب فقرة عن عادة شائعة بين الشباب وأعطِ رأيك.",
+   words:["happier","lifestyle","energetic","sleeping","eating","succeed","attention"],
+   qs:["How much time do youth spend on their phones?","How can phones be helpful?","How can they be harmful?","Do you think using phones is a bad habit? Why?"],
+   model:"Healthy habits are the most important factor in our life that makes us what we are. College students eat too much fast food. To be healthy, they need to add more fresh fruit and vegetables to their diet. Getting enough exercise can make them happier, more energetic and find it easier to pay attention. Getting enough sleep can make their exam scores higher. Healthy habits can help them succeed in their classes. Finally, good habits help us to live a better life.",
+   frames:["One common habit among young people is ...","They spend about ... hours a day on ...","This habit can be helpful because ...","However, it can be harmful because ...","In my opinion, ..."]
+ }}
+ ]
+},
+{
+ id:"u2", name:"Unit 2", title:"Life Stories", ar:"قصص حياة", color:"#ff8a5c",
+ lessons:[
+  {h:"Past Simple", ar:"الماضي البسيط",
+   html:`<div class="grid2">
+    <div class="box"><b>Verb to be</b><br>I / he / she / it → <b>was</b><br>you / we / they → <b>were</b><br><span class="ex">I was born in Abha.</span><br><span class="ex">They were not tired.</span></div>
+    <div class="box"><b>Regular</b> → + ed: work → work<b>ed</b><br><b>Irregular</b>: go → <b>went</b>, have → <b>had</b>, swim → <b>swam</b>, bring → <b>brought</b>, see → <b>saw</b>, send → <b>sent</b>, wear → <b>wore</b>, buy → <b>bought</b></div></div>
+   <div class="grid2">
+    <div class="box"><b>Negative:</b> didn't + <u>base verb</u><br><span class="ex">They didn't go to school.</span></div>
+    <div class="box"><b>Question:</b> Did + subject + <u>base verb</u>?<br><span class="ex">Did you live in Jeddah?</span></div></div>
+   <p><b>Time words:</b> <span class="chip">yesterday</span> <span class="chip">last week / month / year</span> <span class="chip">three days ago</span></p>
+   <div class="mist"><div>❌ Did you <s>lived</s>? → ✅ Did you <b>live</b>?</div><div>❌ I didn't <s>slept</s>. → ✅ I didn't <b>sleep</b>.</div><div>❌ 3 weeks <s>last</s>. → ✅ 3 weeks <b>ago</b>.</div></div>
+   <p class="ar">💡 بعد did / didn't نستخدم الفعل الأصلي (بدون ed). وكلمة <b>ago</b> تأتي بعد المدة، أما <b>last</b> فتأتي قبلها.</p>`},
+  {h:"used to  ·  When clauses", ar:"اعتدتُ أن ... · جمل When",
+   html:`<p><b>used to + base verb</b> = a habit in the past that is <u>not true now</u>. <span class="ar">عادة في الماضي وتوقفت الآن.</span></p>
+   <div class="ex">I <b>used to ride</b> a bike when I was 8.</div>
+   <div class="ex">I <b>didn't use to play</b> video games.  <span class="ar">(بدون d في use)</span></div>
+   <div class="ex"><b>Did</b> he <b>use to</b> smoke?</div>
+   <div class="ex"><b>When</b> I was a child, I used to play football.</div>
+   <div class="ex">What <b>did</b> Ahmad <b>use to</b> do?</div>`},
+  {h:"The Passive", ar:"المبني للمجهول",
+   html:`<div class="grid2"><div class="box"><b>Active</b><br>S + V-ed + O<br><span class="ex">Lama bought a skirt.</span></div>
+   <div class="box"><b>Passive</b><br>O + <b>was / were</b> + V3 + (by S)<br><span class="ex">A skirt was bought by Lama.</span></div></div>
+   <p>Singular object → <b>was</b> · Plural object → <b>were</b>.<br><span class="ex">The houses were built in the 19th century.</span></p>
+   <p class="ar">💡 نقلب الفاعل والمفعول، ونستخدم was/were + التصريف الثالث للفعل (V3). مثال: steal → stole → <b>stolen</b>.</p>`},
+  {h:"in · on · at", ar:"حروف الجر للزمان والمكان",
+   html:`<div class="grid3">
+    <div class="box"><b>in</b><br>months, seasons, years, cities<br><span class="ex">in August · in spring · in 2013 · in Jeddah</span></div>
+    <div class="box"><b>on</b><br>days &amp; dates<br><span class="ex">on Monday · on June 21st</span></div>
+    <div class="box"><b>at</b><br>clock time &amp; points<br><span class="ex">at 10 o'clock · at night · at home</span></div></div>`}
+ ],
+ sections:[
+ {id:"u2v", title:"Vocabulary", ar:"المفردات", tip:"راجع معنى الكلمة ثم حاول مرة أخرى 📖",
+  parts:[
+   {type:"match", h:"A · Match the word with its meaning", items:[
+    {t:"league", ar:"دوري", d:"a group of sports clubs"},
+    {t:"owner", ar:"مالك", d:"the person to whom it belongs"},
+    {t:"litter", ar:"قمامة", d:"the synonym of rubbish"},
+    {t:"awarded", ar:"منح جائزة", d:"to give a prize"},
+    {t:"compete", ar:"يتنافس", d:"to take part in a race or competition"},
+    {t:"colleague", ar:"زميل عمل", d:"the people you work with"},
+    {t:"infant", ar:"رضيع", d:"a baby or new born"},
+    {t:"donate", ar:"يتبرّع", d:"to give money or goods to help a person or organization"},
+    {t:"outstanding", ar:"متميّز", d:"excellent"},
+    {t:"appointment", ar:"موعد", d:"an arrangement to meet"}]},
+   {type:"match", h:"B · Match", items:[
+    {t:"metropolis", ar:"مدينة كبرى", d:"a big city"},
+    {t:"relief", ar:"ارتياح", d:"taking away stress and pain"},
+    {t:"encouraged", ar:"شجّع", d:"supported someone to succeed"},
+    {t:"abroad", ar:"في الخارج", d:"in other countries"},
+    {t:"gathered", ar:"اجتمعوا", d:"got together / met"},
+    {t:"humanitarian", ar:"إنساني", d:"a person who helps others"},
+    {t:"big break", ar:"فرصة العمر", d:"an important opportunity"}]},
+   {type:"mcq", h:"C · Choose the correct word", items:[
+    ["They ___ a lot of money.","donate","encourage","practice","join"],
+    ["The ___ started to cry.","infant","colleague","blood","league"],
+    ["He has a good working relationship with his ___.","colleagues","facilities","infants","donations"],
+    ["He was ___ a special prize.","awarded","competed","joined","practiced"],
+    ["I had to ___ with him for a promotion.","compete","donate","receive","award"],
+    ["The ___ girls are so much alike.","twin","community","blood","effort"],
+    ["Please do not leave ___ after your picnic.","litter","owner","league","infant"],
+    ["My son practices with the baseball ___ every weekend.","league","employee","operation","newborn"],
+    ["In her job, she supervises 30 ___.","employees","league","operation","newborn"],
+    ["I want to study English ___ in the UK.","abroad","puzzle","proud","twin"],
+    ["Waleed's parents ___ him in his studies.","encourage","abroad","puzzle","twin"],
+    ["My sister has ___ sons.","twin","abroad","proud","puzzle"],
+    ["I can't answer that ___; I give up.","puzzle","abroad","proud","encourage"]]},
+   {type:"mcq", h:"D · Spelling — choose the missing letter", items:[
+    ["I dislike her unfriendly attit__de.","u","I","a","o"],
+    ["We need more medical care for in__ants.","f","v","p","h"],
+    ["His colle__ues gave him a present when he retired.","g","z","k","t"],
+    ["Tom and Mary are tw__ns.","i","e","u","a"],
+    ["Emp__oyees are required to wear uniforms.","l","q","n","s"],
+    ["Our university has excellent sports f__cilities.","a","i","u","o"],
+    ["The ..ustodian of the Two Holy Mosques, King Salman, was born in Riyadh.","C","J","R"],
+    ["You did an out__tanding job on the project.","s","a","w"]]},
+   {type:"type", h:"E · Unscramble the letters", items:[
+    {q:"doorn", a:["donor"], show:"donor", hint:"a person who gives blood or money"},
+    {q:"snwit", a:["twins"], show:"twins"},
+    {q:"ntfain", a:["infant"], show:"infant", hint:"a baby"},
+    {q:"wnernbos", a:["newborns","newborn"], show:"newborns", hint:"very young babies"}]}
+  ]},
+ {id:"u2g1", title:"Grammar · Past Simple", ar:"قواعد · الماضي البسيط", tip:"was/were للـ be  ·  بعد did نستخدم الفعل الأصلي ✏️",
+  parts:[
+   {type:"mcq", h:"A · Choose the correct answer", items:[
+    ["___ you like candy when you were young?","Did","Do","Done","Does"],
+    ["___ she go to the gym yesterday?","Did","Does","Do","Done"],
+    ["___ it rain last night?","Did","Do","Does","Done"],
+    ["Did you ___ on a trip last weekend?","go","goes","gone","going"],
+    ["Did you ___ art in school?","study","to study","studying","studies"],
+    ["Did you ___ a good weekend?","have","had","has","having"],
+    ["She ___ a headache yesterday.","had","to have","has","have"],
+    ["She ___ to a good university last year.","went","going","goes","go"],
+    ["We ___ a lot while we were on holiday.","swam","swimming","swims","to swim"],
+    ["She ___ tennis when she was younger.","played","play","plays","playing"],
+    ["I ___ abroad for five years.","lived","lives","living","live"],
+    ["He ___ in the garden two minutes ago.","was","were","are","is"],
+    ["It ___ sunny yesterday.","was","is","were","are"],
+    ["They ___ not tired.","were","be","is","was"],
+    ["We ___ hungry last night.","were","was","are","is"],
+    ["I ___ born in Abha.","was","are","were","be"],
+    ["He ___ very hard last week.","worked","works","working","to work"],
+    ["I ___ my lunch to school yesterday.","brought","bring","brings","bringing"],
+    ["People ___ in caves a long time ago.","lived","living","live","lives"],
+    ["Amal ___ a blue dress last night.","wore","wear","wears"],
+    ["Nouf ___ tennis yesterday.","played","plays","play"],
+    ["Sahar didn't ___ early last night.","sleep","slept","sleeping"],
+    ["Reem ___ born in Riyadh.","was","were","is"],
+    ["I ___ born in 2013.","was","am","were"],
+    ["Did you ___ in Jeddah?","live","lived","living"],
+    ["When she was at school, she ___ her friend.","saw","see","sees"],
+    ["Where did they ___?","work","worked","working"]]},
+   {type:"mcq", h:"B · Time words: last · ago · yesterday", items:[
+    ["I did my homework ___.","yesterday","ago","last"],
+    ["I was in grade eight ___ year.","last","yesterday","ago"],
+    ["Hanan didn't meet her cousin three months ___.","ago","yesterday","last"],
+    ["___ year I was in Canada.","Last","Ago","Yesterday"],
+    ["I asked my teacher a question ___.","yesterday","last","ago"],
+    ["My parents came to visit me ___ July.","last","ago","yesterday"]]},
+   {type:"mcq", h:"C · Choose the correct structure", items:[
+    ["Which question is correct?","Where did you live last year?","Where does you live last year?","Where do you live last year?","Where doing you live last year?"],
+    ["Which sentence is correct?","He used to play with toys.","He used to playing with toys.","He used to plays with toys.","He used to played with toys."]]},
+   {type:"type", h:"D · Do as shown between brackets", items:[
+    {q:"They (wear) formal clothing yesterday.  (correct the verb)", a:["they wore formal clothing yesterday"], show:"They wore formal clothing yesterday."},
+    {q:"His brother (be) married 4 years ago.  (correct the verb)", a:["his brother was married 4 years ago"], show:"His brother was married 4 years ago."},
+    {q:"Fahad (send) a gift to his daughter three days ago.  (correct the verb)", a:["fahad sent a gift to his daughter three days ago"], show:"Fahad sent a gift to his daughter three days ago."},
+    {q:"Maha (arrive) at home ten minutes ago.  (correct the verb)", a:["maha arrived at home ten minutes ago","maha arrived at home on ten minutes ago"], show:"Maha arrived at home ten minutes ago."},
+    {q:"They went to school last week.  (make it negative)", a:["they didn't go to school last week","they did not go to school last week"], show:"They didn't go to school last week.", hint:"didn't + base verb (go)"},
+    {q:"Bayan got a haircut last week.  (make it negative)", a:["bayan didn't get a haircut last week","bayan did not get a haircut last week"], show:"Bayan didn't get a haircut last week."},
+    {q:"Deema visited her uncle last weekend.  (make a Yes/No question)", a:["did deema visit her uncle last weekend"], show:"Did Deema visit her uncle last weekend?"},
+    {q:"Faten sent an email to her aunt.  (make a Yes/No question)", a:["did faten send an email to her aunt"], show:"Did Faten send an email to her aunt?"},
+    {q:"3 weeks last I watched a movie with my friend.  (correct the mistake)", a:["3 weeks ago i watched a movie with my friend","three weeks ago i watched a movie with my friend"], show:"3 weeks ago I watched a movie with my friend.", hint:"last or ago?"},
+    {q:"The team was call The Lions.  (correct the mistake)", a:["the team was called the lions"], show:"The team was called The Lions.", hint:"passive → was + V3"},
+    {q:"I didn't use to playing video games.  (correct the mistake)", a:["i didn't use to play video games","i did not use to play video games"], show:"I didn't use to play video games."},
+    {q:"The twins was born on June 21st.  (correct the mistake)", a:["the twins were born on june 21st"], show:"The twins were born on June 21st.", hint:"twins = plural"}]},
+   {type:"order", h:"E · Reorder the words", items:[
+    {w:["Jana","used","to","play","with","her","doll."], show:"Jana used to play with her doll."},
+    {w:["What","did","Ahmad","use","to","do?"], show:"What did Ahmad use to do?"},
+    {w:["Omar","didn't","stay","at","home."], show:"Omar didn't stay at home."}]}
+  ]},
+ {id:"u2g2", title:"Grammar · Passive · used to · in/on/at", ar:"قواعد · المبني للمجهول · in / on / at", tip:"Passive = was/were + V3 (stolen, written, built…) 🔄",
+  parts:[
+   {type:"mcq", h:"A · Passive voice", items:[
+    ["You were ___ to the party.","invited","inviting","invites","invite"],
+    ["My bike was ___ by a young boy.","stolen","stole","steals","steal"],
+    ["'Harry Potter' was ___ in English.","written","wrote","writes","writing"],
+    ["The houses were ___ during the 19th century.","built","build","builds","building"],
+    ["The bell was ___ a few minutes ago.","rung","ring","rang","rings"],
+    ["Two men were ___ by wild animals yesterday.","killed","kills","kill","killing"]]},
+   {type:"mcq", h:"B · used to", items:[
+    ["I used to ___ in New Zealand.","live","lives","lived","living"],
+    ["He used to ___ the guitar.","play","plays","playing","played"],
+    ["She used to ___ for a run before breakfast.","go","going","goes","went"],
+    ["I used to ___ a bike when I was 8.","ride","rode","rides"],
+    ["When I was a child, I didn't ___ to play video games.","use","used","using"],
+    ["When Ali was little, I used to ___ with toys.","play","played","playing"]]},
+   {type:"mcq", h:"C · in / on / at", items:[
+    ["My husband works ___ Jeddah.","in","on","at"],
+    ["I am going on vacation ___ August.","in","on","at"],
+    ["There are many flowers ___ spring.","in","on","at"],
+    ["The movie starts ___ 10 o'clock.","at","in","on"]]},
+   {type:"type", h:"D · Rewrite in the passive", items:[
+    {q:"Lama bought a skirt.", a:["a skirt was bought by lama"], show:"A skirt was bought by Lama.", hint:"O + was/were + V3 + by S"},
+    {q:"A thief stole my car.", a:["my car was stolen by a thief"], show:"My car was stolen by a thief.", hint:"steal → stole → stolen"}]}
+  ]},
+ {id:"u2r", title:"Reading", ar:"القراءة", tip:"ارجع للنص وابحث عن الجواب 🔎",
+  passage:`<b>A Best Friend</b><br>A best friend is the most special treasure in our lives. Among all my friends, Raad is my best friend. We have been best friends since our pre-school days. He studies in my class, and we sit on the same bench. He is the favorite student of my class teacher. He is very studious and scores well in all the exams. <u>He</u> is the tallest boy in our class. He is well-mannered boy. He respects teachers and elders. I love going to his house. His father is very polite. He brings chocolates for Raad and me. Raad's mother cooks tasty dishes for both of us. His parents encourage us to study hard and play well. He also has a puppy at his home. We play with his puppy whenever I go to his house. At school, we go to the library and read our favorite books. We share our lunch boxes at school and play lots of games together in the playground. We write our homework together. He has brilliant handwriting. We love spending time with each other. We watch TV, listen to songs and play video games together.`,
+  parts:[
+   {type:"mcq", h:"A · Comprehension", items:[
+    ["“He” (in the underlined sentence) refers to ...","Raad","the teacher","the puppy","the mother"],
+    ["The antonym (opposite) of “short” is ...","tall","small","best","elder"],
+    ["The synonym (same meaning) of “smart” is ...","brilliant","well","polite","dark"],
+    ["Raad and his friend share their ...","lunch boxes","books","video","class"]]},
+   {type:"tf", h:"B · True or False", items:[
+    ["The father brings chocolates to Raad and his friend.",true],
+    ["Raad has a rabbit at his home.",false],
+    ["Raad's mother cooks tasty dishes for both of them.",true],
+    ["Raad is the shortest boy in the class.",false],
+    ["The two friends go to the library at school.",true]]}
+  ]},
+ {id:"u2w", title:"Writing", ar:"الكتابة", write:{
+   prompt:"Write a paragraph about <b>“Your Life Story”</b>. Say where you were born, raised and educated. Include important events, achievements and influences.",
+   ar:"اكتب قصة حياتك: أين وُلدت ونشأت وتعلّمت، وأهم الأحداث والإنجازات.",
+   words:["born","graduated","minister","crown prince","vision","attract","achievement"],
+   qs:["Where were you born? When?","What did you study? Where?","What did you achieve or introduce?","Who supported you?"],
+   model:"Mohammed bin Salman was born in Riyadh in 1985. He went to King Saud University and graduated with a bachelor's degree in law in 2007. In January 2015, he was appointed as defense minister. Then, he was appointed as the crown prince in 2017. In April 2016, he introduced Vision 2030, which was designed to attract foreign investment for industries. Women were granted the right to drive in June 2018, which was considered one of his major achievements.",
+   model2:"Last weekend, I had the time of my life. First, I had my best friend over and we made a delicious pizza on Friday. After we ate, we had a friendly video game competition. On Saturday, my dad took us out on the boat. The weather was perfect and the water was warm. It was a great day to go for a swim. Later that night, we went to the movies. We saw an action film and ate a lot of popcorn. Finally, on Sunday, we rode our bikes all over town. By the end of the day, my legs were very tired. I only hope that next weekend can be as fun as this one.",
+   frames:["I was born in ... in ...","I went to ... and I graduated in ...","When I was a child, I used to ...","In ..., I was proud because I ...","My family encouraged me to ..."]
+ }}
+ ]
+}
+];
+
+/* ===== ENGINE ===== */
+const $=(s,r=document)=>r.querySelector(s);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[.,!?;:]/g,' ').replace(/\s+/g,' ').trim();
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const encourage=p=>p>=90?["ممتاز! أنت جاهز للاختبار 🌟","Excellent! You're ready!"]:p>=70?["جيد جداً! استمر 👏","Very good! Keep going!"]:p>=50?["جيد، راجع أخطاءك وحاول مرة أخرى 💪","Good — check your mistakes and try again."]:["لا بأس! راجع الشرح وأعد المحاولة 📖","No problem! Read the lessons and try again."];
+const boom=()=>{try{confetti({particleCount:140,spread:80,origin:{y:.7}})}catch(e){}};
+
+let S, activeUnit=0;
+function resetState(){S={right:0,done:0,total:0,units:UNITS.map(()=>({right:0,done:0,total:0,missed:[]})),secs:{}}}
+
+function updateBar(){
+  $('#score').textContent=S.right+" / "+S.total;
+  $('#fill').style.width=(S.total?S.done/S.total*100:0)+"%";
+  UNITS.forEach((u,i)=>{const t=$('#tab'+i);if(t)t.querySelector('small').textContent=S.units[i].right+" / "+S.units[i].total+" · "+u.ar});
+  const f=$('#final'); if(f) renderFinal();
+}
+
+function record(ctx,ok,item){
+  const u=S.units[ctx.ui], s=S.secs[ctx.sid];
+  s.done++; u.done++; S.done++;
+  if(ok){s.right++;u.right++;S.right++}
+  else{u.missed.push(item);renderMissed(ctx.ui)}
+  const hd=$('#sc-'+ctx.sid); if(hd) hd.textContent=s.right+" / "+s.total;
+  if(s.done===s.total){
+    const a=$('#nav a[href="#'+ctx.sid+'"]'); if(a)a.classList.add('done');
+    if(s.right===s.total) boom();
+  }
+  updateBar();
+}
+function feedback(box,kind,en,ar){box.className='fb '+kind;box.innerHTML=en+(ar?'<span class="ar">'+ar+'</span>':'')}
+
+/* ---------- part builders ---------- */
+function partMCQ(ctx,items,tip){
+  const wrap=el('div');
+  items.forEach((it,i)=>{
+    const [q,right,...wrong]=it, opts=shuffle([right,...wrong]);
+    const box=el('div','q'), qt=el('div','qt');
+    const parts=q.split('___');
+    qt.innerHTML='<span class="n">'+(i+1)+'.</span>'+esc(parts[0])+(parts.length>1?'<span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'+esc(parts.slice(1).join('___')):'');
+    const row=el('div','opts'), fb=el('div','fb'); let locked=false;
+    opts.forEach(o=>{
+      const b=el('button','opt',esc(o));
+      b.onclick=()=>{
+        if(locked)return; locked=true;
+        const ok=o===right;
+        [...row.children].forEach(x=>{x.disabled=true;if(x.textContent===right)x.classList.add('ok')});
+        if(!ok)b.classList.add('no');
+        const bl=qt.querySelector('.blank'); if(bl)bl.textContent=right;
+        box.classList.add(ok?'right':'wrong');
+        ok?feedback(fb,'good','✅ Correct!'):feedback(fb,'badc','❌ Answer: <u>'+esc(right)+'</u>',tip);
+        record(ctx,ok,{q:q.replace('___','['+right+']'),a:right});
+      };
+      row.appendChild(b);
+    });
+    box.append(qt,row,fb); wrap.appendChild(box);
+  });
+  return wrap;
+}
+
+function partTF(ctx,items,tip){
+  const wrap=el('div');
+  items.forEach(([q,ans],i)=>{
+    const box=el('div','q'), qt=el('div','qt','<span class="n">'+(i+1)+'.</span>'+esc(q));
+    const row=el('div','opts'), fb=el('div','fb'); let locked=false;
+    [['True ✔',true],['False ✘',false]].forEach(([lab,val])=>{
+      const b=el('button','opt',lab);
+      b.onclick=()=>{
+        if(locked)return; locked=true; const ok=val===ans;
+        [...row.children].forEach((x,k)=>{x.disabled=true;if((k===0)===ans)x.classList.add('ok')});
+        if(!ok)b.classList.add('no');
+        box.classList.add(ok?'right':'wrong');
+        ok?feedback(fb,'good','✅ Correct!'):feedback(fb,'badc','❌ It is '+(ans?'True':'False'),tip);
+        record(ctx,ok,{q:q,a:ans?'True':'False'});
+      };
+      row.appendChild(b);
+    });
+    box.append(qt,row,fb); wrap.appendChild(box);
+  });
+  return wrap;
+}
+
+/* text answer + order share a two-tries flow */
+function twoTries(ctx,box,fb,check,reveal,item,tip,hint,lockUI){
+  let tries=0,fin=false;
+  return function attempt(){
+    if(fin)return;
+    if(check()){fin=true;box.classList.add('right');feedback(fb,'good',tries?'✅ Correct on the 2nd try!':'✅ Correct!');lockUI();record(ctx,true,item);return}
+    tries++;
+    if(tries<2){feedback(fb,'mid','🤔 Not quite — try once more!'+(hint?' 💡 '+esc(hint):''),tip);return}
+    fin=true;box.classList.add('wrong');feedback(fb,'badc','❌ Answer: <u>'+esc(item.a)+'</u>',tip);lockUI();record(ctx,false,item);
+  };
+}
+
+function partType(ctx,items,tip){
+  const wrap=el('div');
+  items.forEach((it,i)=>{
+    const box=el('div','q'), qt=el('div','qt','<span class="n">'+(i+1)+'.</span>'+esc(it.q));
+    const inp=el('input','ans'); inp.type='text'; inp.autocomplete='off'; inp.autocapitalize='off'; inp.spellcheck=false; inp.placeholder='Type your answer…';
+    const ok=el('button','btn','Check ✓'), fb=el('div','fb'), row=el('div','row');
+    const acc=it.a.map(norm);
+    const attempt=twoTries(ctx,box,fb,()=>acc.includes(norm(inp.value)),null,{q:it.q,a:it.show},tip,it.hint,()=>{inp.readOnly=true;ok.disabled=true;if(!acc.includes(norm(inp.value)))inp.value=it.show});
+    ok.onclick=()=>{if(!inp.value.trim()){inp.focus();return}attempt()};
+    inp.onkeydown=e=>{if(e.key==='Enter')ok.onclick()};
+    row.appendChild(ok); box.append(qt,inp,row,fb); wrap.appendChild(box);
+  });
+  return wrap;
+}
+
+function partOrder(ctx,items,tip){
+  const wrap=el('div');
+  items.forEach((it,i)=>{
+    const box=el('div','q'), qt=el('div','qt','<span class="n">'+(i+1)+'.</span>Tap the words in the right order:');
+    const built=el('div','built'), pool=el('div','pool'), fb=el('div','fb'), row=el('div','row');
+    const ok=el('button','btn','Check ✓'), clr=el('button','btn ghost','Clear');
+    let chosen=[], locked=false;
+    const chips=shuffle(it.w.map((w,k)=>({w,k})));
+    const draw=()=>{
+      built.innerHTML='';pool.innerHTML='';
+      chosen.forEach(c=>{const b=el('button','word',esc(c.w));b.onclick=()=>{if(locked)return;chosen=chosen.filter(x=>x!==c);draw()};built.appendChild(b)});
+      chips.filter(c=>!chosen.includes(c)).forEach(c=>{const b=el('button','word',esc(c.w));b.onclick=()=>{if(locked)return;chosen.push(c);draw()};pool.appendChild(b)});
+    };
+    draw();
+    const target=norm(it.show);
+    const attempt=twoTries(ctx,box,fb,()=>norm(chosen.map(c=>c.w).join(' '))===target,null,{q:'Reorder: '+it.w.join(' / '),a:it.show},tip,'start with a capital letter word',()=>{locked=true;ok.disabled=true;clr.disabled=true;chosen=it.w.map((w,k)=>({w,k}));chips.length=0;chips.push(...chosen);draw()});
+    ok.onclick=()=>{if(!chosen.length)return;attempt()};
+    clr.onclick=()=>{if(locked)return;chosen=[];draw()};
+    row.append(ok,clr); box.append(qt,built,pool,row,fb); wrap.appendChild(box);
+  });
+  return wrap;
+}
+
+function partMatch(ctx,items,tip){
+  const box=el('div','q'), grid=el('div','mt'), L=el('div','mcol'), R=el('div','mcol'), fb=el('div','fb');
+  let sel=null; const counted=new Set();
+  const lb=items.map((it,i)=>{const b=el('button','mb','<b>'+esc(it.t)+'</b><small class="ar"></small>');b.dataset.i=i;return b});
+  const rb=shuffle(items.map((it,i)=>{const b=el('button','mb',esc(it.d));b.dataset.i=i;return b}));
+  lb.forEach(b=>{b.onclick=()=>{lb.forEach(x=>x.classList.remove('sel'));sel=b;b.classList.add('sel')};L.appendChild(b)});
+  rb.forEach(b=>{b.onclick=()=>{
+    if(!sel){feedback(fb,'mid','👈 Tap a word on the left first.');return}
+    const i=+sel.dataset.i;
+    if(+b.dataset.i===i){
+      sel.classList.remove('sel');sel.classList.add('ok');b.classList.add('ok');sel.disabled=b.disabled=true;
+      sel.querySelector('small').textContent=items[i].ar;
+      if(!counted.has(i)){counted.add(i);record(ctx,true,null)}
+      sel=null;feedback(fb,'good','✅ Great!');
+    }else{
+      b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);
+      feedback(fb,'badc','❌ Not that one — try again.',tip);
+      if(!counted.has(i)){counted.add(i);record(ctx,false,{q:'Match: '+items[i].t,a:items[i].d})}
+    }
+  };R.appendChild(b)});
+  grid.append(L,R); box.append(grid,fb);
+  const wrap=el('div'); wrap.appendChild(box); return wrap;
+}
+
+function partWrite(ctx,w){
+  const wrap=el('div','card');
+  wrap.innerHTML='<p>'+w.prompt+'</p><p class="ar">'+w.ar+'</p>'+
+   '<p class="part-h">Guide words <span class="ar" style="font-weight:600">· كلمات مساعدة (تتلوّن عند استخدامها)</span></p><div class="gw">'+w.words.map(x=>'<span class="chip">'+x+'</span>').join('')+'</div>'+
+   '<p class="part-h">Think about…</p><ul class="plain">'+w.qs.map(x=>'<li>💭 '+x+'</li>').join('')+'</ul>'+
+   '<p class="part-h">Sentence starters</p><ul class="plain">'+w.frames.map(x=>'<li>✏️ '+x+'</li>').join('')+'</ul>';
+  const ta=el('textarea','wr'); ta.rows=8; ta.placeholder='Write your paragraph here…'; ta.style.marginTop='12px';
+  const cnt=el('div','fb mid','0 words · aim for 50–70 words');
+  ta.oninput=()=>{
+    const t=ta.value, n=(t.trim().match(/\S+/g)||[]).length; cnt.textContent=n+' words · aim for 50–70 words';
+    wrap.querySelectorAll('.gw .chip').forEach(c=>c.classList.toggle('used',t.toLowerCase().includes(c.textContent.toLowerCase())));
+  };
+  const chk=el('div','chk');
+  chk.innerHTML='<p class="part-h">Check your work · راجع كتابتك</p>'+['I started every sentence with a capital letter.','I used full stops (.) and question marks (?).','I used the grammar of this unit correctly.','I checked my spelling.','I wrote my opinion (In my opinion, …).','My writing makes sense.'].map(x=>'<label><input type="checkbox"> '+x+'</label>').join('');
+  const b=el('button','btn ghost','Show a model paragraph · اعرض نموذجاً'); b.style.marginTop='12px';
+  const m=el('div','model'); m.style.display='none'; m.innerHTML=w.model+(w.model2?'<hr style="border:0;border-top:1px solid var(--line);margin:10px 0">'+w.model2:'');
+  b.onclick=()=>{m.style.display=m.style.display==='none'?'block':'none'};
+  wrap.append(ta,cnt,chk,b,m); return wrap;
+}
+
+/* ---------- render ---------- */
+const BUILD={mcq:partMCQ,tf:partTF,type:partType,order:partOrder,match:partMatch};
+const count=(p)=>p.type==='match'?p.items.length:p.items.length;
+
+function render(){
+  resetState(); activeUnit=Math.min(activeUnit,UNITS.length-1);
+  const app=$('#app'); app.innerHTML='';
+  UNITS.forEach((u,ui)=>{
+    const wrap=el('div','unit'); wrap.id='unit'+ui; wrap.style.display=ui===activeUnit?'block':'none';
+    wrap.innerHTML='<div class="unit-title"><h2>'+u.name+' · '+u.title+'</h2><span class="ar">'+u.ar+'</span></div><p class="part-h">📘 Quick lessons · شرح سريع</p>';
+    u.lessons.forEach(l=>{const d=el('details','lesson');d.innerHTML='<summary>'+l.h+' <span class="ar" style="font-weight:600">'+l.ar+'</span></summary><div class="body">'+l.html+'</div>';wrap.appendChild(d)});
+    u.sections.forEach(sec=>{
+      const sid=u.id+'-'+sec.id, ctx={ui,sid};
+      const total=sec.write?0:sec.parts.reduce((n,p)=>n+count(p),0);
+      S.secs[sid]={right:0,done:0,total}; S.units[ui].total+=total; S.total+=total;
+      const s=el('section','sec'); s.id=sid;
+      s.innerHTML='<div class="sec-h"><h3>'+sec.title+'</h3><span class="ar">'+sec.ar+'</span>'+(total?'<span class="sec-score" id="sc-'+sid+'">0 / '+total+'</span>':'')+'</div>';
+      if(sec.passage)s.appendChild(el('div','passage',sec.passage));
+      if(sec.write) s.appendChild(partWrite(ctx,sec.write));
+      else sec.parts.forEach(p=>{s.appendChild(el('div','part-h',esc(p.h)));s.appendChild(BUILD[p.type](ctx,p.items,sec.tip))});
+      wrap.appendChild(s);
+    });
+    const miss=el('details','miss'); miss.id='miss'+ui; miss.innerHTML='<summary>🔁 My mistakes · أخطائي (0)</summary><ul></ul>';
+    wrap.appendChild(miss);
+    app.appendChild(wrap);
+  });
+  const fin=el('div','final'); fin.id='final'; app.appendChild(fin);
+  buildTabs(); buildNav(); updateBar();
+}
+
+function renderMissed(ui){
+  const m=$('#miss'+ui), list=S.units[ui].missed.filter(Boolean);
+  m.querySelector('summary').textContent='🔁 My mistakes · أخطائي ('+list.length+')';
+  m.querySelector('ul').innerHTML=list.map(x=>'<li>'+esc(x.q)+' → <span class="a">'+esc(x.a)+'</span></li>').join('');
+}
+
+function renderFinal(){
+  const f=$('#final'); const done=S.total&&S.done===S.total;
+  if(!done){f.style.display='none';return}
+  f.style.display='block';
+  const p=Math.round(S.right/S.total*100), m=encourage(p);
+  if(!f.dataset.shown){f.dataset.shown=1; if(p>=90)boom()}
+  f.innerHTML='<div class="big">'+S.right+' / '+S.total+' · '+p+'%</div><p style="font-size:1.2rem;margin-top:6px">'+m[1]+'</p><p class="ar" style="font-size:1.1rem">'+m[0]+'</p>';
+}
+
+function buildTabs(){
+  const t=$('#tabs'); t.innerHTML='';
+  UNITS.forEach((u,i)=>{
+    const b=el('button','tab'+(i===activeUnit?' on':''),u.name+' · '+u.title+'<small></small>'); b.id='tab'+i; b.style.setProperty('--acc',u.color);
+    b.onclick=()=>{activeUnit=i;UNITS.forEach((_,k)=>{$('#unit'+k).style.display=k===i?'block':'none';$('#tab'+k).classList.toggle('on',k===i)});document.documentElement.style.setProperty('--acc',u.color);buildNav();scrollTo({top:0})};
+    t.appendChild(b);
+  });
+  document.documentElement.style.setProperty('--acc',UNITS[activeUnit].color);
+}
+function buildNav(){
+  const n=$('#nav'); n.innerHTML='';
+  UNITS[activeUnit].sections.forEach(sec=>{
+    const sid=UNITS[activeUnit].id+'-'+sec.id, a=el('a',S.secs[sid]&&S.secs[sid].total&&S.secs[sid].done===S.secs[sid].total?'done':'',esc(sec.title));
+    a.href='#'+sid; n.appendChild(a);
+  });
+}
+
+$('#resetAll').onclick=()=>{if(confirm('Start again? / البدء من جديد؟')){render();scrollTo({top:0})}};
+render();
+
+</script>
+</body>
+</html>
