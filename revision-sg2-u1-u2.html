@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SG2 Revision – Units 1 &amp; 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{--navy:#0a1628;--navy2:#12233f;--navy3:#1b3358;--gold:#d4af37;--ok:#2ecc71;--bad:#ff5a5f;--txt:#f3f1e8;--mut:#9fb0cc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--navy);color:var(--txt);font-family:'Cairo',system-ui,sans-serif;line-height:1.6}
+h1,h2,h3{font-family:'Playfair Display',serif;color:var(--gold);margin:0}
+header{text-align:center;padding:22px 16px 8px}
+header h1{font-size:1.7rem}
+header p{margin:4px 0 0;color:var(--mut)}
+#bar{position:sticky;top:0;z-index:50;background:var(--navy2);border-bottom:2px solid var(--gold);padding:8px 16px}
+#bar .row{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem;max-width:820px;margin:0 auto 4px}
+.track{height:10px;background:#0a1628;border-radius:6px;overflow:hidden;max-width:820px;margin:auto}
+#fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#f5e08a);transition:width .4s}
+.tabs{display:flex;gap:8px;justify-content:center;padding:14px 16px 0;flex-wrap:wrap}
+.tab{min-height:44px;padding:8px 20px;border-radius:24px;border:2px solid var(--gold);background:transparent;color:var(--gold);font:700 1rem 'Cairo';cursor:pointer}
+.tab.on{background:var(--gold);color:var(--navy)}
+main{max-width:820px;margin:auto;padding:12px 16px 60px}
+.unit{display:none}.unit.on{display:block}
+.sec{background:var(--navy2);border:1px solid var(--navy3);border-radius:16px;padding:16px;margin:16px 0}
+.sec h2{font-size:1.25rem;margin-bottom:2px}
+.sec .tag{color:var(--mut);font-size:.85rem;margin-bottom:10px}
+.sub{color:#7fd6a4;font-weight:700;margin:14px 0 6px}
+.q{background:var(--navy);border:1px solid var(--navy3);border-radius:12px;padding:12px;margin:10px 0}
+.q.ok{border-color:var(--ok)}.q.no{border-color:var(--bad)}
+.qt{font-size:1.05rem;margin-bottom:8px}
+.qt .n{color:var(--gold);font-weight:700;margin-right:6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt,.chip{min-height:44px;padding:8px 16px;border-radius:10px;border:2px solid var(--navy3);background:var(--navy3);color:var(--txt);font:600 1rem 'Cairo';cursor:pointer}
+.opt.sel,.chip.sel{border-color:var(--gold);background:#2a3f66}
+.opt.right{border-color:var(--ok);background:#153d2a}
+.opt.wrong{border-color:var(--bad);background:#43202a}
+input.txt,select{min-height:44px;width:100%;padding:8px 12px;border-radius:10px;border:2px solid var(--navy3);background:#0d1d36;color:var(--txt);font:1rem 'Cairo'}
+input.txt:focus,select:focus{outline:none;border-color:var(--gold)}
+.given{color:var(--mut);margin-bottom:6px}
+.built{min-height:48px;border:2px dashed var(--navy3);border-radius:10px;padding:6px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px}
+.btn{min-height:44px;padding:8px 18px;border-radius:10px;border:none;background:var(--gold);color:var(--navy);font:700 1rem 'Cairo';cursor:pointer;margin-top:8px;margin-right:6px}
+.btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.fb{margin-top:8px;font-weight:600;min-height:1.4em}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.pic{text-align:center;background:var(--navy);border:1px solid var(--navy3);border-radius:12px;padding:10px}
+.pic.ok{border-color:var(--ok)}.pic.no{border-color:var(--bad)}
+.pic .em{font-size:3.2rem;line-height:1.2}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:var(--navy);border:1px dashed var(--gold);border-radius:12px;padding:10px;margin-bottom:10px}
+.bank span{color:var(--gold);font-weight:700;padding:4px 10px}
+.mrow{display:grid;grid-template-columns:1fr;gap:6px;margin:8px 0;padding:10px;border:1px solid var(--navy3);border-radius:12px;background:var(--navy)}
+.mrow.ok{border-color:var(--ok)}.mrow.no{border-color:var(--bad)}
+.secfoot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.secscore{font-weight:700;color:var(--gold)}
+.final{display:none;text-align:center;background:linear-gradient(160deg,var(--navy3),var(--navy2));border:2px solid var(--gold);border-radius:18px;padding:22px 16px;margin-top:22px}
+.final.show{display:block}
+.final .big{font-size:2.4rem;color:var(--gold);font-weight:700}
+.final .ar{direction:rtl;font-size:1.25rem;margin:6px 0}
+@media(min-width:600px){.mrow{grid-template-columns:1fr 1fr;align-items:center}}
+</style>
+</head>
+<body>
+<header>
+  <h1>SG2 Revision ✦ Units 1 &amp; 2</h1>
+  <p>Grammar &amp; Vocabulary · مراجعة القواعد والمفردات</p>
+</header>
+<div id="bar">
+  <div class="row"><span id="uname">Unit 1</span><span id="scoretxt">0 / 0</span></div>
+  <div class="track"><div id="fill"></div></div>
+</div>
+<div class="tabs">
+  <button class="tab on" data-u="u1">Unit 1 · Are you here on vacation?</button>
+  <button class="tab" data-u="u2">Unit 2 · What are they making?</button>
+</div>
+<main id="main"></main>
+
+<script>
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[.,!?;:]+/g,' ').replace(/\s+/g,' ').trim();
+
+/* ---------- data ---------- */
+const UNITS=[
+{id:'u1',name:'Unit 1',sections:[
+ {title:'Grammar A',tag:'Choose the correct answer · اختر الإجابة الصحيحة',items:[
+  {t:'mcq',q:'Riyadh ___ in Saudi Arabia.',o:['is','are','am'],a:'is'},
+  {t:'mcq',q:'I ___ a doctor.',o:["isn't","aren't","am n't"],a:"am n't",alt:["am not"],note:'“I am not” (am n\'t) — نستخدم am مع I'},
+  {t:'mcq',q:'Aisha and Fadwa ___ at the mall.',o:['is','are','am'],a:'are'},
+  {t:'mcq',q:'Who ___ your teacher?',o:['is','are','am'],a:'is'},
+  {t:'mcq',q:'___ old are you?',o:['How','What','Where'],a:'How'}]},
+ {title:'Grammar B',tag:'Do as shown between brackets · افعل كما هو موضح',items:[
+  {sub:'1 · Correct the underlined word'},
+  {t:'text',q:'Dubai <u>aren\'t</u> in Egypt.',ans:["Dubai isn't in Egypt","Dubai is not in Egypt"]},
+  {t:'text',q:'<u>When</u> is your name?',ans:['What is your name','What\'s your name']},
+  {sub:'2 · Give a short answer'},
+  {t:'text',q:'Is he a doctor?',given:'No,',ans:["no he isn't","no he's not","no he is not"],fixed:'No, he isn\'t.'},
+  {t:'text',q:'Are you from Oman?',given:'Yes,',ans:["yes i am"],fixed:'Yes, I am.'},
+  {sub:'3 · Make a Yes/No question'},
+  {t:'text',q:"Mahmoud isn't in the kitchen.",ans:['Is Mahmoud in the kitchen']},
+  {t:'text',q:'They are at the mall.',ans:['Are they at the mall']},
+  {sub:'4 · Reorder the words'},
+  {t:'order',w:['are','Where','from','you','?'],a:'Where are you from ?'},
+  {t:'order',w:['are','How','you','?'],a:'How are you ?'},
+  {sub:'5 · Choose (look at the pictures)'},
+  {t:'mcq',q:'📖🍎 The apple is ___ the book.',o:['between','far from','on'],a:'on'},
+  {t:'mcq',q:'👧🌳 Nora is ___ the tree.',o:['on','near','across from'],a:'near'}]},
+ {title:'Vocabulary A',tag:'Choose the missing letter · اختر الحرف الناقص',items:[
+  {t:'mcq',q:'During his summer ___acation, he visited Dubai.',o:['v','a','d'],a:'v'},
+  {t:'mcq',q:'I had just returned from the Cannes Film Fe___tival.',o:['q','s','w'],a:'s'}]},
+ {title:'Vocabulary B',tag:'Write the correct word under each picture · اكتب الكلمة تحت كل صورة',pics:{
+  bank:['elevator','castle','hotel','credit card'],
+  items:[{e:'🏨',a:'hotel'},{e:'🛗',a:'elevator'},{e:'🏰',a:'castle'},{e:'💳',a:'credit card'}]}}
+]},
+{id:'u2',name:'Unit 2',sections:[
+ {title:'Grammar A',tag:'Choose the correct answer · اختر الإجابة الصحيحة',items:[
+  {t:'mcq',q:'___ the book please.',o:['open','opening','opened'],a:'open'},
+  {t:'mcq',q:'Are you ___?',o:['sleep','sleeping','sleeps'],a:'sleeping'},
+  {t:'mcq',q:'Sara is ___ a cake.',o:['make','makes','making'],a:'making'},
+  {t:'mcq',q:"Don't ___ junk food.",o:['eat','eats','eating'],a:'eat'},
+  {t:'mcq',q:'I ___ martial arts films.',o:['liking','likes','like'],a:'like'},
+  {t:'mcq',q:'The pizza ___ good.',o:['smell','smells','smelling'],a:'smells'}]},
+ {title:'Grammar B',tag:'Do as shown between brackets · افعل كما هو موضح',items:[
+  {sub:'1 · Correct the underlined word'},
+  {t:'text',q:'<u>Closing</u> the window please.',ans:['Close the window please','Close the window'],fixed:'Close the window please.'},
+  {t:'text',q:'I <u>wanting</u> a new cell phone.',ans:['I want a new cell phone']},
+  {sub:'2 · Give the negative'},
+  {t:'text',q:'Feed the fish.',ans:["Don't feed the fish","Do not feed the fish"]},
+  {t:'text',q:'Sit down.',ans:["Don't sit down","Do not sit down"]},
+  {sub:'3 · Make a Yes/No question'},
+  {t:'text',q:'They are working now.',ans:['Are they working now']},
+  {t:'text',q:'He is wearing jeans.',ans:['Is he wearing jeans']},
+  {sub:'4 · Reorder the words'},
+  {t:'order',w:['doing','what','you','are','?'],a:'what are you doing ?'},
+  {sub:'5 · Choose'},
+  {t:'mcq',q:"🎥 The cameraman is filming the scene. He's standing ___ the camera.",o:['over','behind'],a:'behind'},
+  {t:'mcq',q:'🚗 The thieves are getting ___ in a fast car.',o:['in front of','away'],a:'away'}]},
+ {title:'Vocabulary A',tag:'Match · صل العبارات',match:{
+  left:['The director','The film editor','The actors','The camera operator'],
+  right:['is telling the actors what to do.','is holding the camera.','is cutting the film scene.','are doing a martial arts scene.'],
+  ans:[0,2,3,1]}},
+ {title:'Vocabulary B',tag:'Write the correct word under each picture · اكتب الكلمة تحت كل صورة',pics:{
+  bank:['Ladder','karate','webcam','volcano'],
+  items:[{e:'📷',a:'webcam'},{e:'🌋',a:'volcano'},{e:'🪜',a:'Ladder'},{e:'🥋',a:'karate'}]}}
+]}
+];
+
+/* ---------- state ---------- */
+const state={}; // per unit: {score,total}
+let current='u1';
+
+function updateBar(){
+  const s=state[current];
+  $('#uname').textContent=UNITS.find(u=>u.id===current).name;
+  $('#scoretxt').textContent=`${s.score} / ${s.total}`;
+  $('#fill').style.width=(s.total?100*s.answered/s.total:0)+'%';
+  const fin=$('#final-'+current);
+  if(s.answered===s.total){
+    fin.classList.add('show');
+    const p=100*s.score/s.total;
+    $('.big',fin).textContent=`${s.score} / ${s.total}`;
+    $('.en',fin).textContent=p===100?'Perfect! Outstanding work! 🏆':p>=70?'Great job! Keep it up! 👏':p>=50?'Good try — review and try again! 💪':'Keep practising, you can do it! 🌱';
+    $('.ar',fin).textContent=p===100?'ممتاز! أحسنت، درجة كاملة 🌟':p>=70?'رائع جدًا! استمر 👏':p>=50?'جيد، راجع الأخطاء وحاول مرة أخرى 💪':'لا بأس، تدرّب أكثر وستتحسن 🌱';
+    if(p===100&&!s.confetti){s.confetti=true;if(window.confetti)confetti({particleCount:220,spread:90,origin:{y:.6}})}
+  } else fin.classList.remove('show');
+}
+
+/* ---------- question builders ---------- */
+function makeQ(unitId,sec,it,idx,secCtx){
+  const box=el('div','q');
+  const n=el('span','n',idx+'.');
+  const fb=el('div','fb');
+  let locked=false;
+  const s=state[unitId];
+  const finish=(ok,msg)=>{
+    locked=true;box.classList.add(ok?'ok':'no');fb.className='fb '+(ok?'ok':'no');fb.innerHTML=msg;
+    s.answered++;secCtx.answered++;if(ok){s.score++;secCtx.score++}
+    secCtx.upd();updateBar();
+  };
+  const api={reset(){}};
+  if(it.t==='mcq'){
+    const qt=el('div','qt');qt.appendChild(n);qt.insertAdjacentHTML('beforeend',it.q);box.appendChild(qt);
+    const op=el('div','opts');box.appendChild(op);
+    let sel=null;const btns=[];
+    shuffle(it.o).forEach(o=>{
+      const b=el('button','opt',o);b.onclick=()=>{
+        if(locked)return;
+        const ok=norm(o)===norm(it.a)||(it.alt||[]).some(x=>norm(x)===norm(o));
+        btns.forEach(x=>x.disabled=true);
+        b.classList.add(ok?'right':'wrong');
+        if(!ok)btns.find(x=>norm(x.textContent)===norm(it.a)).classList.add('right');
+        finish(ok,ok?'✅ Correct! أحسنت':`❌ The answer is: <b>${it.a}</b>`+(it.note?`<br><small>${it.note}</small>`:''));
+      };
+      btns.push(b);op.appendChild(b);
+    });
+    box.appendChild(fb);
+  }
+  if(it.t==='text'){
+    const qt=el('div','qt');qt.appendChild(n);qt.insertAdjacentHTML('beforeend',it.q);box.appendChild(qt);
+    if(it.given)box.appendChild(el('div','given','Start with: <b>'+it.given+'</b>'));
+    const inp=el('input','txt');inp.type='text';inp.placeholder='Type your answer…';inp.autocomplete='off';inp.autocapitalize='off';inp.spellcheck=false;
+    box.appendChild(inp);
+    const b=el('button','btn','Check ✔');
+    const go=()=>{
+      if(locked||!inp.value.trim())return;
+      const v=norm(inp.value);
+      const ok=it.ans.some(a=>norm(a)===v);
+      inp.disabled=true;b.disabled=true;
+      const shown=it.fixed||(it.ans[0]+(/[.?!]$/.test(it.ans[0])?'':(it.q.includes('?')?'?':'.')));
+      finish(ok,ok?'✅ Correct! أحسنت':`❌ Correct answer: <b>${shown}</b>`);
+    };
+    b.onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+    box.appendChild(b);box.appendChild(fb);
+  }
+  if(it.t==='order'){
+    const qt=el('div','qt');qt.appendChild(n);qt.insertAdjacentHTML('beforeend','Put the words in the correct order · رتّب الكلمات');box.appendChild(qt);
+    const built=el('div','built');const pool=el('div','opts');
+    box.appendChild(built);box.appendChild(pool);
+    const chosen=[];
+    shuffle(it.w).forEach(w=>{
+      const c=el('button','chip',w);
+      c.onclick=()=>{
+        if(locked)return;
+        if(c.parentNode===pool){built.appendChild(c);chosen.push(c)}
+        else{pool.appendChild(c);chosen.splice(chosen.indexOf(c),1)}
+      };
+      pool.appendChild(c);
+    });
+    const b=el('button','btn','Check ✔');
+    b.onclick=()=>{
+      if(locked||chosen.length===0)return;
+      const v=norm(chosen.map(c=>c.textContent).join(' '));
+      const ok=v===norm(it.a);
+      b.disabled=true;
+      const fixed=it.a.replace(/\s\?/,'?');
+      finish(ok,ok?'✅ Correct! أحسنت':`❌ Correct sentence: <b>${fixed.charAt(0).toUpperCase()+fixed.slice(1)}</b>`);
+    };
+    box.appendChild(b);box.appendChild(fb);
+  }
+  return box;
+}
+
+function makePics(unitId,pics,secCtx){
+  const wrap=el('div');
+  const bank=el('div','bank');bank.innerHTML=pics.bank.map(w=>`<span>${w}</span>`).join('');
+  wrap.appendChild(bank);
+  const grid=el('div','pics');wrap.appendChild(grid);
+  const s=state[unitId];
+  shuffle(pics.items).forEach(p=>{
+    const c=el('div','pic');
+    c.appendChild(el('div','em',p.e));
+    const sel=el('select');sel.appendChild(new Option('— choose —',''));
+    shuffle(pics.bank).forEach(w=>sel.appendChild(new Option(w,w)));
+    const fb=el('div','fb');
+    sel.onchange=()=>{
+      if(!sel.value)return;
+      const ok=norm(sel.value)===norm(p.a);
+      sel.disabled=true;c.classList.add(ok?'ok':'no');fb.className='fb '+(ok?'ok':'no');
+      fb.innerHTML=ok?'✅ Correct!':`❌ It is <b>${p.a}</b>`;
+      s.answered++;secCtx.answered++;if(ok){s.score++;secCtx.score++}
+      secCtx.upd();updateBar();
+    };
+    c.appendChild(sel);c.appendChild(fb);grid.appendChild(c);
+  });
+  return wrap;
+}
+
+function makeMatch(unitId,m,secCtx){
+  const wrap=el('div');const s=state[unitId];
+  const opts=m.right;
+  m.left.forEach((l,i)=>{
+    const row=el('div','mrow');
+    row.appendChild(el('div','',`<b>${i+1}.</b> ${l}`));
+    const sel=el('select');sel.appendChild(new Option('— choose —',''));
+    shuffle(opts.map((t,k)=>[t,k])).forEach(([t,k])=>sel.appendChild(new Option(t,k)));
+    const fb=el('div','fb');
+    sel.onchange=()=>{
+      if(sel.value==='')return;
+      const ok=+sel.value===m.ans[i];
+      sel.disabled=true;row.classList.add(ok?'ok':'no');fb.className='fb '+(ok?'ok':'no');
+      fb.innerHTML=ok?'✅ Correct!':`❌ ${l} <b>${opts[m.ans[i]]}</b>`;
+      s.answered++;secCtx.answered++;if(ok){s.score++;secCtx.score++}
+      secCtx.upd();updateBar();
+    };
+    row.appendChild(sel);row.appendChild(fb);wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+/* ---------- build ---------- */
+function countItems(sec){
+  if(sec.items)return sec.items.filter(i=>i.t).length;
+  if(sec.pics)return sec.pics.items.length;
+  if(sec.match)return sec.match.left.length;
+}
+function buildUnit(u){
+  state[u.id]={score:0,total:0,answered:0,confetti:false};
+  const root=el('div','unit'+(u.id===current?' on':''));root.id=u.id;
+  u.sections.forEach(sec=>{
+    const total=countItems(sec);state[u.id].total+=total;
+    const card=el('section','sec');
+    card.appendChild(el('h2','',u.name+' · '+sec.title));
+    card.appendChild(el('div','tag',sec.tag));
+    const ctx={score:0,answered:0,upd(){sc.textContent=`Section score: ${this.score} / ${total}`}};
+    const sc=el('span','secscore',`Section score: 0 / ${total}`);
+    const body=el('div');card.appendChild(body);
+    if(sec.items){let k=0;sec.items.forEach(it=>{
+      if(it.sub){body.appendChild(el('div','sub',it.sub))}
+      else{k++;body.appendChild(makeQ(u.id,sec,it,k,ctx))}})}
+    if(sec.pics)body.appendChild(makePics(u.id,sec.pics,ctx));
+    if(sec.match)body.appendChild(makeMatch(u.id,sec.match,ctx));
+    const foot=el('div','secfoot');foot.appendChild(sc);
+    const rs=el('button','btn ghost','↻ Restart whole unit');rs.onclick=()=>{if(confirm('Restart this unit? / إعادة الوحدة؟'))rebuild()};
+    foot.appendChild(rs);card.appendChild(foot);
+    root.appendChild(card);
+  });
+  const fin=el('div','final');fin.id='final-'+u.id;
+  fin.innerHTML='<h3>Final Score · النتيجة النهائية</h3><div class="big"></div><div class="en"></div><div class="ar"></div>';
+  const again=el('button','btn','↻ Try again');again.onclick=rebuild;fin.appendChild(again);
+  root.appendChild(fin);
+  return root;
+}
+function rebuild(){
+  const m=$('#main');m.innerHTML='';
+  UNITS.forEach(u=>m.appendChild(buildUnit(u)));
+  updateBar();window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  current=t.dataset.u;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+  document.querySelectorAll('.unit').forEach(x=>x.classList.toggle('on',x.id===current));
+  updateBar();window.scrollTo({top:0});
+});
+rebuild();
+</script>
+</body>
+</html>
