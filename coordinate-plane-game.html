@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coordinate Plane Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{--navy:#0a1628;--navy2:#12233f;--navy3:#1b3157;--gold:#d4af37;--text:#f3efe2;--muted:#a9b4c8;--ok:#3ecf8e;--bad:#ff6b6b;--x:#5ec8ff;--y:#ffb454}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--navy);color:var(--text);font-family:'Cairo',sans-serif;line-height:1.7;font-size:17px}
+h1,h2,h3{font-family:'Playfair Display','Cairo',serif;color:var(--gold);margin:.3em 0}
+.ar{direction:rtl;text-align:right}.en{direction:ltr;text-align:left}
+#top{position:sticky;top:0;z-index:20;background:rgba(10,22,40,.96);border-bottom:1px solid var(--navy3);padding:8px 14px}
+#top .row{display:flex;justify-content:space-between;max-width:760px;margin:auto;font-weight:700;font-size:14px}
+#bar{height:10px;background:var(--navy3);border-radius:9px;max-width:760px;margin:6px auto 0;overflow:hidden}
+#fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#f5dd7a);transition:width .5s}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:760px;margin:8px auto 0;padding-bottom:4px}
+nav button{flex:none;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--navy3);background:var(--navy2);color:var(--text);font:700 14px 'Cairo';cursor:pointer}
+nav button.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+main{max-width:760px;margin:auto;padding:14px}
+section{display:none}section.on{display:block}
+.card{background:var(--navy2);border:1px solid var(--navy3);border-radius:16px;padding:16px;margin:14px 0}
+.tip{background:#1d2c17;border:1px solid #3d5a2c;border-radius:12px;padding:10px 14px;margin:10px 0}
+.note{background:#2b2410;border:1px solid #6b5a1c;border-radius:12px;padding:10px 14px;margin:10px 0}
+.x{color:var(--x);font-weight:800}.y{color:var(--y);font-weight:800}
+svg.plane{width:100%;max-width:520px;display:block;margin:8px auto;background:#0d1d36;border:2px solid var(--navy3);border-radius:14px;touch-action:manipulation;cursor:crosshair}
+.big{font:800 30px 'Playfair Display';text-align:center;direction:ltr;margin:6px 0}
+.btn{min-height:48px;padding:0 20px;border-radius:14px;border:0;background:var(--gold);color:var(--navy);font:800 16px 'Cairo';cursor:pointer;margin:4px}
+.btn.alt{background:var(--navy3);color:var(--text);border:1px solid var(--gold)}
+.btn:disabled{opacity:.4;cursor:default}
+.fb{display:none;margin:10px 0;padding:10px 12px;border-radius:12px;font-size:16px}
+.fb.show{display:block}.fb.g{background:#12382a}.fb.r{background:#3d1a1f}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;direction:ltr}
+.opt{min-height:52px;border-radius:12px;border:2px solid var(--navy3);background:var(--navy);color:var(--text);font:700 18px 'Cairo';cursor:pointer}
+.opt:hover{border-color:var(--gold)}
+.opt.ok{background:#12382a;border-color:var(--ok)}
+.opt.no{background:#3d1a1f;border-color:var(--bad);animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{border:1px solid var(--navy3);padding:6px;text-align:center}th{background:var(--navy3);color:var(--gold)}
+.center{text-align:center}
+.done{display:none;text-align:center;padding:18px;border:2px dashed var(--gold);border-radius:16px;margin:16px 0}
+.done.show{display:block}
+.pill{display:inline-block;padding:2px 12px;border-radius:14px;background:var(--navy3);border:1px solid var(--gold);direction:ltr}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="row"><span>📍 Coordinate Plane Game</span><span id="sc">⭐ 0 / 0</span></div>
+  <div id="bar"><div id="fill"></div></div>
+  <nav id="nav"></nav>
+</div>
+<main>
+
+<!-- LEARN -->
+<section id="s0" class="on">
+  <h2>🧭 Learn: the Coordinate Plane</h2>
+  <div class="card ar">
+    <p>المستوى الإحداثي يشبه <b>خريطة</b>. لتصل إلى أي نقطة نكتب رقمين بين قوسين:</p>
+    <div class="big">( <span class="x">x</span> , <span class="y">y</span> )</div>
+    <p><span class="x">x (الأول)</span> = امشِ <b>يمينًا (+)</b> أو <b>يسارًا (−)</b> ➡️⬅️<br>
+       <span class="y">y (الثاني)</span> = اصعد <b>لأعلى (+)</b> أو انزل <b>لأسفل (−)</b> ⬆️⬇️</p>
+    <div class="tip"><b>قاعدة سهلة:</b> "امشِ قبل أن تصعد" — في الأبجدية <b>x</b> قبل <b>y</b>. 🚶‍♂️ ثم 🛗<br>
+    ابدأ دائمًا من نقطة الأصل (0, 0).</div>
+  </div>
+  <div class="card">
+    <h3 class="ar">جرّب بنفسك 👇 اضغط على أي مكان</h3>
+    <svg class="plane" id="exp" viewBox="0 0 500 500"></svg>
+    <div class="big" id="expL">( ? , ? )</div>
+    <div class="ar center" id="expT">اضغط على الشبكة لترى الطريق من (0,0).</div>
+  </div>
+  <div class="card ar">
+    <h3>الأرباع الأربعة</h3>
+    <table class="en"><tr><th>Quadrant</th><th>x</th><th>y</th><th>مثال</th></tr>
+    <tr><td>I</td><td>+</td><td>+</td><td>(3, 2)</td></tr>
+    <tr><td>II</td><td>−</td><td>+</td><td>(−3, 2)</td></tr>
+    <tr><td>III</td><td>−</td><td>−</td><td>(−3, −2)</td></tr>
+    <tr><td>IV</td><td>+</td><td>−</td><td>(3, −2)</td></tr></table>
+    <div class="note">إذا كان أحد الرقمين <b>صفرًا</b> فالنقطة تقع على <b>محور</b> وليست في ربع.<br>
+    (−3, 0) على محور x · (0, 4) على محور y</div>
+    <div class="tip"><b>الكسور:</b> ½ تعني "منتصف" بين رقمين. مثلًا 2½ بين 2 و 3. وكل مربع صغير في اللعبة = نصف وحدة.</div>
+  </div>
+</section>
+
+<!-- PLOT -->
+<section id="s1">
+  <h2>🎯 Game 1: Plot the Point</h2>
+  <p class="ar">اضغط على المكان الصحيح ثم اختر <b>Check</b>. (أسئلة 13–20 من الكتاب)</p>
+  <div class="card">
+    <div class="big" id="pTask"></div>
+    <svg class="plane" id="pSvg" viewBox="0 0 500 500"></svg>
+    <div class="fb" id="pFb"></div>
+    <div class="center">
+      <button class="btn alt" id="pHint">💡 Show me how</button>
+      <button class="btn" id="pCheck" disabled>✔ Check</button>
+      <button class="btn alt" id="pNext" style="display:none">Next ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- READ -->
+<section id="s2">
+  <h2>🔍 Game 2: Write the Ordered Pair</h2>
+  <p class="ar">انظر إلى النقطة الذهبية ⭐ واختر إحداثياتها. (مثل أسئلة 21–26)</p>
+  <div class="card">
+    <div class="big" id="rTask"></div>
+    <svg class="plane" id="rSvg" viewBox="0 0 500 500"></svg>
+    <div class="opts" id="rOpts"></div>
+    <div class="fb" id="rFb"></div>
+    <div class="center"><button class="btn alt" id="rNext" style="display:none">Next ▶</button></div>
+  </div>
+</section>
+
+<!-- QUAD -->
+<section id="s3">
+  <h2>🏁 Game 3: Which Quadrant?</h2>
+  <p class="ar">أين تقع النقطة؟ انظر إلى إشارتي x و y.</p>
+  <div class="card">
+    <div class="big" id="qTask"></div>
+    <div class="opts" id="qOpts"></div>
+    <div class="fb" id="qFb"></div>
+    <div class="center"><button class="btn alt" id="qNext" style="display:none">Next ▶</button></div>
+  </div>
+</section>
+
+<div class="done" id="fin">
+  <div style="font-size:56px">🏆</div>
+  <h2 id="fint"></h2><p class="ar" id="finar"></p>
+</div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s), NS='http://www.w3.org/2000/svg';
+const O=250,U=38,MAXV=6;
+const px=v=>O+v*U, py=v=>O-v*U;
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e}
+function fmt(v){const a=Math.abs(v),i=Math.floor(a),h=a-i>=.5;let s=h?(i?i+'½':'½'):String(i);return (v<0?'−':'')+s}
+const pair=(x,y)=>`(${fmt(x)}, ${fmt(y)})`;
+
+function drawGrid(svg){
+  svg.innerHTML='';
+  for(let i=-MAXV;i<=MAXV;i++){
+    el('line',{x1:px(i),y1:py(-MAXV),x2:px(i),y2:py(MAXV),stroke:i?'#1f3559':'#d9d3c0','stroke-width':i?1:2.5},svg);
+    el('line',{x1:px(-MAXV),y1:py(i),x2:px(MAXV),y2:py(i),stroke:i?'#1f3559':'#d9d3c0','stroke-width':i?1:2.5},svg);
+    if(i){el('text',{x:px(i),y:O+15,'text-anchor':'middle','font-size':12,fill:'#a9b4c8'},svg,fmt(i));
+          el('text',{x:O-6,y:py(i)+4,'text-anchor':'end','font-size':12,fill:'#a9b4c8'},svg,fmt(i));}
+  }
+  el('text',{x:px(MAXV)+2,y:O-8,'font-size':16,fill:'#5ec8ff','font-weight':800},svg,'x');
+  el('text',{x:O+8,y:py(MAXV)+14,'font-size':16,fill:'#ffb454','font-weight':800},svg,'y');
+  el('text',{x:O-10,y:O+15,'text-anchor':'end','font-size':12,fill:'#a9b4c8'},svg,'0');
+  [['I',3,3],['II',-3,3],['III',-3,-3],['IV',3,-3]].forEach(q=>el('text',{x:px(q[1]*1.5),y:py(q[2]*1.5)+8,'text-anchor':'middle','font-size':34,fill:'#ffffff10','font-weight':800},svg,q[0]));
+  return el('g',{},svg);
+}
+function pt(g,x,y,label,color,r=6){
+  el('circle',{cx:px(x),cy:py(y),r:r,fill:color,stroke:'#0a1628','stroke-width':2},g);
+  if(label)el('text',{x:px(x)+9,y:py(y)-9,'font-size':16,'font-weight':800,fill:color},g,label);
+}
+function path(g,x,y){
+  if(x!==0){el('line',{x1:px(0),y1:py(0),x2:px(x),y2:py(0),stroke:'#5ec8ff','stroke-width':4,'stroke-dasharray':'7 5'},g);
+    el('text',{x:(px(0)+px(x))/2,y:py(0)+(y>=0?32:-14),'text-anchor':'middle','font-size':14,'font-weight':800,fill:'#5ec8ff'},g,(x>0?'→ ':'← ')+fmt(Math.abs(x)));}
+  if(y!==0){el('line',{x1:px(x),y1:py(0),x2:px(x),y2:py(y),stroke:'#ffb454','stroke-width':4,'stroke-dasharray':'7 5'},g);
+    el('text',{x:px(x)+(x>=0?10:-10),y:(py(0)+py(y))/2,'text-anchor':x>=0?'start':'end','font-size':14,'font-weight':800,fill:'#ffb454'},g,(y>0?'↑ ':'↓ ')+fmt(Math.abs(y)));}
+}
+function svgToVal(svg,e){
+  const r=svg.getBoundingClientRect(),s=500/r.width;
+  const cx=(e.clientX-r.left)*s,cy=(e.clientY-r.top)*s;
+  const c=v=>Math.max(-MAXV,Math.min(MAXV,Math.round(v*2)/2));
+  return [c((cx-O)/U),c((O-cy)/U)];
+}
+
+/* ---------- score ---------- */
+const PLOT=[
+ {n:'A',x:1,y:-1,s:'(1, −1)'},{n:'B',x:4,y:3,s:'(4, 3)'},{n:'C',x:-4,y:3,s:'(−4, 3)'},{n:'D',x:5,y:-2,s:'(5, −2)'},
+ {n:'E',x:-2.5,y:1.5,s:'(−2.5, 1.5)'},{n:'F',x:2,y:1.5,s:'(2, 1.5)'},{n:'G',x:-2,y:-1.5,s:'(−2, −1½)'},{n:'H',x:.5,y:-1,s:'(½, −1)'}
+];
+const READ=[
+ {n:'P',x:3,y:4},{n:'Q',x:-2,y:3},{n:'R',x:-4,y:-1.5},{n:'S',x:2.5,y:-3},
+ {n:'T',x:.5,y:2.5},{n:'U',x:-1.5,y:0},{n:'V',x:0,y:-2},{n:'W',x:4.5,y:-.5}
+];
+const QUAD=[
+ {x:3,y:2,a:'I'},{x:-4,y:1,a:'II'},{x:-2,y:-5,a:'III'},{x:5,y:-.5,a:'IV'},{x:-3,y:0,a:'x-axis'},{x:0,y:4,a:'y-axis'}
+];
+const TOTAL=PLOT.length+READ.length+QUAD.length;
+let earned=0,answered=0,celebrated=false;
+function finish(first){
+  answered++;if(first)earned++;
+  $('#sc').textContent=`⭐ ${earned} / ${TOTAL}`;
+  $('#fill').style.width=(answered/TOTAL*100)+'%';
+  if(answered===TOTAL){
+    const p=Math.round(earned/TOTAL*100);
+    $('#fint').textContent=(p===100?'Perfect! 🌟':p>=70?'Very good! 👏':'Good try! 💪')+` (${earned}/${TOTAL})`;
+    $('#finar').textContent=p===100?'ما شاء الله! أنت خبير في المستوى الإحداثي!':p>=70?'ممتاز! راجع الأخطاء وستصبح الأول.':'محاولة جيدة! ارجع لتبويب Learn وأعد اللعب.';
+    $('#fin').classList.add('show');
+    if(p>=70&&!celebrated){celebrated=true;try{confetti({particleCount:200,spread:80,origin:{y:.6}})}catch(_){}}
+  }
+}
+const fb=(id,ok,html)=>{const f=$(id);f.className='fb show '+(ok?'g':'r')+' ar';f.innerHTML=html};
+
+/* ---------- explorer ---------- */
+const exp=$('#exp');let eg=drawGrid(exp);
+exp.addEventListener('click',e=>{
+  const [x,y]=svgToVal(exp,e);
+  exp.removeChild(eg);eg=el('g',{},exp);path(eg,x,y);pt(eg,x,y,pair(x,y),'#d4af37',8);
+  $('#expL').innerHTML=`( <span class="x">${fmt(x)}</span> , <span class="y">${fmt(y)}</span> )`;
+  const xs=x===0?'لا تتحرك يمينًا أو يسارًا':`امشِ ${fmt(Math.abs(x))} ${x>0?'يمينًا':'يسارًا'}`;
+  const ys=y===0?'ولا تصعد أو تنزل':`ثم ${y>0?'اصعد':'انزل'} ${fmt(Math.abs(y))}`;
+  $('#expT').innerHTML=`<span class="x">${xs}</span> ← <span class="y">${ys}</span>`;
+});
+
+/* ---------- game 1: plot ---------- */
+const pSvg=$('#pSvg');let pg,pi=0,pick=null,pMiss=false,pDone=[];
+function pRender(){
+  pSvg.innerHTML='';pg=drawGrid(pSvg);
+  pDone.forEach(i=>pt(pg,PLOT[i].x,PLOT[i].y,PLOT[i].n,'#3ecf8e'));
+  const p=PLOT[pi];
+  $('#pTask').innerHTML=`${13+pi}. ${p.n} <span class="pill">${p.s}</span>`;
+  pick=null;pMiss=false;$('#pCheck').disabled=true;$('#pCheck').style.display='';$('#pHint').style.display='';
+  $('#pNext').style.display='none';$('#pFb').className='fb';
+}
+pSvg.addEventListener('click',e=>{
+  if($('#pNext').style.display!=='none')return;
+  pick=svgToVal(pSvg,e);pRender2();
+});
+function pRender2(){
+  const keep=pick;pSvg.innerHTML='';pg=drawGrid(pSvg);
+  pDone.forEach(i=>pt(pg,PLOT[i].x,PLOT[i].y,PLOT[i].n,'#3ecf8e'));
+  pt(pg,keep[0],keep[1],'?','#ffd97a',7);pick=keep;
+  $('#pCheck').disabled=false;$('#pFb').className='fb';
+}
+$('#pHint').onclick=()=>{const p=PLOT[pi];path(pg,p.x,p.y);
+  const xs=p.x===0?'x = 0: لا تتحرك':`امشِ ${fmt(Math.abs(p.x))} ${p.x>0?'يمينًا':'يسارًا'}`;
+  const ys=p.y===0?'y = 0':`ثم ${p.y>0?'اصعد':'انزل'} ${fmt(Math.abs(p.y))}`;
+  fb('#pFb',true,`💡 <span class="x">${xs}</span> ← <span class="y">${ys}</span>`);};
+$('#pCheck').onclick=()=>{
+  const p=PLOT[pi],xo=pick[0]===p.x,yo=pick[1]===p.y;
+  if(xo&&yo){
+    pDone.push(pi);pSvg.innerHTML='';pg=drawGrid(pSvg);pDone.forEach(i=>pt(pg,PLOT[i].x,PLOT[i].y,PLOT[i].n,'#3ecf8e'));
+    fb('#pFb',true,'✅ '+(pMiss?'أحسنت! أصبت هذه المرة.':'ممتاز! من أول مرة.')+` النقطة ${p.n} ${p.s}`);
+    finish(!pMiss);$('#pCheck').style.display='none';$('#pHint').style.display='none';
+    if(pi<PLOT.length-1)$('#pNext').style.display='';
+  }else{
+    pMiss=true;
+    fb('#pFb',false,`❌ ليست صحيحة. <span class="x">x ${xo?'✔ صحيح':'✘ راجعه'}</span> · <span class="y">y ${yo?'✔ صحيح':'✘ راجعه'}</span><br>جرّب مرة أخرى أو اضغط 💡 Show me how.`);
+  }
+};
+$('#pNext').onclick=()=>{pi++;pRender()};
+pRender();
+
+/* ---------- game 2: read ---------- */
+const rSvg=$('#rSvg');let ri=0,rMiss=false;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function rRender(){
+  const p=READ[ri];rMiss=false;
+  const g=drawGrid(rSvg);
+  READ.forEach((q,i)=>{if(i!==ri)return});
+  pt(g,p.x,p.y,p.n,'#d4af37',9);
+  $('#rTask').innerHTML=`${21+ri}. ${p.n} = ( ? , ? )`;
+  let cands=[[p.x,p.y],[p.y,p.x],[-p.x,p.y],[p.x,-p.y],[-p.x,-p.y],[p.x+1,p.y],[p.x,p.y+1]];
+  const seen=new Set([pair(p.x,p.y)]),wrong=[];
+  cands.slice(1).forEach(c=>{const s=pair(c[0],c[1]);if(!seen.has(s)&&Math.abs(c[0])<=MAXV&&Math.abs(c[1])<=MAXV){seen.add(s);wrong.push(c)}});
+  const opts=shuffle([[p.x,p.y]].concat(wrong.slice(0,3)));
+  $('#rOpts').innerHTML=opts.map(c=>`<button class="opt" data-c="${c[0]},${c[1]}">${pair(c[0],c[1])}</button>`).join('');
+  $('#rFb').className='fb';$('#rNext').style.display='none';
+  document.querySelectorAll('#rOpts .opt').forEach(b=>b.onclick=()=>{
+    if($('#rNext').style.display!=='none')return;
+    const [x,y]=b.dataset.c.split(',').map(Number);
+    if(x===p.x&&y===p.y){
+      b.classList.add('ok');path(g,p.x,p.y);
+      document.querySelectorAll('#rOpts .opt').forEach(o=>o.disabled=true);
+      fb('#rFb',true,`✅ ${rMiss?'أحسنت!':'ممتاز!'} <span class="x">x = ${fmt(p.x)}</span> (يمين/يسار) و <span class="y">y = ${fmt(p.y)}</span> (فوق/تحت).`);
+      finish(!rMiss);if(ri<READ.length-1)$('#rNext').style.display='';
+    }else{
+      b.classList.add('no');b.disabled=true;rMiss=true;
+      fb('#rFb',false,'❌ جرّب مرة أخرى. ابدأ من (0,0): كم خطوة يمينًا أو يسارًا؟ ثم كم خطوة لأعلى أو لأسفل؟ <b>x أولًا ثم y</b>.');
+    }
+  });
+}
+$('#rNext').onclick=()=>{ri++;rRender()};
+rRender();
+
+/* ---------- game 3: quadrants ---------- */
+let qi=0,qMiss=false;
+const QOPTS=['I','II','III','IV','x-axis','y-axis'];
+function qWhy(q){
+  if(q.y===0)return 'y = 0، إذن النقطة على <b>محور x</b>.';
+  if(q.x===0)return 'x = 0، إذن النقطة على <b>محور y</b>.';
+  return `x ${q.x>0?'موجب (+)':'سالب (−)'} و y ${q.y>0?'موجب (+)':'سالب (−)'} ← <b>Quadrant ${q.a}</b>.`;
+}
+function qRender(){
+  const q=QUAD[qi];qMiss=false;
+  $('#qTask').innerHTML=`${qi+1}. <span class="pill">${pair(q.x,q.y)}</span>`;
+  $('#qOpts').innerHTML=QOPTS.map(o=>`<button class="opt" data-o="${o}">${o.length<4?'Quadrant '+o:'On the '+o}</button>`).join('');
+  $('#qFb').className='fb';$('#qNext').style.display='none';
+  document.querySelectorAll('#qOpts .opt').forEach(b=>b.onclick=()=>{
+    if($('#qNext').style.display!=='none')return;
+    if(b.dataset.o===q.a){
+      b.classList.add('ok');document.querySelectorAll('#qOpts .opt').forEach(o=>o.disabled=true);
+      fb('#qFb',true,'✅ '+(qMiss?'أحسنت!':'ممتاز!')+' '+qWhy(q));
+      finish(!qMiss);if(qi<QUAD.length-1)$('#qNext').style.display='';
+    }else{
+      b.classList.add('no');b.disabled=true;qMiss=true;
+      fb('#qFb',false,'❌ جرّب مرة أخرى. انظر إلى إشارة x ثم إشارة y. تذكر: الأصفار تعني محور.');
+    }
+  });
+}
+$('#qNext').onclick=()=>{qi++;qRender()};
+qRender();
+
+/* ---------- nav ---------- */
+const tabs=['🧭 Learn','🎯 Plot','🔍 Read','🏁 Quadrants'];
+$('#nav').innerHTML=tabs.map((t,i)=>`<button data-t="${i}" class="${i?'':'on'}">${t}</button>`).join('');
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('section').forEach((s,i)=>s.classList.toggle('on',i==b.dataset.t));
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+$('#sc').textContent=`⭐ 0 / ${TOTAL}`;
+</script>
+</body>
+</html>
